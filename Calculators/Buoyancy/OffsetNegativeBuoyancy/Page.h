@@ -1,0 +1,34 @@
+#ifndef BUOYANCY_PAGE_H
+#define BUOYANCY_PAGE_H
+
+#include "SCUBACalculator.h"
+
+#include <QWidget>
+#include <memory>
+
+namespace Ui
+{
+    class CPage;
+}
+
+class CPage : public CSCUBACalculatorPage
+{
+    Q_OBJECT
+public:
+    CPage( QWidget *parent = 0 );
+    ~CPage();
+
+public:
+Q_SIGNALS:
+
+public Q_SLOTS:
+protected:
+    virtual void updateValues( QWidget * widgetChanged ) override;
+
+protected:
+
+private:
+    std::unique_ptr< Ui::CPage > fImpl;
+};
+
+#endif
