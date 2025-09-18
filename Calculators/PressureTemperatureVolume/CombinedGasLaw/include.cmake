@@ -21,17 +21,20 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    CombinedGasLaw.cpp
+    Calculator.cpp
+    Page.cpp
 )
 
 set(qtproject_H
+    Page.h
 )
 
 set(project_H
-    CombinedGasLaw.h
+    Calculator.h
 )
 
 set(qtproject_UIS
+    Page.ui
 )
 
 set(qtproject_QRC

@@ -1,8 +1,8 @@
 #include "Page.h"
 #include "ui_Page.h"
 
-CPage::CPage( QWidget *parent ) :
-    CSCUBACalculatorPage( parent ),
+CPage::CPage( const CSCUBACalculator *calculator, QWidget *parent ) :
+    CSCUBACalculatorPage( calculator, parent ),
     fImpl( new Ui::CPage )
 {
     fImpl->setupUi( this );
@@ -21,23 +21,14 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget * /*changedWidget*/ )
 {
-    auto volumeUnitSingular = imperial() ? tr( "cu ft" ) : tr( "liter" );
-    auto volumeUnitPlural = imperial() ? tr( "cu ft" ) : tr( "liters" );
-    auto weightUnit = imperial() ? tr( "lb" ) : tr( "kg" );
+    auto weightOfWaterString = this->weightOfWaterString( fImpl->saltwater->isChecked() );
+    fImpl->weightOfWater->setText( "x " + weightOfWaterString );
 
-    auto weightLabel = imperial() ? ( fImpl->saltwater->isChecked() ? tr( "64" ) : tr( "62.4" ) ) : ( fImpl->saltwater->isChecked() ? tr( "1.0" ) : tr( "1.03" ) );
-    bool aOK;
-    auto weightOfWater = weightLabel.toDouble( &aOK );
-    Q_ASSERT( aOK );
-
-    auto weightOfWaterLabel = tr( "(%3 %4/%5 of water)" ).arg( weightLabel ).arg( weightUnit ).arg( volumeUnitSingular );
-    fImpl->weightOfWater->setText( weightOfWaterLabel );
-
-    QString labelText = tr( "%1 required = (%2s of negative buoyancy) / %3" ).arg( volumeUnitPlural ).arg( weightUnit ).arg( weightOfWaterLabel );
+    QString labelText = tr( "%1 required = (%2 of negative buoyancy) / %3" ).arg( volumeUnit( false ) ).arg( weightUnit( false ) ).arg( weightOfWaterString );
     fImpl->eq->setText( labelText );
 
-    fImpl->negativeBuoyancy->setPlaceholderText( tr( "Negative Buyoyancy (%1)" ).arg( weightUnit ) );
-    fImpl->volumeDisplaced->setPlaceholderText( tr( "Volume (%1)" ).arg( volumeUnitPlural ) );
+    fImpl->negativeBuoyancy->setPlaceholderText( tr( "Negative Buyoyancy (%1)" ).arg( weightUnit( false ) ) );
+    fImpl->volumeDisplaced->setPlaceholderText( tr( "Volume (%1)" ).arg( volumeUnit( false ) ) );
 
     auto negativeBuoyancy = getValue( fImpl->negativeBuoyancy->text() );
     auto volumeDisplaced = getValue( fImpl->volumeDisplaced->text() );
@@ -58,17 +49,11 @@ void CPage::updateValues( QWidget * /*changedWidget*/ )
         }
     }
 
-    if ( numEmpty != 1 )
+    auto values = std::vector< std::optional< double > >( { fImpl->saltwater->isChecked() ? 1.0 : 0.0, volumeDisplaced, negativeBuoyancy } );
+    auto aOK = calculator()->compute( values );
+    if ( !aOK )
         return;
 
-    if ( !volumeDisplaced.has_value() )
-    {
-        volumeDisplaced = negativeBuoyancy.value() / weightOfWater;
-        fImpl->volumeDisplaced->setText( QString( "%1" ).arg( volumeDisplaced.value(), 0, 'f', 1 ) );
-    }
-    else if ( !negativeBuoyancy.has_value() )
-    {
-        negativeBuoyancy = volumeDisplaced.value() * weightOfWater;
-        fImpl->negativeBuoyancy->setText( QString( "%1" ).arg( negativeBuoyancy.value(), 0, 'f', 1 ) );
-    }
+    fImpl->negativeBuoyancy->setText( QString( "%1" ).arg( negativeBuoyancy.value(), 0, 'f', 1 ) );
+    fImpl->volumeDisplaced->setText( QString( "%1" ).arg( volumeDisplaced.value(), 0, 'f', 1 ) );
 }

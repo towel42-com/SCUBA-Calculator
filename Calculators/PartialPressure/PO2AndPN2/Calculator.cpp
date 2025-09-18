@@ -1,29 +1,41 @@
-#include "VolumePressureChangeInPressureVolume.h"
+#include "Calculator.h"
+#include "Page.h"
 
-class CALCULATORS_EXPORT CVolumePressureChangeInPressureVolume : public CSCUBACalculator
+class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CVolumePressureChangeInPressureVolume() {}
-    virtual ~CVolumePressureChangeInPressureVolume() override {}
+    CCalculator() {}
+    virtual ~CCalculator() override {}
 
     QString calculatorName() const override;
     QStringList calculatorPath() const override;
 
-    CSCUBACalculatorPage *getPage( QWidget * /*parent*/ ) const override { return nullptr; };
+    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
+    virtual bool compute( std::vector< std::optional< double > > &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
 {
-    return new CVolumePressureChangeInPressureVolume;
+    return new CCalculator;
 }
 
-QString CVolumePressureChangeInPressureVolume::calculatorName() const
+QString CCalculator::calculatorName() const
 {
-    return "Calculating Volume/Pressure Following a Change in Pressure/Volume";
+    return "Calculating PO2 and PN2";
 }
 
-QStringList CVolumePressureChangeInPressureVolume::calculatorPath() const
+QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Volume Calculations" };
+    return { "Partial Pressure Calculations" };
 }
 
+CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+{
+    return new CPage( this, parent );
+}
+
+bool CCalculator::compute( std::vector< std::optional< double > > &values ) const
+{
+    (void)values;
+    return false;
+}

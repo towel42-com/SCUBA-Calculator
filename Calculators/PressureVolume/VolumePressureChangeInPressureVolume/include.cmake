@@ -21,17 +21,20 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    VolumePressureChangeInPressureVolume.cpp
+    Calculator.cpp
+    Page.cpp
 )
 
 set(qtproject_H
+    Page.h
 )
 
 set(project_H
-    VolumePressureChangeInPressureVolume.h
+    Calculator.h
 )
 
 set(qtproject_UIS
+    Page.ui
 )
 
 set(qtproject_QRC

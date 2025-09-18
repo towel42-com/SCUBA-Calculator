@@ -21,17 +21,20 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    RelativeChangeInAmbientPressure.cpp
+    Calculator.cpp
+    Page.cpp
 )
 
 set(qtproject_H
+    Page.h
 )
 
 set(project_H
-    RelativeChangeInAmbientPressure.h
+    Calculator.h
 )
 
 set(qtproject_UIS
+    Page.ui
 )
 
 set(qtproject_QRC

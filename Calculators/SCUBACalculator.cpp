@@ -42,8 +42,26 @@ bool CSCUBACalculator::metric() const
     return false;
 }
 
-CSCUBACalculatorPage::CSCUBACalculatorPage( QWidget *parent ) :
-    QWidget( parent )
+double CSCUBACalculator::weightOfWater( bool saltWater ) const
+{
+    auto retVal = imperial() ? ( saltWater ? 64.0 : 62.4 ) : ( saltWater ? 1.0 : 1.03 );
+    return retVal;
+}
+
+std::size_t CSCUBACalculator::numEmptyOK( const std::vector< std::optional< double > > &values ) const
+{
+    std::size_t numEmpty = 0;
+
+    for ( auto &&value : values )
+    {
+        numEmpty += value.has_value() ? 0 : 1;
+    }
+    return numEmpty == 1;
+}
+
+CSCUBACalculatorPage::CSCUBACalculatorPage( const CSCUBACalculator *calculator, QWidget *parent ) :
+    QWidget( parent ),
+    fCalculator( calculator )
 {
     connect( this, &CSCUBACalculatorPage::sigUnitsChanged, [ = ]() { updateValues( nullptr ); } );
 }
@@ -96,6 +114,50 @@ std::optional< double > CSCUBACalculatorPage::getValue( const QString &text ) co
     auto retVal = text.toDouble( &aOK );
     if ( !aOK )
         return {};
+    return retVal;
+}
+
+QString CSCUBACalculatorPage::volumeUnit( bool singular ) const
+{
+    QString retVal;
+    if(imperial())
+    {
+        return tr( "cu ft" );
+    }
+    else
+    {
+        if ( singular )
+            return tr( "liter" );
+        else
+            return tr( "liters" );
+    }
+}
+
+QString CSCUBACalculatorPage::weightUnit( bool singular ) const
+{
+    QString retVal;
+    if ( imperial() )
+    {
+        if ( singular )
+            return tr( "lb" );
+        else
+            return tr( "lbs" );
+    }
+    else
+    {
+        if ( singular )
+            return tr( "kg" );
+        else
+            return tr( "kgs" );
+    }
+}
+
+QString CSCUBACalculatorPage::weightOfWaterString( bool saltWater ) const
+{
+    auto retVal = tr( "(%1 %2/%3 of water)" )
+        .arg( calculator()->weightOfWater( saltWater ), 0, 'f', 1 )
+        .arg( weightUnit( false ) )
+        .arg( volumeUnit( true ) );
     return retVal;
 }
 

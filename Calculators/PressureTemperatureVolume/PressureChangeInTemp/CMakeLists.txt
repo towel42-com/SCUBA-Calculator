@@ -20,7 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-project( PressureChangeInTemp )
+get_filename_component( _PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+
+get_filename_component( _GROUP_NAME ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY )
+get_filename_component( _GROUP_NAME ${_GROUP_NAME} NAME )
+project( ${_PROJECT_NAME} )
+
 
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
@@ -39,7 +44,7 @@ target_link_libraries( ${PROJECT_NAME}
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators/PressureTemperatureVolume )
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators/${_GROUP_NAME} )
 set_target_properties( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX d )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION Calculators )

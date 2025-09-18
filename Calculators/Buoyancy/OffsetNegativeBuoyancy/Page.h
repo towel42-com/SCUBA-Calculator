@@ -15,7 +15,7 @@ class CPage : public CSCUBACalculatorPage
 {
     Q_OBJECT
 public:
-    CPage( QWidget *parent = 0 );
+    CPage( const CSCUBACalculator * calculator, QWidget *parent = 0 );
     ~CPage();
 
 public:

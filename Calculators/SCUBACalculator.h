@@ -51,6 +51,7 @@ public:
     virtual QString calculatorName() const = 0;
     virtual QStringList calculatorPath() const = 0;
     virtual CSCUBACalculatorPage *getPage( QWidget *parent = nullptr ) const final;
+    virtual bool compute( std::vector< std::optional< double > > &values ) const = 0;
 
     virtual void setImperial( bool imperial ) final;
     virtual void setMetric( bool metric ) final;
@@ -58,9 +59,15 @@ public:
     virtual bool imperial() const final;
     virtual bool metric() const final;
 
+    virtual double weightOfWater( bool saltWater ) const final;
+
+    virtual std::size_t numEmptyOK( const std::vector< std::optional< double > > &values ) const final;
+
 protected:
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const = 0;
     mutable CSCUBACalculatorPage *fPage{ nullptr };
+
+public:
 };
 
 class CSCUBACalculatorPage : public QWidget
@@ -68,8 +75,10 @@ class CSCUBACalculatorPage : public QWidget
     Q_OBJECT;
 
 public:
-    CSCUBACalculatorPage( QWidget *parent );
+    CSCUBACalculatorPage( const CSCUBACalculator * calculator, QWidget *parent );
     virtual ~CSCUBACalculatorPage();
+
+    virtual const CSCUBACalculator *calculator() const final { return fCalculator; }
 
     virtual void setImperial( bool imperial ) final;
     virtual void setMetric( bool metric ) final;
@@ -80,12 +89,15 @@ public:
     virtual void setUpdateFromRHS( bool updateFromRHS ) final;
     virtual bool updateFromRHS() const final { return fUpdateFromRHS; }
 
-protected:
     virtual void updateValues( QWidget * widget ) = 0;
     virtual void addWidgets( bool rhs, const std::list< QWidget * > &widgets );
     virtual void addWidget( bool rhs, QWidget *widget );
 
     std::optional< double > getValue( const QString & text ) const;
+
+    virtual QString volumeUnit( bool singular ) const final;
+    virtual QString weightUnit( bool singular ) const final;
+    virtual QString weightOfWaterString( bool seaWater ) const final;
 
 private Q_SLOTS:
     void slotWidgetChanged( QWidget * );
@@ -95,6 +107,8 @@ Q_SIGNALS:
 private:
     bool fImperial{ false };
     bool fUpdateFromRHS{ true };
+
+    const CSCUBACalculator *fCalculator{ nullptr };
     std::unordered_map< QObject *, bool > fWidgets;
 };
 
