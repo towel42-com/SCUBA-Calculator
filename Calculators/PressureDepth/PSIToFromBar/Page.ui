@@ -17,31 +17,24 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QRadioButton" name="saltwater">
+      <widget class="QLineEdit" name="psi"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Salt Water?</string>
+        <string>PSI = 14.7 x</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="freshWater">
-       <property name="text">
-        <string>Fresh Water?</string>
-       </property>
-      </widget>
+      <widget class="QLineEdit" name="bar"/>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>BAR</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
     </layout>
    </item>
@@ -71,10 +64,6 @@
    </property>
   </action>
  </widget>
- <tabstops>
-  <tabstop>saltwater</tabstop>
-  <tabstop>freshWater</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

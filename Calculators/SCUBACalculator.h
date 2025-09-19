@@ -28,6 +28,7 @@
 #include <QStringList>
 #include <optional>
 
+class QLineEdit;
 #include <unordered_map>
 
 #if defined( WINDOWS ) || defined( WIN32 ) || defined( Q_OS_WINDOWS )
@@ -51,7 +52,7 @@ public:
     virtual QString calculatorName() const = 0;
     virtual QStringList calculatorPath() const = 0;
     virtual CSCUBACalculatorPage *getPage( QWidget *parent = nullptr ) const final;
-    virtual bool compute( std::vector< std::optional< double > > &values ) const = 0;
+    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const = 0;
 
     virtual void setImperial( bool imperial ) final;
     virtual void setMetric( bool metric ) final;
@@ -75,7 +76,8 @@ class CSCUBACalculatorPage : public QWidget
     Q_OBJECT;
 
 public:
-    CSCUBACalculatorPage( const CSCUBACalculator * calculator, QWidget *parent );
+    Q_PROPERTY( bool showUnits READ showUnits );
+    CSCUBACalculatorPage( const CSCUBACalculator *calculator, QWidget *parent );
     virtual ~CSCUBACalculatorPage();
 
     virtual const CSCUBACalculator *calculator() const final { return fCalculator; }
@@ -89,16 +91,18 @@ public:
     virtual void setUpdateFromRHS( bool updateFromRHS ) final;
     virtual bool updateFromRHS() const final { return fUpdateFromRHS; }
 
-    virtual void updateValues( QWidget * widget ) = 0;
+    virtual void updateValues( QWidget *widget ) = 0;
     virtual void addWidgets( bool rhs, const std::list< QWidget * > &widgets );
     virtual void addWidget( bool rhs, QWidget *widget );
 
-    std::optional< double > getValue( const QString & text ) const;
+    std::optional< double > getValue( const QString &text ) const;
+    virtual void setValue( QLineEdit *le, const std::optional< double > &value );
 
     virtual QString volumeUnit( bool singular ) const final;
     virtual QString weightUnit( bool singular ) const final;
     virtual QString weightOfWaterString( bool seaWater ) const final;
 
+    virtual bool showUnits() const { return true; }
 private Q_SLOTS:
     void slotWidgetChanged( QWidget * );
 Q_SIGNALS:

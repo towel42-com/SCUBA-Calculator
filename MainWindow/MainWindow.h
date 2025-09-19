@@ -29,8 +29,9 @@ public:
 Q_SIGNALS:
 public Q_SLOTS:
     void slotSelectCalculator( QTreeWidgetItem *item );
+    void hideUnits( bool hide );
 
-private:
+        private:
     void addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetImperialFunc setImperialFunc, TSetMetricFunc setMetricFunc );
 
 private:

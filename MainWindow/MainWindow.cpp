@@ -68,9 +68,11 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
         page = pageFunc( calculator, nullptr );
     }
 
+    bool showUnits = page != nullptr;
     if ( calculator && page )
     {
         fImpl->pageName->setText( calculator->calculatorName() );
+        showUnits = page->property( "showUnits" ).toBool();
         fImpl->stackedWidget->setCurrentWidget( page );
     }
     else
@@ -78,8 +80,8 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
         fImpl->stackedWidget->setCurrentWidget( fBlankPage );
         fImpl->pageName->setText( "Please Select a Calculator" );
     }
-    fImpl->imperial->setVisible( page != nullptr );
-    fImpl->metric->setVisible( page != nullptr );
+    fImpl->imperial->setVisible( showUnits );
+    fImpl->metric->setVisible( showUnits );
 }
 
 void CMainWindow::loadCalculators()
@@ -145,6 +147,12 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getP
         return;
     }
     fImpl->stackedWidget->addWidget( page );
+}
+
+void CMainWindow::hideUnits( bool hide )
+{
+    fImpl->imperial->setHidden( hide );
+    fImpl->metric->setHidden( hide );
 }
 
 CSCUBACalculator *CMainWindow::getCalculator( QTreeWidgetItem *leaf ) const

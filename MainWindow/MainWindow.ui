@@ -40,7 +40,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
+         <layout class="QHBoxLayout" name="unitLayout">
           <item>
            <widget class="QRadioButton" name="imperial">
             <property name="text">
@@ -73,7 +73,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="currentIndex">
-           <number>15</number>
+           <number>-1</number>
           </property>
          </widget>
         </item>

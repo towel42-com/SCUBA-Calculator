@@ -19,6 +19,8 @@ public:
     ~CPage();
 
 public:
+    virtual bool showUnits() const { return false; }
+
 Q_SIGNALS:
 
 public Q_SLOTS:

@@ -1,5 +1,6 @@
 #include "SCUBACalculator.h"
 #include "SABUtils/WidgetChanged.h"
+#include <QLineEdit>
 
 CSCUBACalculator::CSCUBACalculator()
 {
@@ -115,6 +116,15 @@ std::optional< double > CSCUBACalculatorPage::getValue( const QString &text ) co
     if ( !aOK )
         return {};
     return retVal;
+}
+
+void CSCUBACalculatorPage::setValue( QLineEdit *le, const std::optional< double > &value )
+{
+    if ( !le || !value.has_value() )
+        return;
+    le->blockSignals( true );
+    le->setText( QString( "%1" ).arg( value.value(), 0, 'f', 1 ) );
+    le->blockSignals( false );
 }
 
 QString CSCUBACalculatorPage::volumeUnit( bool singular ) const

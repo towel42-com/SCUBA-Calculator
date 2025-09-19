@@ -7,12 +7,8 @@ CPage::CPage( const CSCUBACalculator * calculator, QWidget *parent ) :
 {
     fImpl->setupUi( this );
 
-    fImpl->saltwater->setChecked( true );
-    QObject::connect( fImpl->saltwater, &QRadioButton::clicked, [ = ]() { updateValues( nullptr ); } );
-    QObject::connect( fImpl->freshWater, &QRadioButton::clicked, [ = ]() { updateValues( nullptr ); } );
-
-    //addWidget( false, fImpl->buoyancy );
-    //addWidgets( true, { fImpl->volumeDisplaced, fImpl->weightOfObject } );
+    addWidget( false, fImpl->psi );
+    addWidget( true, fImpl->bar );
 }
 
 CPage::~CPage()
@@ -21,5 +17,14 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget *changedWidget )
 {
-    (void)changedWidget;
+    auto psi = ( changedWidget == fImpl->bar ) ? std::optional< double >() : getValue( fImpl->psi->text() );
+    auto bar = ( changedWidget == fImpl->psi) ? std::optional< double >() : getValue( fImpl->bar->text() );
+
+    auto newValues = calculator()->compute( { psi, bar } );
+    if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
+        return;
+    if ( changedWidget != fImpl->psi )
+        setValue( fImpl->psi, newValues.value()[ 0 ] );
+    if ( changedWidget != fImpl->bar )
+        setValue( fImpl->bar, newValues.value()[ 1 ] );
 }

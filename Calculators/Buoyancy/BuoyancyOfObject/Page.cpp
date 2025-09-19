@@ -60,13 +60,14 @@ void CPage::updateValues( QWidget *changedWidget )
         }
     }
 
-    auto values = std::vector< std::optional< double > >( { fImpl->saltwater->isChecked() ? 1.0 : 0.0, buoyancy, weightOfObject, volumeDisplaced } );
-
-    auto aOK = calculator()->compute( values );
-    if ( !aOK )
+    auto newValues = calculator()->compute( { fImpl->saltwater->isChecked() ? 1.0 : 0.0, buoyancy, weightOfObject, volumeDisplaced } );
+    if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
         return;
 
-    fImpl->weightOfObject->setText( QString( "%1" ).arg( weightOfObject.value(), 0, 'f', 1 ) );
-    fImpl->volumeDisplaced->setText( QString( "%1" ).arg( volumeDisplaced.value(), 0, 'f', 1 ) );
-    fImpl->buoyancy->setText( QString( "%1" ).arg( buoyancy.value(), 0, 'f', 1 ) );
+    if ( changedWidget != fImpl->weightOfObject )
+        setValue( fImpl->weightOfObject, newValues.value()[ 0 ] );
+    if ( changedWidget != fImpl->buoyancy )
+        setValue( fImpl->buoyancy, newValues.value()[ 1 ] );
+    if ( changedWidget != fImpl->volumeDisplaced )
+        setValue( fImpl->volumeDisplaced, newValues.value()[ 2 ] );
 }

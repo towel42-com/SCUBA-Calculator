@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual bool compute( std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,8 +34,21 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-bool CCalculator::compute( std::vector< std::optional< double > > &values ) const
+std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return false;
+    if ( numEmptyOK( values ) != 1 )
+        return {};
+
+    auto psi = values[ 0 ];
+    auto bar = values[ 1 ];
+
+    if ( !psi.has_value() )
+    {
+        psi = bar.value() * 14.7;
+    }
+    else if ( !bar.has_value() )
+    {
+        bar = psi.value() / 14.7;
+    }
+    return std::vector< std::optional< double > >( { psi, bar } );
 }
