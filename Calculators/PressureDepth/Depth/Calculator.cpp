@@ -36,6 +36,19 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( numEmptyOK( values ) != 1 )
+        return {};
+
+    auto feet = values[ 0 ];
+    auto meters = values[ 1 ];
+
+    if ( !feet.has_value() )
+    {
+        feet = meters.value() * 3.3;
+    }
+    else if ( !meters.has_value() )
+    {
+        meters = feet.value() / 3.3;
+    }
+    return std::vector< std::optional< double > >( { feet, meters } );
 }

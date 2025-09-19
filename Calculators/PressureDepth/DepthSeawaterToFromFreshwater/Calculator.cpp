@@ -36,6 +36,19 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( numEmptyOK( values ) != 1 )
+        return {};
+
+    auto depthFreshWater = values[ 0 ];
+    auto depthSaltWater = values[ 1 ];
+
+    if ( !depthFreshWater.has_value() )
+    {
+        depthFreshWater = depthSaltWater.value() * 1.03;
+    }
+    else if ( !depthSaltWater.has_value() )
+    {
+        depthSaltWater = depthFreshWater.value() / 1.03;
+    }
+    return std::vector< std::optional< double > >( { depthFreshWater, depthSaltWater } );
 }

@@ -23,6 +23,7 @@ void CPage::updateValues( QWidget *changedWidget )
     auto newValues = calculator()->compute( { psi, bar } );
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
         return;
+
     if ( changedWidget != fImpl->psi )
         setValue( fImpl->psi, newValues.value()[ 0 ] );
     if ( changedWidget != fImpl->bar )

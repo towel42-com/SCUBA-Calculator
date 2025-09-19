@@ -61,8 +61,12 @@ public:
     virtual bool metric() const final;
 
     virtual double weightOfWater( bool saltWater ) const final;
+    virtual double lengthToSingleAtmosphere( bool saltWater ) const final;;
 
-    virtual std::size_t numEmptyOK( const std::vector< std::optional< double > > &values ) const final;
+    virtual std::size_t numEmpty( const std::vector< std::optional< double > > &values ) const final;
+    virtual bool numEmptyOK( const std::vector< std::optional< double > > &values ) const final;
+
+public:
 
 protected:
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const = 0;
@@ -95,11 +99,15 @@ public:
     virtual void addWidgets( bool rhs, const std::list< QWidget * > &widgets );
     virtual void addWidget( bool rhs, QWidget *widget );
 
+    QString doubleToString( const std::optional< double > &value, int numDecimal ) const;
     std::optional< double > getValue( const QString &text ) const;
-    virtual void setValue( QLineEdit *le, const std::optional< double > &value );
+    virtual void setValue( QLineEdit *le, const std::optional< double > &value, int numDecimal=1 );
 
     virtual QString volumeUnit( bool singular ) const final;
     virtual QString weightUnit( bool singular ) const final;
+    virtual QString lengthUnit( bool singular ) const final;
+    virtual QString pressureUnit() const final;
+
     virtual QString weightOfWaterString( bool seaWater ) const final;
 
     virtual bool showUnits() const { return true; }
