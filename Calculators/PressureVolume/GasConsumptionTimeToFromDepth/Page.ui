@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
-    <height>351</height>
+    <width>456</width>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,33 +15,74 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>P1xT1 = P2xT2</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QRadioButton" name="saltwater">
+      <widget class="QLineEdit" name="p1"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="p1Label">
        <property name="text">
-        <string>Salt Water?</string>
+        <string>p1</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="freshWater">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Fresh Water?</string>
+        <string>x</string>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+      <widget class="QLineEdit" name="t1"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="t1Label">
+       <property name="text">
+        <string>(minutes)</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>=</string>
        </property>
-      </spacer>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="p2"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="p2Label">
+       <property name="text">
+        <string>(p2)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>x</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="t2"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="t2Label">
+       <property name="text">
+        <string>(minutes)</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -53,7 +94,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>139</height>
       </size>
      </property>
     </spacer>
@@ -71,10 +112,6 @@
    </property>
   </action>
  </widget>
- <tabstops>
-  <tabstop>saltwater</tabstop>
-  <tabstop>freshWater</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

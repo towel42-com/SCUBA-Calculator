@@ -36,6 +36,24 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( !numEmptyOK( values ) )
+        return {};
+
+    auto relChange = values[ 0 ];
+    auto p1 = values[ 1 ];
+    auto p2 = values[ 2 ];
+
+    if ( !relChange.has_value() )
+    {
+        relChange = p2.value() / p1.value();
+    }
+    else if ( !p2.has_value() )
+    {
+        p2 = relChange.value() * p1.value();
+    }
+    else if ( !p1.has_value() )
+    {
+        p1 = p2.value() / relChange.value();
+    }
+    return std::vector< std::optional< double > >( { relChange, p1, p2 } );
 }

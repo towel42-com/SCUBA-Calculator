@@ -21,7 +21,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Volume/Pressure Following a Change in Pressure/Volume";
+    return "Calculating Volume/Pressure Following a Change in Pressure/Volume (P1xV1=P2xV2)";
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -36,6 +36,29 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( !numEmptyOK( values ) )
+        return {};
+
+    auto p1 = values[ 0 ];
+    auto v1 = values[ 1 ];
+    auto p2 = values[ 2 ];
+    auto v2 = values[ 3 ];
+
+    if ( !p1.has_value() )
+    {
+        p1 = ( p2.value() * v2.value() ) / v1.value();
+    }
+    else if ( !v1.has_value() )
+    {
+        v1 = ( p2.value() * v2.value() ) / p1.value();
+    }
+    else if ( !p2.has_value() )
+    {
+        p2 = ( p1.value() * v1.value() ) / v2.value();
+    }
+    else if ( !v2.has_value() )
+    {
+        v2 = ( p1.value() * v1.value() ) / p2.value();
+    }
+    return std::vector< std::optional< double > >( { p1, v1, p2, v2 } );
 }

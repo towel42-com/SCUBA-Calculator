@@ -120,6 +120,7 @@ void CMainWindow::loadCalculators()
         addCalculator( calculator, getPageFunc, setImperial, setMetric );
     }
     fImpl->whichCalculator->expandAll();
+    fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
 }
 
 void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetImperialFunc setImperialFunc, TSetMetricFunc setMetricFunc )

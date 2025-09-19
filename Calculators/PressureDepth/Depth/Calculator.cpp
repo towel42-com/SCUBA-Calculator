@@ -36,7 +36,7 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    if ( numEmptyOK( values ) != 1 )
+    if ( !numEmptyOK( values ) )
         return {};
 
     auto feet = values[ 0 ];
