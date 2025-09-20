@@ -21,7 +21,7 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget * changedWidget )
 {
-    auto weightOfWaterString = this->weightOfWaterString( fImpl->saltwater->isChecked() );
+    auto weightOfWaterString = weightOfWater( fImpl->saltwater->isChecked() );
     fImpl->weightOfWater->setText( "x " + weightOfWaterString );
 
     QString labelText = tr( "%1 required = (%2 of negative buoyancy) / %3" ).arg( volumeUnit( false ) ).arg( weightUnit( false ) ).arg( weightOfWaterString );

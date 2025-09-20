@@ -36,6 +36,20 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( !numEmptyOK( values ) )
+        return {};
+
+    auto t = values[ 0 ];
+    auto p = values[ 1 ];
+
+    // p*v = numMoles * R * t
+    if ( !t.has_value() )
+    {
+        t = pressurePerTemp() * p.value();
+    }
+    else if ( !p.has_value() )
+    {
+        p = t.value() / pressurePerTemp();
+    }
+    return std::vector< std::optional< double > >( { t, p } );
 }

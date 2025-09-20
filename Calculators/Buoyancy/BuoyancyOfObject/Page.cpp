@@ -21,7 +21,7 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget *changedWidget )
 {
-    auto weightOfWaterString = this->weightOfWaterString( fImpl->saltwater->isChecked() );
+    auto weightOfWaterString = weightOfWater( fImpl->saltwater->isChecked() );
     fImpl->weightOfWater->setText( "x " + weightOfWaterString );
 
     QString labelText = tr( "Buoyancy = weight of object - (%1 displaced) x %2" ).arg( volumeUnit( false ) ).arg( weightOfWaterString );

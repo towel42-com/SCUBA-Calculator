@@ -61,7 +61,14 @@ public:
     virtual bool metric() const final;
 
     virtual double weightOfWater( bool saltWater ) const final;
-    virtual double lengthToSingleAtmosphere( bool saltWater ) const final;;
+    virtual double lengthToSingleAtmosphere( bool saltWater ) const final;
+    ;
+    virtual double absZero() const final;
+    virtual double pressureOffset() const final;
+    virtual double absZeroBasedTemp( double temp ) const final;
+    virtual double fromAbsZeroBasedTemp( double temp ) const final;
+    virtual double idealGasConstant() const final;
+    virtual double pressurePerTemp() const final;
 
     virtual std::size_t numEmpty( const std::vector< std::optional< double > > &values ) const final;
     virtual bool numEmptyOK( const std::vector< std::optional< double > > &values ) const final;
@@ -107,8 +114,11 @@ public:
     virtual QString weightUnit( bool singular ) const final;
     virtual QString lengthUnit( bool singular ) const final;
     virtual QString pressureUnit() const final;
+    virtual QString pressurePerTemp() const final;
+    virtual QString tempUnit( bool absZero ) const final;
 
-    virtual QString weightOfWaterString( bool seaWater ) const final;
+    virtual QString weightOfWater( bool seaWater ) const final;
+    virtual QString idealGasConstant() const final;
 
     virtual bool showUnits() const { return true; }
 private Q_SLOTS:

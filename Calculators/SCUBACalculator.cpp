@@ -56,6 +56,16 @@ double CSCUBACalculator::lengthToSingleAtmosphere( bool saltWater ) const
     return retVal;
 }
 
+double CSCUBACalculator::absZero() const
+{
+    return imperial() ? 460.0 : 273.0;
+}
+
+double CSCUBACalculator::pressureOffset() const
+{
+    return imperial() ? 14.7 : 1.0;
+}
+
 bool CSCUBACalculator::numEmptyOK( const std::vector< std::optional< double > > &values ) const
 {
     return numEmpty( values ) == 1;
@@ -70,6 +80,33 @@ std::size_t CSCUBACalculator::numEmpty( const std::vector< std::optional< double
         numEmpty += value.has_value() ? 0 : 1;
     }
     return numEmpty;
+}
+
+double CSCUBACalculator::absZeroBasedTemp( double temp ) const
+{
+    return temp + absZero();
+}
+
+double CSCUBACalculator::fromAbsZeroBasedTemp( double temp ) const
+{
+    return temp - absZero();
+}
+
+double CSCUBACalculator::idealGasConstant() const
+{
+    if ( imperial() )
+    {
+        return 10.731577089016;
+    }
+    else
+    {
+        return 0.08206;
+    }
+}
+
+double CSCUBACalculator::pressurePerTemp() const
+{
+    return imperial() ? 5 : 0.6;
 }
 
 CSCUBACalculatorPage::CSCUBACalculatorPage( const CSCUBACalculator *calculator, QWidget *parent ) :
@@ -203,21 +240,43 @@ QString CSCUBACalculatorPage::weightUnit( bool singular ) const
 
 QString CSCUBACalculatorPage::pressureUnit() const
 {
-    QString retVal;
+    return imperial() ? tr( "ATM" ) : tr( "BAR" );
+}
+
+QString CSCUBACalculatorPage::pressurePerTemp() const
+{
+    return tr( "%1 (%2/%3)" ).arg( calculator()->pressurePerTemp() ).arg( pressureUnit() ).arg( tempUnit( false ) );
+}
+
+QString CSCUBACalculatorPage::tempUnit( bool absZero ) const
+{
+    QString retVal = "\u00B0";
     if ( imperial() )
     {
-        return tr( "ATM" );
+        if ( absZero )
+            retVal += tr( "R" );
+        else
+            retVal += tr( "F" );
     }
     else
     {
-        return tr( "BAR" );
+        if ( absZero )
+            retVal += tr( "K" );
+        else
+            retVal += tr( "C" );
     }
+    return retVal;
 }
 
-QString CSCUBACalculatorPage::weightOfWaterString( bool saltWater ) const
+QString CSCUBACalculatorPage::weightOfWater( bool saltWater ) const
 {
     auto retVal = tr( "(%1 %2/%3 of water)" ).arg( doubleToString( calculator()->weightOfWater( saltWater ), 1 ) ).arg( weightUnit( false ) ).arg( volumeUnit( true ) );
     return retVal;
+}
+
+QString CSCUBACalculatorPage::idealGasConstant() const
+{
+    return QString( "%1 (%2)x(%3)/(mol)x(%4)" ).arg( calculator()->idealGasConstant() ).arg( volumeUnit( true ) ).arg( pressureUnit() ).arg( tempUnit( true ) );
 }
 
 void CSCUBACalculatorPage::setUpdateFromRHS( bool updateFromRHS )

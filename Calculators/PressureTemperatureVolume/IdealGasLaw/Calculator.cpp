@@ -36,6 +36,30 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( !numEmptyOK( values ) )
+        return {};
+
+    auto p = values[ 0 ];
+    auto v = values[ 1 ];
+    auto numMoles = values[ 2 ];
+    auto t = values[ 3 ];
+
+    // p*v = numMoles * R * t
+    if ( !p.has_value() )
+    {
+        p = numMoles.value() * idealGasConstant() * absZeroBasedTemp( t.value() ) / v.value();
+    }
+    else if ( !v.has_value() )
+    {
+        v = numMoles.value() * idealGasConstant() * absZeroBasedTemp( t.value() ) / p.value();
+    }
+    else if ( !numMoles.has_value() )
+    {
+        numMoles = ( p.value() * v.value() ) / ( idealGasConstant() * absZeroBasedTemp( t.value() ) );
+    }
+    else if ( !t.has_value() )
+    {
+        t = fromAbsZeroBasedTemp( ( p.value() * v.value() ) / ( idealGasConstant() * numMoles.value() ) );
+    }
+    return std::vector< std::optional< double > >( { p, v, numMoles, t } );
 }

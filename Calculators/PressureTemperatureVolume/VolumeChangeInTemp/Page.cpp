@@ -1,18 +1,14 @@
 #include "Page.h"
 #include "ui_Page.h"
 
-CPage::CPage( const CSCUBACalculator * calculator, QWidget *parent ) :
+CPage::CPage( const CSCUBACalculator *calculator, QWidget *parent ) :
     CSCUBACalculatorPage( calculator, parent ),
     fImpl( new Ui::CPage )
 {
     fImpl->setupUi( this );
 
-    fImpl->saltwater->setChecked( true );
-    QObject::connect( fImpl->saltwater, &QRadioButton::clicked, [ = ]() { updateValues( nullptr ); } );
-    QObject::connect( fImpl->freshWater, &QRadioButton::clicked, [ = ]() { updateValues( nullptr ); } );
-
-    //addWidget( false, fImpl->buoyancy );
-    //addWidgets( true, { fImpl->volumeDisplaced, fImpl->weightOfObject } );
+    addWidget( false, fImpl->v2 );
+    addWidgets( true, { fImpl->t2, fImpl->v1, fImpl->t1 } );
 }
 
 CPage::~CPage()
@@ -21,6 +17,39 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget *changedWidget )
 {
-    (void)changedWidget;
+    auto tempLabel = tr( "(%1) + %2" ).arg( tempUnit( false ) ).arg( doubleToString( calculator()->absZero(), 1 ) );
+    fImpl->t1Label->setText( tempLabel );
+    fImpl->t2Label->setText( tempLabel );
+
+    fImpl->v1Label->setText( tr( "(%1)" ).arg( volumeUnit( false ) ) );
+    fImpl->v2Label->setText( tr( "(%1)" ).arg( volumeUnit( false ) ) );
+
+    if ( changedWidget == nullptr )
+        return;
+
+    auto t1 = getValue( fImpl->t1->text() );
+    auto t2 = getValue( fImpl->t2->text() );
+    auto v1 = getValue( fImpl->v1->text() );
+    auto v2 = getValue( fImpl->v2->text() );
+
+    if ( calculator()->numEmpty( { t1, t2, v1, v2 } ) == 0 )
+    {
+        if ( changedWidget == fImpl->v2 )
+            v1.reset();
+        else
+            v2.reset();
+    }
+
+    auto newValues = calculator()->compute( { t1, t2, v1, v2 } );
+    if ( !newValues.has_value() || ( newValues.value().size() != 4 ) )
+        return;
+
+    if ( changedWidget != fImpl->t1 )
+        setValue( fImpl->t1, newValues.value()[ 0 ], 2 );
+    if ( changedWidget != fImpl->t2 )
+        setValue( fImpl->t2, newValues.value()[ 1 ], 2 );
+    if ( changedWidget != fImpl->v1 )
+        setValue( fImpl->v1, newValues.value()[ 2 ], 2 );
+    if ( changedWidget != fImpl->v2 )
+        setValue( fImpl->v2, newValues.value()[ 3 ], 2 );
 }
-    

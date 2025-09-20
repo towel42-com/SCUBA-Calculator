@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
+    <width>586</width>
     <height>351</height>
    </rect>
   </property>
@@ -15,33 +15,81 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QRadioButton" name="saltwater">
+      <widget class="QLineEdit" name="v2"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="v2Label">
        <property name="text">
-        <string>Salt Water?</string>
+        <string>(v2)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="freshWater">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Fresh Water?</string>
+        <string>=</string>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>(</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="t2"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="t2Label">
+       <property name="text">
+        <string>(degrees C) + Diff</string>
        </property>
-      </spacer>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>) x (</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="v1"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="v1Label">
+       <property name="text">
+        <string>(v1)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>/</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="t1"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="t1Label">
+       <property name="text">
+        <string>(degrees C) + Diff)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>)</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -71,10 +119,6 @@
    </property>
   </action>
  </widget>
- <tabstops>
-  <tabstop>saltwater</tabstop>
-  <tabstop>freshWater</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>
