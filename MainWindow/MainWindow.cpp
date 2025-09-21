@@ -121,6 +121,9 @@ void CMainWindow::loadCalculators()
     }
     fImpl->whichCalculator->expandAll();
     fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
+    fImpl->whichCalculator->resizeColumnToContents( 0 );
+    auto colWidth = fImpl->whichCalculator->columnWidth( 0 );
+    fImpl->whichCalculator->setMinimumWidth( colWidth + 10 );
 }
 
 void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetImperialFunc setImperialFunc, TSetMetricFunc setMetricFunc )
