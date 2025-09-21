@@ -50,7 +50,7 @@ double CSCUBACalculator::weightOfWater( bool saltWater ) const
     return retVal;
 }
 
-double CSCUBACalculator::lengthToSingleAtmosphere( bool saltWater ) const
+double CSCUBACalculator::depthToSingleAtmosphere( bool saltWater ) const
 {
     auto retVal = imperial() ? ( saltWater ? 33.0 : 34.0 ) : ( saltWater ? 10.0 : 10.3 );
     return retVal;
@@ -69,6 +69,22 @@ double CSCUBACalculator::pressureOffset() const
 bool CSCUBACalculator::numEmptyOK( const std::vector< std::optional< double > > &values ) const
 {
     return numEmpty( values ) == 1;
+}
+
+void CSCUBACalculator::calculateDepthToFromPressure( bool saltWater, std::optional< double > &pressure, std::optional< double > &depth ) const
+{
+    if ( !pressure.has_value() && !depth.has_value() )
+        return;
+
+    auto depthOfATM = depthToSingleAtmosphere( saltWater );
+    if ( !depth.has_value() )
+    {
+        depth = ( pressure.value() - 1 ) * depthOfATM;
+    }
+    else if ( !pressure.has_value() )
+    {
+        pressure = ( depth.value() / depthOfATM ) + 1;
+    }
 }
 
 std::size_t CSCUBACalculator::numEmpty( const std::vector< std::optional< double > > &values ) const
@@ -107,6 +123,16 @@ double CSCUBACalculator::idealGasConstant() const
 double CSCUBACalculator::pressurePerTemp() const
 {
     return imperial() ? 5 : 0.6;
+}
+
+double CSCUBACalculator::percentN2AtSurface() const
+{
+    return 0.79;
+}
+
+double CSCUBACalculator::percentO2AtSurface() const
+{
+    return 0.21;
 }
 
 CSCUBACalculatorPage::CSCUBACalculatorPage( const CSCUBACalculator *calculator, QWidget *parent ) :

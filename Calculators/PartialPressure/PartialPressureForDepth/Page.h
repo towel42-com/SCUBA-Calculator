@@ -28,6 +28,7 @@ protected:
 protected:
 
 private:
+    void updateSurfacePercentage();
     std::unique_ptr< Ui::CPage > fImpl;
 };
 

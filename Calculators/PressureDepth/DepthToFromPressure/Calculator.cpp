@@ -45,14 +45,6 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
     auto pressure = values[ 1 ];
     auto depth = values[ 2 ];
 
-    auto lengthOfATM = lengthToSingleAtmosphere( saltWater.value() );
-    if ( !depth.has_value() )
-    {
-        depth = ( pressure.value() - 1 ) * lengthOfATM;
-    }
-    else if ( !pressure.has_value() )
-    {
-        pressure = ( depth.value() / lengthOfATM ) + 1;
-    }
+    calculateDepthToFromPressure( saltWater.value() != 0, pressure, depth );
     return std::vector< std::optional< double > >( { pressure, depth } );
 }

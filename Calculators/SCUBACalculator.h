@@ -61,20 +61,23 @@ public:
     virtual bool metric() const final;
 
     virtual double weightOfWater( bool saltWater ) const final;
-    virtual double lengthToSingleAtmosphere( bool saltWater ) const final;
-    ;
+    virtual double depthToSingleAtmosphere( bool saltWater ) const final;
+
     virtual double absZero() const final;
     virtual double pressureOffset() const final;
     virtual double absZeroBasedTemp( double temp ) const final;
     virtual double fromAbsZeroBasedTemp( double temp ) const final;
     virtual double idealGasConstant() const final;
     virtual double pressurePerTemp() const final;
+    virtual double percentN2AtSurface() const final;
+    virtual double percentO2AtSurface() const final;
 
     virtual std::size_t numEmpty( const std::vector< std::optional< double > > &values ) const final;
     virtual bool numEmptyOK( const std::vector< std::optional< double > > &values ) const final;
 
-public:
+    void calculateDepthToFromPressure( bool saltWater, std::optional< double > &pressure, std::optional< double > &depth ) const;
 
+public:
 protected:
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const = 0;
     mutable CSCUBACalculatorPage *fPage{ nullptr };
@@ -108,7 +111,7 @@ public:
 
     QString doubleToString( const std::optional< double > &value, int numDecimal ) const;
     std::optional< double > getValue( const QString &text ) const;
-    virtual void setValue( QLineEdit *le, const std::optional< double > &value, int numDecimal=1 );
+    virtual void setValue( QLineEdit *le, const std::optional< double > &value, int numDecimal = 1 );
 
     virtual QString volumeUnit( bool singular ) const final;
     virtual QString weightUnit( bool singular ) const final;

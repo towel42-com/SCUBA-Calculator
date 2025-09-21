@@ -24,7 +24,7 @@ void CPage::updateValues( QWidget *changedWidget )
     auto pressureString = tr( "Pressure (%1) = (" ).arg( pressureUnit() );
     fImpl->pressureLabel->setText( pressureString );
 
-    auto depthString = tr( "(%1) + %2)/%2" ).arg( lengthUnit( false ) ).arg( doubleToString( calculator()->lengthToSingleAtmosphere( fImpl->saltwater->isChecked() ), 1 ) );
+    auto depthString = tr( "(%1) + %2)/%2" ).arg( lengthUnit( false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( fImpl->saltwater->isChecked() ), 1 ) );
     fImpl->depthLabel->setText( depthString );
 
     auto pressure = ( changedWidget == fImpl->depth ) ? std::optional< double >() : getValue( fImpl->pressure->text() );
