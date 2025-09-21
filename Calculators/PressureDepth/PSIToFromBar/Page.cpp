@@ -17,8 +17,8 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget *changedWidget )
 {
-    auto psi = ( changedWidget == fImpl->bar ) ? std::optional< double >() : getValue( fImpl->psi->text() );
-    auto bar = ( changedWidget == fImpl->psi ) ? std::optional< double >() : getValue( fImpl->bar->text() );
+    auto psi = ( changedWidget == fImpl->bar ) ? TOptionalVariant() : getValue( fImpl->psi->text() );
+    auto bar = ( changedWidget == fImpl->psi ) ? TOptionalVariant() : getValue( fImpl->bar->text() );
 
     auto newValues = calculator()->compute( { psi, bar } );
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )

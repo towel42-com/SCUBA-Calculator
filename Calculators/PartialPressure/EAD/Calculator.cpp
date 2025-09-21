@@ -10,8 +10,9 @@ public:
     QString calculatorName() const override;
     QStringList calculatorPath() const override;
 
+    virtual bool usesSaltwater() const override { return true; }
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,29 +35,27 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
-    if ( !values[ 0 ].has_value() )
-        return {};
-    auto saltWater = values[ 0 ] != 0;
+    auto saltWater = std::get< bool >( values[ 0 ].value() );
     auto ead = values[ 1 ];
     auto fn2 = values[ 2 ];
     auto depth = values[ 3 ];
 
     if ( !ead.has_value() )
     {
-        ead = ( ( fn2.value() / percentN2AtSurface() ) * ( depth.value() + depthToSingleAtmosphere( saltWater ) ) ) - depthToSingleAtmosphere( saltWater );
+        ead = ( ( std::get< double >( fn2.value() ) / percentN2AtSurface() ) * ( std::get< double >( depth.value() ) + depthToSingleAtmosphere( saltWater ) ) ) - depthToSingleAtmosphere( saltWater );
     }
     else if ( !fn2.has_value() )
     {
-        fn2 = ( percentN2AtSurface() * ( ead.value() + depthToSingleAtmosphere( saltWater ) ) ) / ( depth.value() + depthToSingleAtmosphere( saltWater ) );
+        fn2 = ( percentN2AtSurface() * ( std::get< double >( ead.value() ) + depthToSingleAtmosphere( saltWater ) ) ) / ( std::get< double >( depth.value() ) + depthToSingleAtmosphere( saltWater ) );
     }
     else if ( !depth.has_value() )
     {
-        depth = ( ( ead.value() + depthToSingleAtmosphere( saltWater ) ) / ( fn2.value() / percentN2AtSurface() ) ) - depthToSingleAtmosphere( saltWater );
+        depth = ( ( std::get< double >( ead.value() ) + depthToSingleAtmosphere( saltWater ) ) / ( std::get< double >( fn2.value() ) / percentN2AtSurface() ) ) - depthToSingleAtmosphere( saltWater );
     }
-    return std::vector< std::optional< double > >( { ead, fn2, depth } );
+    return TOptionalVariantVector( { ead, fn2, depth } );
 }

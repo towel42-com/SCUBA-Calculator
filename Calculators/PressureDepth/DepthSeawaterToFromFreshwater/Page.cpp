@@ -23,8 +23,8 @@ void CPage::updateValues( QWidget *changedWidget )
     auto saltWaterString = tr( "%1 salt water" ).arg( lengthUnit( false ) );
     fImpl->saltWaterLabel->setText( saltWaterString );
 
-    auto depthFreshWater = ( changedWidget == fImpl->depthSeaWater ) ? std::optional< double >() : getValue( fImpl->depthFreshWater->text() );
-    auto depthSeaWater = ( changedWidget == fImpl->depthFreshWater ) ? std::optional< double >() : getValue( fImpl->depthSeaWater->text() );
+    auto depthFreshWater = ( changedWidget == fImpl->depthSeaWater ) ? TOptionalVariant() : getValue( fImpl->depthFreshWater->text() );
+    auto depthSeaWater = ( changedWidget == fImpl->depthFreshWater ) ? TOptionalVariant() : getValue( fImpl->depthSeaWater->text() );
 
     auto newValues = calculator()->compute( { depthFreshWater, depthSeaWater } );
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )

@@ -40,7 +40,7 @@ void CPage::updateValues( QWidget *changedWidget )
             depth.reset();
     }
 
-    auto newValues = calculator()->compute( { ( fImpl->saltwater->isChecked() ? 1 : 0 ), ead, fn2, depth } );
+    auto newValues = calculator()->compute( { fImpl->saltwater->isChecked(), ead, fn2, depth } );
     if ( !newValues.has_value() || ( newValues.value().size() != 3 ) )
         return;
 

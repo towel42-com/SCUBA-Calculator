@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto t1 = values[ 0 ];
@@ -46,19 +46,19 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
 
     if ( !v2.has_value() )
     {
-        v2 = absZeroBasedTemp( t2.value() ) * ( v1.value()/absZeroBasedTemp( t1.value() ) );
+        v2 = absZeroBasedTemp( std::get< double >( t2.value() ) ) * ( std::get< double >( v1.value() ) / absZeroBasedTemp( std::get< double >( t1.value() ) ) );
     }
     else if ( !v1.has_value() )
     {
-        v1 = absZeroBasedTemp( t1.value() ) * ( v2.value() / absZeroBasedTemp( t2.value() ) );
+        v1 = absZeroBasedTemp( std::get< double >( t1.value() ) ) * ( std::get< double >( v2.value() ) / absZeroBasedTemp( std::get< double >( t2.value() ) ) );
     }
     else if ( !t1.has_value() )
     {
-        t1 = ( absZeroBasedTemp( t2.value() ) * ( v1.value() / v2.value() ) ) - absZero();
+        t1 = ( absZeroBasedTemp( std::get< double >( t2.value() ) ) * ( std::get< double >( v1.value() ) / std::get< double >( v2.value() ) ) ) - absZero();
     }
     else if ( !t2.has_value() )
     {
-        t2 = ( absZeroBasedTemp( t1.value() ) * ( v2.value() / v1.value() ) ) - absZero();
+        t2 = ( absZeroBasedTemp( std::get< double >( t1.value() ) ) * ( std::get< double >( v2.value() ) / std::get< double >( v1.value() ) ) ) - absZero();
     }
-    return std::vector< std::optional< double > >( { t1, t2, v1, v2 } );
+    return TOptionalVariantVector( { t1, t2, v1, v2 } );
 }

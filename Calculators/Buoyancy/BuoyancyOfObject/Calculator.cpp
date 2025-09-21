@@ -11,7 +11,8 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual bool usesSaltwater() const override { return true; }
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,29 +35,28 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
-    auto saltwater = values[ 0 ];
+    auto saltwater = std::get< bool >( values[ 0 ].value() );
     auto buoyancy = values[ 1 ];
     auto weightOfObject = values[ 2 ];
     auto volumeDisplaced = values[ 3 ];
 
     if ( !weightOfObject.has_value() )
     {
-        weightOfObject = buoyancy.value() + ( volumeDisplaced.value() * weightOfWater( saltwater.value() != 0 ) );
+        weightOfObject = std::get< double >( buoyancy.value() ) + ( std::get< double >( volumeDisplaced.value() ) * weightOfWater( saltwater ) );
     }
     else if ( !volumeDisplaced.has_value() )
     {
-        volumeDisplaced = ( weightOfObject.value() - buoyancy.value() ) / weightOfWater( saltwater.value() != 0 );
+        volumeDisplaced = ( std::get< double >( weightOfObject.value() ) - std::get< double >( buoyancy.value() ) ) / weightOfWater( saltwater );
     }
     else if ( !buoyancy.has_value() )
     {
-        buoyancy = weightOfObject.value() - ( volumeDisplaced.value() * weightOfWater( saltwater.value() != 0 ) );
+        buoyancy = std::get< double >( weightOfObject.value() ) - ( std::get< double >( volumeDisplaced.value() ) * weightOfWater( saltwater ) );
     }
 
-    return std::vector< std::optional< double > >( { buoyancy, weightOfObject, volumeDisplaced } );
+    return TOptionalVariantVector( { buoyancy, weightOfObject, volumeDisplaced } );
 }
-

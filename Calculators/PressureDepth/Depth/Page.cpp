@@ -17,8 +17,8 @@ CPage::~CPage()
 
 void CPage::updateValues( QWidget *changedWidget )
 {
-    auto feet = ( changedWidget == fImpl->meters ) ? std::optional< double >() : getValue( fImpl->feet->text() );
-    auto meters = ( changedWidget == fImpl->feet ) ? std::optional< double >() : getValue( fImpl->meters->text() );
+    auto feet = ( changedWidget == fImpl->meters ) ? TOptionalVariant() : getValue( fImpl->feet->text() );
+    auto meters = ( changedWidget == fImpl->feet ) ? TOptionalVariant() : getValue( fImpl->meters->text() );
 
     auto newValues = calculator()->compute( { feet, meters } );
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )

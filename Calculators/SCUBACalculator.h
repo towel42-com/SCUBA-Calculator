@@ -27,9 +27,11 @@
 #include <QString>
 #include <QStringList>
 #include <optional>
+#include <variant>
+#include <vector>
+#include <unordered_map>
 
 class QLineEdit;
-#include <unordered_map>
 
 #if defined( WINDOWS ) || defined( WIN32 ) || defined( Q_OS_WINDOWS )
     #ifdef CALCULATORS_INTERNAL
@@ -40,6 +42,10 @@ class QLineEdit;
 #else
     #define CALCULATORS_EXPORT
 #endif
+
+using TVariant = std::variant< bool, double >;
+using TOptionalVariant = std::optional< TVariant >;
+using TOptionalVariantVector = std::vector< TOptionalVariant >;
 
 class QWidget;
 class CSCUBACalculatorPage;
@@ -52,7 +58,7 @@ public:
     virtual QString calculatorName() const = 0;
     virtual QStringList calculatorPath() const = 0;
     virtual CSCUBACalculatorPage *getPage( QWidget *parent = nullptr ) const final;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const = 0;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const = 0;
 
     virtual void setImperial( bool imperial ) final;
     virtual void setMetric( bool metric ) final;
@@ -72,10 +78,12 @@ public:
     virtual double percentN2AtSurface() const final;
     virtual double percentO2AtSurface() const final;
 
-    virtual std::size_t numEmpty( const std::vector< std::optional< double > > &values ) const final;
-    virtual bool numEmptyOK( const std::vector< std::optional< double > > &values ) const final;
+    virtual std::size_t numEmpty( const TOptionalVariantVector &values ) const final;
+    virtual bool valuesValid( const TOptionalVariantVector &values, bool checkNumEmpty=true ) const final;
 
-    void calculateDepthToFromPressure( bool saltWater, std::optional< double > &pressure, std::optional< double > &depth ) const;
+    void calculateDepthToFromPressure( bool saltWater, TOptionalVariant &pressure, TOptionalVariant &depth ) const;
+
+    virtual bool usesSaltwater() const { return false; }
 
 public:
 protected:
@@ -109,9 +117,9 @@ public:
     virtual void addWidgets( bool rhs, const std::list< QWidget * > &widgets );
     virtual void addWidget( bool rhs, QWidget *widget );
 
-    QString doubleToString( const std::optional< double > &value, int numDecimal ) const;
-    std::optional< double > getValue( const QString &text ) const;
-    virtual void setValue( QLineEdit *le, const std::optional< double > &origValue, const std::optional< double > &value, int numDecimal = 1 );
+    QString doubleToString( const TOptionalVariant &value, int numDecimal ) const;
+    TOptionalVariant getValue( const QString &text ) const;
+    virtual void setValue( QLineEdit *le, const TOptionalVariant &origValue, const TOptionalVariant &value, int numDecimal = 1 );
 
     virtual QString volumeUnit( bool singular ) const final;
     virtual QString weightUnit( bool singular ) const final;

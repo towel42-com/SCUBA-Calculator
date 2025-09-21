@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto relChange = values[ 0 ];
@@ -45,15 +45,15 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
 
     if ( !relChange.has_value() )
     {
-        relChange = p2.value() / p1.value();
+        relChange = std::get< double >( p2.value() ) / std::get< double >( p1.value() );
     }
     else if ( !p2.has_value() )
     {
-        p2 = relChange.value() * p1.value();
+        p2 = std::get< double >( relChange.value() ) * std::get< double >( p1.value() );
     }
     else if ( !p1.has_value() )
     {
-        p1 = p2.value() / relChange.value();
+        p1 = std::get< double >( p2.value() ) / std::get< double >( relChange.value() );
     }
-    return std::vector< std::optional< double > >( { relChange, p1, p2 } );
+    return TOptionalVariantVector( { relChange, p1, p2 } );
 }

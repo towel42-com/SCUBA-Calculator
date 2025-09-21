@@ -11,7 +11,8 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual bool usesSaltwater() const override { return true; }
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,17 +35,15 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
-    auto saltWater = values[ 0 ];
-    if ( !saltWater.has_value() )
-        return {};
+    auto saltWater = std::get< bool >( values[ 0 ].value() );
     auto pressure = values[ 1 ];
     auto depth = values[ 2 ];
 
-    calculateDepthToFromPressure( saltWater.value() != 0, pressure, depth );
-    return std::vector< std::optional< double > >( { pressure, depth } );
+    calculateDepthToFromPressure( saltWater, pressure, depth );
+    return TOptionalVariantVector( { pressure, depth } );
 }

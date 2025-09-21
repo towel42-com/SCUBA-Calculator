@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto t = values[ 0 ];
@@ -45,11 +45,11 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
     // p*v = numMoles * R * t
     if ( !t.has_value() )
     {
-        t = pressurePerTemp() * p.value();
+        t = pressurePerTemp() * std::get< double >( p.value() );
     }
     else if ( !p.has_value() )
     {
-        p = t.value() / pressurePerTemp();
+        p = std::get< double >( t.value() ) / pressurePerTemp();
     }
-    return std::vector< std::optional< double > >( { t, p } );
+    return TOptionalVariantVector( { t, p } );
 }

@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto p1 = values[ 0 ];
@@ -46,19 +46,19 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
 
     if ( !p1.has_value() )
     {
-        p1 = ( p2.value() * v2.value() ) / v1.value();
+        p1 = ( std::get< double >( p2.value() ) * std::get< double >( v2.value() ) ) / std::get< double >( v1.value() );
     }
     else if ( !v1.has_value() )
     {
-        v1 = ( p2.value() * v2.value() ) / p1.value();
+        v1 = ( std::get< double >( p2.value() ) * std::get< double >( v2.value() ) ) / std::get< double >( p1.value() );
     }
     else if ( !p2.has_value() )
     {
-        p2 = ( p1.value() * v1.value() ) / v2.value();
+        p2 = ( std::get< double >( p1.value() ) * std::get< double >( v1.value() ) ) / std::get< double >( v2.value() );
     }
     else if ( !v2.has_value() )
     {
-        v2 = ( p1.value() * v1.value() ) / p2.value();
+        v2 = ( std::get< double >( p1.value() ) * std::get< double >( v1.value() ) ) / std::get< double >( p2.value() );
     }
-    return std::vector< std::optional< double > >( { p1, v1, p2, v2 } );
+    return TOptionalVariantVector( { p1, v1, p2, v2 } );
 }

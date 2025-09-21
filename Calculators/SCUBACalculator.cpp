@@ -66,28 +66,46 @@ double CSCUBACalculator::pressureOffset() const
     return imperial() ? 14.7 : 1.0;
 }
 
-bool CSCUBACalculator::numEmptyOK( const std::vector< std::optional< double > > &values ) const
+bool CSCUBACalculator::valuesValid( const TOptionalVariantVector &values, bool checkNumEmpty ) const
 {
-    return numEmpty( values ) == 1;
+    if ( values.empty() )
+        return false;
+
+    if ( checkNumEmpty && numEmpty( values ) != 1 )
+        return false;
+    
+    std::size_t start = 0;
+    if( usesSaltwater() )
+    {
+        if ( values.front().has_value() || !std::holds_alternative< bool >( values.front().value() ) )
+            return false;
+        start = 1;
+    }
+    for(auto ii = start; ii < values.size(); ++ii)
+    {
+        if ( values.front().has_value() && !std::holds_alternative< double >( values.front().value() ) )
+            return false;
+    }
+    return true;
 }
 
-void CSCUBACalculator::calculateDepthToFromPressure( bool saltWater, std::optional< double > &pressure, std::optional< double > &depth ) const
+void CSCUBACalculator::calculateDepthToFromPressure( bool saltWater, TOptionalVariant &pressure, TOptionalVariant &depth ) const
 {
     if ( !pressure.has_value() && !depth.has_value() )
         return;
 
     auto depthOfATM = depthToSingleAtmosphere( saltWater );
-    if ( !depth.has_value() )
+    if ( !depth.has_value() && std::holds_alternative< double >( pressure.value() ) )
     {
-        depth = ( pressure.value() - 1 ) * depthOfATM;
+        depth = ( std::get< double >( pressure.value() ) - 1 ) * depthOfATM;
     }
-    else if ( !pressure.has_value() )
+    else if ( !pressure.has_value() && std::holds_alternative< double >( depth.value() ) )
     {
-        pressure = ( depth.value() / depthOfATM ) + 1;
+        pressure = ( std::get< double >( depth.value() ) / depthOfATM ) + 1;
     }
 }
 
-std::size_t CSCUBACalculator::numEmpty( const std::vector< std::optional< double > > &values ) const
+std::size_t CSCUBACalculator::numEmpty( const TOptionalVariantVector &values ) const
 {
     std::size_t numEmpty = 0;
 
@@ -182,7 +200,7 @@ void CSCUBACalculatorPage::addWidget( bool rhs, QWidget *widget )
         } );
 }
 
-std::optional< double > CSCUBACalculatorPage::getValue( const QString &text ) const
+TOptionalVariant CSCUBACalculatorPage::getValue( const QString &text ) const
 {
     if ( text.trimmed().isEmpty() )
         return {};
@@ -193,17 +211,17 @@ std::optional< double > CSCUBACalculatorPage::getValue( const QString &text ) co
     return retVal;
 }
 
-QString CSCUBACalculatorPage::doubleToString( const std::optional< double > &value, int numDecimal ) const
+QString CSCUBACalculatorPage::doubleToString( const TOptionalVariant &value, int numDecimal ) const
 {
     QString retVal;
-    if ( value.has_value() )
-        retVal = QString( "%1" ).arg( value.value(), 0, 'f', numDecimal );
+    if ( value.has_value() && std::holds_alternative< double >( value.value() ) )
+        retVal = QString( "%1" ).arg( std::get< double >( value.value() ), 0, 'f', numDecimal );
     return retVal;
 }
 
-void CSCUBACalculatorPage::setValue( QLineEdit *le, const std::optional< double > &origValue, const std::optional< double > &newValue, int numDecimal /*= 1 */ )
+void CSCUBACalculatorPage::setValue( QLineEdit *le, const TOptionalVariant &origValue, const TOptionalVariant &newValue, int numDecimal /*= 1 */ )
 {
-    if ( !le || !newValue.has_value() )
+    if ( !le || !newValue.has_value() || !std::holds_alternative< double >( newValue.value() ) )
         return;
 
     auto newValueString = doubleToString( newValue, numDecimal );

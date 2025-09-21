@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto depthFreshWater = values[ 0 ];
@@ -44,11 +44,11 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
 
     if ( !depthFreshWater.has_value() )
     {
-        depthFreshWater = depthSaltWater.value() * 1.03;
+        depthFreshWater = std::get< double >( depthSaltWater.value() ) * 1.03;
     }
     else if ( !depthSaltWater.has_value() )
     {
-        depthSaltWater = depthFreshWater.value() / 1.03;
+        depthSaltWater = std::get< double >( depthFreshWater.value() ) / 1.03;
     }
-    return std::vector< std::optional< double > >( { depthFreshWater, depthSaltWater } );
+    return TOptionalVariantVector( { depthFreshWater, depthSaltWater } );
 }

@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto feet = values[ 0 ];
@@ -44,11 +44,11 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
 
     if ( !feet.has_value() )
     {
-        feet = meters.value() * 3.3;
+        feet = std::get< double >( meters.value() ) * 3.3;
     }
     else if ( !meters.has_value() )
     {
-        meters = feet.value() / 3.3;
+        meters = std::get< double >( feet.value() ) / 3.3;
     }
-    return std::vector< std::optional< double > >( { feet, meters } );
+    return TOptionalVariantVector( { feet, meters } );
 }

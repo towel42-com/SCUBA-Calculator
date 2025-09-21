@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< std::vector< std::optional< double > > > compute( const std::vector< std::optional< double > > &values ) const override;
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -34,9 +34,9 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
-    if ( !numEmptyOK( values ) )
+    if ( !valuesValid( values ) )
         return {};
 
     auto p = values[ 0 ];
@@ -47,19 +47,19 @@ std::optional< std::vector< std::optional< double > > > CCalculator::compute( co
     // p*v = numMoles * R * t
     if ( !p.has_value() )
     {
-        p = numMoles.value() * idealGasConstant() * absZeroBasedTemp( t.value() ) / v.value();
+        p = std::get< double >( numMoles.value() ) * idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) / std::get< double >( v.value() );
     }
     else if ( !v.has_value() )
     {
-        v = numMoles.value() * idealGasConstant() * absZeroBasedTemp( t.value() ) / p.value();
+        v = std::get< double >( numMoles.value() ) * idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) / std::get< double >( p.value() );
     }
     else if ( !numMoles.has_value() )
     {
-        numMoles = ( p.value() * v.value() ) / ( idealGasConstant() * absZeroBasedTemp( t.value() ) );
+        numMoles = ( std::get< double >( p.value() ) * std::get< double >( v.value() ) ) / ( idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) );
     }
     else if ( !t.has_value() )
     {
-        t = fromAbsZeroBasedTemp( ( p.value() * v.value() ) / ( idealGasConstant() * numMoles.value() ) );
+        t = fromAbsZeroBasedTemp( ( std::get< double >( p.value() ) * std::get< double >( v.value() ) ) / ( idealGasConstant() * std::get< double >( numMoles.value() ) ) );
     }
-    return std::vector< std::optional< double > >( { p, v, numMoles, t } );
+    return TOptionalVariantVector( { p, v, numMoles, t } );
 }
