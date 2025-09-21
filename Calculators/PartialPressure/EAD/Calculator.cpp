@@ -36,6 +36,27 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
 
 std::optional< std::vector< std::optional< double > > > CCalculator::compute( const std::vector< std::optional< double > > &values ) const
 {
-    (void)values;
-    return {};
+    if ( !numEmptyOK( values ) )
+        return {};
+
+    if ( !values[ 0 ].has_value() )
+        return {};
+    auto saltWater = values[ 0 ] != 0;
+    auto ead = values[ 1 ];
+    auto fn2 = values[ 2 ];
+    auto depth = values[ 3 ];
+
+    if ( !ead.has_value() )
+    {
+        ead = ( ( fn2.value() / percentN2AtSurface() ) * ( depth.value() + depthToSingleAtmosphere( saltWater ) ) ) - depthToSingleAtmosphere( saltWater );
+    }
+    else if ( !fn2.has_value() )
+    {
+        fn2 = ( percentN2AtSurface() * ( ead.value() + depthToSingleAtmosphere( saltWater ) ) ) / ( depth.value() + depthToSingleAtmosphere( saltWater ) );
+    }
+    else if ( !depth.has_value() )
+    {
+        depth = ( ( ead.value() + depthToSingleAtmosphere( saltWater ) ) / ( fn2.value() / percentN2AtSurface() ) ) - depthToSingleAtmosphere( saltWater );
+    }
+    return std::vector< std::optional< double > >( { ead, fn2, depth } );
 }

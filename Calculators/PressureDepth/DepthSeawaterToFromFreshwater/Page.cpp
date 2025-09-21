@@ -30,8 +30,6 @@ void CPage::updateValues( QWidget *changedWidget )
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
         return;
 
-    if ( changedWidget != fImpl->depthFreshWater )
-        setValue( fImpl->depthFreshWater, newValues.value()[ 0 ], 2 );
-    if ( changedWidget != fImpl->depthSeaWater )
-        setValue( fImpl->depthSeaWater, newValues.value()[ 1 ], 2 );
+    setValue( fImpl->depthFreshWater, depthFreshWater, newValues.value()[ 0 ], 2 );
+    setValue( fImpl->depthSeaWater, depthSeaWater, newValues.value()[ 1 ], 2 );
 }

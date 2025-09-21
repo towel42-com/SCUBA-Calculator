@@ -42,8 +42,6 @@ void CPage::updateValues( QWidget *changedWidget )
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
         return;
 
-    if ( changedWidget != fImpl->pressure )
-        setValue( fImpl->pressure, newValues.value()[ 0 ], 1 );
-    if ( changedWidget != fImpl->depth )
-        setValue( fImpl->depth, newValues.value()[ 1 ], 1 );
+    setValue( fImpl->pressure, pressure, newValues.value()[ 0 ], 1 );
+    setValue( fImpl->depth, depth, newValues.value()[ 1 ], 1 );
 }

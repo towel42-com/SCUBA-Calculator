@@ -19,7 +19,7 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget * changedWidget )
+void CPage::updateValues( QWidget * /*changedWidget*/ )
 {
     auto weightOfWaterString = weightOfWater( fImpl->saltwater->isChecked() );
     fImpl->weightOfWater->setText( "x " + weightOfWaterString );
@@ -53,8 +53,6 @@ void CPage::updateValues( QWidget * changedWidget )
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
         return;
 
-    if ( changedWidget != fImpl->volumeDisplaced )
-        setValue( fImpl->volumeDisplaced, newValues.value()[ 0 ] );
-    if ( changedWidget != fImpl->negativeBuoyancy )
-        setValue( fImpl->negativeBuoyancy, newValues.value()[ 1 ] );
+    setValue( fImpl->volumeDisplaced, volumeDisplaced, newValues.value()[ 0 ] );
+    setValue( fImpl->negativeBuoyancy, negativeBuoyancy, newValues.value()[ 1 ] );
 }

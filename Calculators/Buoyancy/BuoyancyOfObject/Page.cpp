@@ -61,13 +61,10 @@ void CPage::updateValues( QWidget *changedWidget )
     }
 
     auto newValues = calculator()->compute( { fImpl->saltwater->isChecked() ? 1.0 : 0.0, buoyancy, weightOfObject, volumeDisplaced } );
-    if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
+    if ( !newValues.has_value() || ( newValues.value().size() != 3 ) )
         return;
 
-    if ( changedWidget != fImpl->weightOfObject )
-        setValue( fImpl->weightOfObject, newValues.value()[ 0 ] );
-    if ( changedWidget != fImpl->buoyancy )
-        setValue( fImpl->buoyancy, newValues.value()[ 1 ] );
-    if ( changedWidget != fImpl->volumeDisplaced )
-        setValue( fImpl->volumeDisplaced, newValues.value()[ 2 ] );
+    setValue( fImpl->buoyancy, buoyancy, newValues.value()[ 0 ] );
+    setValue( fImpl->weightOfObject, weightOfObject, newValues.value()[ 1 ] );
+    setValue( fImpl->volumeDisplaced, volumeDisplaced, newValues.value()[ 2 ] );
 }

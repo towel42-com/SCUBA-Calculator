@@ -39,7 +39,7 @@ void CPage::updateSurfacePercentage()
 {
     if ( fImpl->oxygen->isChecked() )
     {
-        setValue( fImpl->surfacePercentage, 0.21, 2 );
+        setValue( fImpl->surfacePercentage, {}, 0.21, 2 );
         fImpl->surfacePercentageLabel->setText( tr( "FO2 (%)" ) );
         fImpl->partialPressureLabel->setText( tr( "PO2 (%)" ) );
         fImpl->surfacePercentage->setReadOnly( true );
@@ -47,7 +47,7 @@ void CPage::updateSurfacePercentage()
     }
     else if ( fImpl->nitrogen->isChecked() )
     {
-        setValue( fImpl->surfacePercentage, 0.79, 2 );
+        setValue( fImpl->surfacePercentage, {}, 0.79, 2 );
         fImpl->surfacePercentageLabel->setText( tr( "FN2 (%)" ) );
         fImpl->partialPressureLabel->setText( tr( "PN2 (%)" ) );
         fImpl->surfacePercentage->setReadOnly( true );
@@ -112,14 +112,9 @@ void CPage::updateValues( QWidget *changedWidget )
     if ( !newValues.has_value() || ( newValues.value().size() != 4 ) )
         return;
 
-    if ( changedWidget != fImpl->pressureForDepth )
-        setValue( fImpl->pressureForDepth, newValues.value()[ 0 ], 2 );
-    if ( newValues.value()[ 0 ].has_value() )
-        setValue( fImpl->pressure, newValues.value()[ 0 ], 2 );
-    if ( changedWidget != fImpl->depthForPressure )
-        setValue( fImpl->depthForPressure, newValues.value()[ 1 ], 2 );
-    if ( changedWidget != fImpl->partialPressure )
-        setValue( fImpl->partialPressure, newValues.value()[ 2 ], 2 );
-    if ( changedWidget != fImpl->surfacePercentage )
-        setValue( fImpl->surfacePercentage, newValues.value()[ 3 ], 2 );
+    setValue( fImpl->pressureForDepth, pressureForDepth, newValues.value()[ 0 ], 2 );
+    setValue( fImpl->pressure, pressureForDepth, newValues.value()[ 0 ], 2 );
+    setValue( fImpl->depthForPressure, depthForPressure, newValues.value()[ 1 ], 2 );
+    setValue( fImpl->partialPressure, partialPressure, newValues.value()[ 2 ], 2 );
+    setValue( fImpl->surfacePercentage, surfacePercentage, newValues.value()[ 3 ], 2 );
 }

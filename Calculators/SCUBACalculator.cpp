@@ -184,10 +184,10 @@ void CSCUBACalculatorPage::addWidget( bool rhs, QWidget *widget )
 
 std::optional< double > CSCUBACalculatorPage::getValue( const QString &text ) const
 {
-    if ( text.isEmpty() )
+    if ( text.trimmed().isEmpty() )
         return {};
     bool aOK = false;
-    auto retVal = text.toDouble( &aOK );
+    auto retVal = text.trimmed().toDouble( &aOK );
     if ( !aOK )
         return {};
     return retVal;
@@ -201,12 +201,17 @@ QString CSCUBACalculatorPage::doubleToString( const std::optional< double > &val
     return retVal;
 }
 
-void CSCUBACalculatorPage::setValue( QLineEdit *le, const std::optional< double > &value, int numDecimal )
+void CSCUBACalculatorPage::setValue( QLineEdit *le, const std::optional< double > &origValue, const std::optional< double > &newValue, int numDecimal /*= 1 */ )
 {
-    if ( !le || !value.has_value() )
+    if ( !le || !newValue.has_value() )
         return;
+
+    auto newValueString = doubleToString( newValue, numDecimal );
+    if ( doubleToString( origValue, numDecimal ) == newValueString )
+        return;
+
     le->blockSignals( true );
-    le->setText( doubleToString( value, numDecimal ) );
+    le->setText( newValueString );
     le->blockSignals( false );
 }
 

@@ -37,8 +37,6 @@ void CPage::updateValues( QWidget *changedWidget )
     if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
         return;
 
-    if ( changedWidget != fImpl->t )
-        setValue( fImpl->t, newValues.value()[ 0 ], 2 );
-    if ( changedWidget != fImpl->p )
-        setValue( fImpl->p, newValues.value()[ 1 ], 2 );
+    setValue( fImpl->t, t, newValues.value()[ 0 ], 2 );
+    setValue( fImpl->p, p, newValues.value()[ 1 ], 2 );
 }

@@ -111,7 +111,7 @@ public:
 
     QString doubleToString( const std::optional< double > &value, int numDecimal ) const;
     std::optional< double > getValue( const QString &text ) const;
-    virtual void setValue( QLineEdit *le, const std::optional< double > &value, int numDecimal = 1 );
+    virtual void setValue( QLineEdit *le, const std::optional< double > &origValue, const std::optional< double > &value, int numDecimal = 1 );
 
     virtual QString volumeUnit( bool singular ) const final;
     virtual QString weightUnit( bool singular ) const final;
