@@ -79,7 +79,7 @@ public:
     virtual double percentO2AtSurface() const final;
 
     virtual std::size_t numEmpty( const TOptionalVariantVector &values ) const final;
-    virtual bool valuesValid( const TOptionalVariantVector &values, bool checkNumEmpty=true ) const final;
+    virtual bool valuesValid( const TOptionalVariantVector &values, bool checkNumEmpty = true ) const final;
 
     void calculateDepthToFromPressure( bool saltWater, TOptionalVariant &pressure, TOptionalVariant &depth ) const;
 

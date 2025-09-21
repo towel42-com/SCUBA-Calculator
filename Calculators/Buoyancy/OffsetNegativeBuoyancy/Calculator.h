@@ -6,4 +6,3 @@
 extern "C" CALCULATORS_EXPORT CSCUBACalculator *instantiateCalculator();
 
 #endif
-

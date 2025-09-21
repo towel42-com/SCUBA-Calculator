@@ -15,7 +15,7 @@ class CPage : public CSCUBACalculatorPage
 {
     Q_OBJECT
 public:
-    CPage( const CSCUBACalculator * calculator, QWidget *parent = 0 );
+    CPage( const CSCUBACalculator *calculator, QWidget *parent = 0 );
     ~CPage();
 
 public:
@@ -23,10 +23,9 @@ Q_SIGNALS:
 
 public Q_SLOTS:
 protected:
-    virtual void updateValues( QWidget * widgetChanged ) override;
+    virtual void updateValues( QWidget *widgetChanged ) override;
 
 protected:
-
 private:
     void updateSurfacePercentage();
     std::unique_ptr< Ui::CPage > fImpl;
