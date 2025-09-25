@@ -18,6 +18,7 @@ set(qtproject_QRC
  set( project_pub_DEPS
         Qt6::Widgets
         Qt6::Core
+        Qt6:Svg
         MainWindow
         SABUtils
 )

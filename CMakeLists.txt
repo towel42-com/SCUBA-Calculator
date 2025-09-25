@@ -43,6 +43,8 @@ include( VersionInfo.cmake )
 
 file( REAL_PATH ~/bin/SCUBA-Calculator CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
+add_subdirectory( T42-Qt6MathJax  )
+add_subdirectory( T42-Qt6MathJax/example )
 add_subdirectory( SABUtils )
 add_subdirectory( MainWindow )
 add_subdirectory( main )
