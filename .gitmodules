@@ -4,3 +4,6 @@
 [submodule "T42-Qt6MathJax"]
 	path = T42-Qt6MathJax
 	url = https://github.com/towel42-com/T42-Qt6MathJax
+[submodule "T42-CMakeUtils"]
+	path = T42-CMakeUtils
+	url = https://github.com/towel42-com/T42-CMakeUtils
