@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.22)
 project(SCUBA-Calculator) 
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 add_executable( ${PROJECT_NAME} WIN32
                 ${_PROJECT_DEPENDENCIES} 

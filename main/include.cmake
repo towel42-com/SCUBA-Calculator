@@ -18,7 +18,8 @@ set(qtproject_QRC
  set( project_pub_DEPS
         Qt6::Widgets
         Qt6::Core
-        Qt6:Svg
+        Qt6::SvgWidgets
         MainWindow
         SABUtils
+        Qt6MathJax
 )
