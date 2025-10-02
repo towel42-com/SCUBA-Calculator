@@ -86,7 +86,7 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
 
 void CMainWindow::loadCalculators()
 {
-    auto calcDir = QDir( QApplication::applicationDirPath() ).absoluteFilePath( "Calculators" );
+    auto calcDir = QApplication::applicationDirPath();
 
     auto ii = QDirIterator( calcDir, QStringList() << "*.dll" );
     while ( ii.hasNext() )
@@ -110,11 +110,11 @@ void CMainWindow::loadCalculators()
             continue;
 
         auto constructor = (TInstantiateCalcFunc)GetProcAddress( hLib, "instantiateCalculator" );
+        if ( !constructor )
+            continue;
         auto getPageFunc = (TGetPageFunc)GetProcAddress( hLib, "getPage" );
         auto setImperial = (TSetImperialFunc)GetProcAddress( hLib, "setImperial" );
         auto setMetric = (TSetMetricFunc)GetProcAddress( hLib, "setMetric" );
-        if ( !constructor )
-            continue;
 
         auto calculator = (CSCUBACalculator *)constructor();
         addCalculator( calculator, getPageFunc, setImperial, setMetric );

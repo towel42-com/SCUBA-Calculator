@@ -57,7 +57,29 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
-DeployQt( ${PROJECT_NAME} . )
+DeployQt( ${PROJECT_NAME} . 
+    EXTRA_TARGETS 
+        T42Qt6MathJax 
+        BuoyancyOfObject
+        OffsetNegativeBuoyancy
+        EAD
+        MOD
+        PartialPressureForDepth
+        Depth
+        DepthSeawaterToFromFreshwater
+        DepthToFromPressure
+        PSIToFromBar
+        CombinedGasLaw
+        IdealGasLaw
+        PressureChangeInTemp
+        QuickEstimates
+        VolumeChangeInTemp
+        GasConsumptionTimeToFromDepth
+        P1V1EqP2V2
+        RelativeChangeInAmbientPressure
+        SABUtils
+)
+
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )
