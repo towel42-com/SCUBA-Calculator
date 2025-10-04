@@ -11,7 +11,7 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual std::pair< std::optional< TOptionalVariantVector >, QString > compute( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
     virtual bool usesSaltwater() const override { return true; }
 };
 
@@ -35,7 +35,7 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+std::pair< std::optional< TOptionalVariantVector >, QString > CCalculator::compute( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
 {
     bool depthForPressureOK = ( values[ 0 ].has_value() && ( values[ 1 ].has_value() || values[ 2 ].has_value() ) );
     bool po2OK = ( values[ 3 ].has_value() && values[ 4 ].has_value() );

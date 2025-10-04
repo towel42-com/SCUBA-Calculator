@@ -12,6 +12,12 @@ namespace Ui
     class CMainWindow;
 }
 
+namespace NTowel42
+{
+    class CQt6MathJax;
+
+}
+
 class CSCUBACalculator;
 class QTreeWidgetItem;
 
@@ -25,26 +31,50 @@ public:
 public:
     void loadCalculators();
 
-public:
 Q_SIGNALS:
+
 public Q_SLOTS:
     void slotSelectCalculator( QTreeWidgetItem *item );
-    void hideUnits( bool hide );
+    void slotUnitsChanged();
+    void slotWaterChanged();
+    void slotFormulaRendered( const QString &formula, const QByteArray &svg );
 
 private:
-    void addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetImperialFunc setImperialFunc, TSetMetricFunc setMetricFunc );
+    void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
+    void loadSettings();
+    void saveSettings();
+    void showUnits( bool show );
+    void showWaterType( bool show );
+    void addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSaltWaterFunc, TSetUpdateFormulaFunc setUpdateEqFunc, TInitFunc initFunc );
 
-private:
+    void loadFormulaForPage( CSCUBACalculatorPage *page );
+    void loadSVG( const QString &formula, const QByteArray &svg );
+    void setFormulaForCalculator( CSCUBACalculatorPage *page, const QString &formula );
     CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;
+    QTreeWidgetItem *getItemForPage( QWidget * page ) const;
     TGetPageFunc getGetPageFunc( QTreeWidgetItem *leaf ) const;
-    TSetImperialFunc getSetImperialFunc( QTreeWidgetItem *leaf ) const;
-    TSetMetricFunc getSetMetricFunc( QTreeWidgetItem *leaf ) const;
+    TSetBoolFunc getSetImperialFunc( QTreeWidgetItem *leaf ) const;
+    TSetBoolFunc getSetSaltWaterFunc( QTreeWidgetItem *leaf ) const;
+    TInitFunc getInitFunc( QTreeWidgetItem *leaf ) const;
 
     QTreeWidgetItem *findItem( QTreeWidgetItem *parent, const QStringList &path, bool createIfNecessary );
     std::unique_ptr< Ui::CMainWindow > fImpl;
 
     QWidget *fBlankPage{ nullptr };
-    std::unordered_map< QTreeWidgetItem *, std::tuple< CSCUBACalculator *, TGetPageFunc, TSetImperialFunc, TSetMetricFunc > > fCalculators;
+
+    struct SPageInfo
+    {
+        CSCUBACalculator *fCalculator{ nullptr };
+        TInitFunc fInitFunc{ nullptr };
+        TGetPageFunc fGetPageFunc{ nullptr };
+        TSetBoolFunc fSetImperialFunc{ nullptr };
+        TSetBoolFunc fSetSaltWaterFunc{ nullptr };
+    };
+    std::unordered_map< QTreeWidgetItem *, SPageInfo > fCalculators;
+    std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
+    std::unordered_map< QWidget *, QString > fPageToFormulaMap;
+    std::unordered_map< QString, QByteArray > fFormulaToSVGMap;
+    NTowel42::CQt6MathJax *fRenderingEngine{ nullptr };
 };
 
 #endif

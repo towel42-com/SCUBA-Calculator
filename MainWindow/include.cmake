@@ -43,6 +43,7 @@ SET( project_pub_DEPS
     Qt6::Core
     Qt6::Widgets
     Qt6::Gui
+    Qt6::Svg
     ${project_pub_DEPS}
 )
 

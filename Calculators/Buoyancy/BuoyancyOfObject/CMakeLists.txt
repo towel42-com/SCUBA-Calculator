@@ -29,6 +29,7 @@ project( ${_PROJECT_NAME} )
 
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
+find_package(Qt6 COMPONENTS Svg REQUIRED)
 add_library(${PROJECT_NAME} SHARED
     ${_PROJECT_DEPENDENCIES} 
 )

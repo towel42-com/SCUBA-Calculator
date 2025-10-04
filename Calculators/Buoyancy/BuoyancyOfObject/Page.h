@@ -18,12 +18,14 @@ public:
     CPage( const CSCUBACalculator *calculator, QWidget *parent = 0 );
     ~CPage();
 
+    virtual bool showWaterType() const override { return true; }
+
 public:
 Q_SIGNALS:
 
 public Q_SLOTS:
 protected:
-    virtual void updateValues( QWidget *widgetChanged ) override;
+    virtual void updateValuesInternal( QWidget *widgetChanged ) override;
 
 protected:
 private:
