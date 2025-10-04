@@ -15,12 +15,12 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto freshWaterString = tr( "%1 fresh water = 1.03 x" ).arg( lengthUnit( false ) );
+    auto freshWaterString = tr( "%1 fresh water = 1.03 x" ).arg( lengthUnit( false, false ) );
     fImpl->freshWaterLabel->setText( freshWaterString );
 
-    auto saltWaterString = tr( "%1 salt water" ).arg( lengthUnit( false ) );
+    auto saltWaterString = tr( "%1 salt water" ).arg( lengthUnit( false, false ) );
     fImpl->saltWaterLabel->setText( saltWaterString );
 
     auto depthFreshWater = ( changedWidget == fImpl->depthSeaWater ) ? TOptionalVariant() : getValue( fImpl->depthFreshWater->text() );

@@ -19,11 +19,11 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto depthString = tr( "(%1) + %2) - %2" ).arg( lengthUnit( false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( fImpl->saltwater->isChecked() ), 1 ) );
+    auto depthString = tr( "(%1) + %2) - %2" ).arg( lengthUnit( false, false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( saltWater() ), 1 ) );
     fImpl->depthLabel->setText( depthString );
-    fImpl->eadLabel->setText( tr( "(%1)" ).arg( lengthUnit( false ) ) );
+    fImpl->eadLabel->setText( tr( "(%1)" ).arg( lengthUnit( false, false ) ) );
     fImpl->fn2Label->setText( tr( "FN2%/%1%)" ).arg( doubleToString( calculator()->percentN2AtSurface(), 2 ) ) );
     if ( changedWidget == nullptr )
         return;
@@ -40,7 +40,7 @@ void CPage::updateValues( QWidget *changedWidget )
             depth.reset();
     }
 
-    auto newValues = calculator()->compute( { fImpl->saltwater->isChecked(), ead, fn2, depth } );
+    auto newValues = calculator()->compute( { saltWater(), ead, fn2, depth } );
     if ( !newValues.has_value() || ( newValues.value().size() != 3 ) )
         return;
 

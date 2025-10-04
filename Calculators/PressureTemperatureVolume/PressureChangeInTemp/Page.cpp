@@ -15,14 +15,14 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto tempLabel = tr( "(%1) + %2" ).arg( tempUnit( false ) ).arg( doubleToString( calculator()->absZero(), 1 ) );
+    auto tempLabel = tr( "(%1) + %2" ).arg( tempUnit( false, false ) ).arg( doubleToString( calculator()->absZero(), 1 ) );
     fImpl->t1Label->setText( tempLabel );
     fImpl->t2Label->setText( tempLabel );
 
-    fImpl->p1Label->setText( tr( "(%1)" ).arg( pressureUnit() ) );
-    fImpl->p2Label->setText( tr( "(%1)" ).arg( pressureUnit() ) );
+    fImpl->p1Label->setText( tr( "(%1)" ).arg( pressureUnit( false ) ) );
+    fImpl->p2Label->setText( tr( "(%1)" ).arg( pressureUnit( false ) ) );
 
     if ( changedWidget == nullptr )
         return;

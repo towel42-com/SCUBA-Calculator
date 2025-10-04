@@ -103,17 +103,18 @@ public:
 
     void calculateDepthToFromPressure( bool saltWater, TOptionalVariant &pressure, TOptionalVariant &depth ) const;
 
-    virtual bool usesSaltWater() const { return false; }
+    virtual bool isWaterTypeBased() const { return false; }
 
-    virtual void updateEquation( const QString &eq ) const final;
+    virtual void updateFormula( const QString &eq ) const final;
 
 public:
 protected:
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const = 0;
     CSCUBACalculatorPage *fPage{ nullptr };
+    void updateFormula( QString & formula, const QString & token, const TOptionalVariant &value, const QString &label, const QString & unit ) const;
 
 private:
-    TUpdateFormulaFunc fUpdateEqFunc;
+    TUpdateFormulaFunc fUpdateFormulaFunc;
 };
 
 class CSCUBACalculatorPage : public QWidget
@@ -122,7 +123,7 @@ class CSCUBACalculatorPage : public QWidget
 
 public:
     Q_PROPERTY( bool showUnits READ showUnits );
-    Q_PROPERTY( bool showWaterType READ showWaterType );
+    Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
     CSCUBACalculatorPage( const CSCUBACalculator *calculator, QWidget *parent );
     virtual ~CSCUBACalculatorPage();
 
@@ -156,7 +157,7 @@ public:
     virtual QString idealGasConstant( bool tex ) const final;
 
     virtual bool showUnits() const { return true; }
-    virtual bool showWaterType() const { return false; }
+    virtual bool isWaterTypeBased() const;
 
     virtual bool needsInit() const;
 

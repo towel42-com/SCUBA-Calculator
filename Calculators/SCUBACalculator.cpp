@@ -46,7 +46,7 @@ void CSCUBACalculator::setSaltWater( bool saltWater )
 
 void CSCUBACalculator::setUpdateFormulaFunc( const TUpdateFormulaFunc &func )
 {
-    fUpdateEqFunc = func;
+    fUpdateFormulaFunc = func;
 }
 
 bool CSCUBACalculator::imperial() const
@@ -94,15 +94,9 @@ bool CSCUBACalculator::valuesValid( const TOptionalVariantVector &values, bool c
         return false;
 
     std::size_t start = 0;
-    if ( usesSaltWater() )
+    for ( auto &&ii : values )
     {
-        if ( !values.front().has_value() || !std::holds_alternative< bool >( values.front().value() ) )
-            return false;
-        start = 1;
-    }
-    for ( auto ii = start; ii < values.size(); ++ii )
-    {
-        if ( values[ ii ].has_value() && !std::holds_alternative< double >( values[ ii ].value() ) )
+        if ( ii.has_value() && !std::holds_alternative< double >( ii.value() ) )
             return false;
     }
     return true;
@@ -124,10 +118,21 @@ void CSCUBACalculator::calculateDepthToFromPressure( bool saltWater, TOptionalVa
     }
 }
 
-void CSCUBACalculator::updateEquation( const QString &eq ) const
+void CSCUBACalculator::updateFormula( const QString &eq ) const
 {
-    if ( fUpdateEqFunc )
-        fUpdateEqFunc( getPage(), eq );
+    if ( fUpdateFormulaFunc )
+        fUpdateFormulaFunc( getPage(), eq );
+}
+
+void CSCUBACalculator::updateFormula( QString &formula, const QString &token, const TOptionalVariant &value, const QString &label, const QString &unit ) const
+{
+    QString newString;
+    if ( value.has_value() )
+        newString = QString( "%1%2" ).arg( doubleToString( value.value(), 2 ) );
+    else
+        newString = QString( "%1 (%2)" ).arg( label );
+    newString = newString.arg( unit );
+    formula = formula.replace( token, newString );
 }
 
 std::size_t CSCUBACalculator::numEmpty( const TOptionalVariantVector &values ) const
@@ -413,9 +418,14 @@ QString CSCUBACalculatorPage::idealGasConstant( bool tex ) const
     return calculator()->idealGasConstant( tex );
 }
 
+bool CSCUBACalculatorPage::isWaterTypeBased() const
+{
+    return fCalculator->isWaterTypeBased();
+}
+
 bool CSCUBACalculatorPage::needsInit() const
 {
-    return true;
+    return fNeedsInit;
 }
 
 void CSCUBACalculatorPage::setUpdateFromRHS( bool updateFromRHS )

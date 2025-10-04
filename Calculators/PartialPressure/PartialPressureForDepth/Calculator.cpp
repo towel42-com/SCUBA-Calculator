@@ -11,8 +11,9 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::pair< std::optional< TOptionalVariantVector >, QString > compute( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
-    virtual bool usesSaltwater() const override { return true; }
+    virtual bool isWaterTypeBased() const override { return true; }
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -35,7 +36,15 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::pair< std::optional< TOptionalVariantVector >, QString > CCalculator::compute( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
+std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
+{
+    (void)updateFromRHS;
+    (void)triggerPos;
+    (void)values;
+    return {};
+}
+
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
 {
     bool depthForPressureOK = ( values[ 0 ].has_value() && ( values[ 1 ].has_value() || values[ 2 ].has_value() ) );
     bool po2OK = ( values[ 3 ].has_value() && values[ 4 ].has_value() );

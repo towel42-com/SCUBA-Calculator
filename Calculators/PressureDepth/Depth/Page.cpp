@@ -15,7 +15,7 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
     auto feet = ( changedWidget == fImpl->meters ) ? TOptionalVariant() : getValue( fImpl->feet->text() );
     auto meters = ( changedWidget == fImpl->feet ) ? TOptionalVariant() : getValue( fImpl->meters->text() );

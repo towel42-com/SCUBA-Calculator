@@ -15,13 +15,13 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto pressureLabel = tr( "(%1)" ).arg( pressureUnit() );
+    auto pressureLabel = tr( "(%1)" ).arg( pressureUnit( false ) );
     fImpl->p1Label->setText( pressureLabel );
     fImpl->p2Label->setText( pressureLabel );
 
-    auto volumeLabel = tr( "(%1)" ).arg( volumeUnit( false ) );
+    auto volumeLabel = tr( "(%1)" ).arg( volumeUnit( false, false ) );
     fImpl->v1Label->setText( volumeLabel );
     fImpl->v2Label->setText( volumeLabel );
 

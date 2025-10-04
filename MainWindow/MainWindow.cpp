@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QSvgRenderer>
 #include <QButtonGroup>
+
 #include <libloaderapi.h>
 
 CMainWindow::CMainWindow( QWidget *parent ) :
@@ -147,7 +148,7 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
 void CMainWindow::setCurrentPage( QTreeWidgetItem * item, CSCUBACalculatorPage *page, bool initPage )
 {
     bool showUnits = page != nullptr;
-    bool showWaterType = page != nullptr;
+    bool isWaterTypeBased = page != nullptr;
     if ( page == nullptr )
     {
         fImpl->stackedWidget->setCurrentWidget( fBlankPage );
@@ -156,7 +157,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem * item, CSCUBACalculatorPage *
     {
         fImpl->stackedWidget->setCurrentWidget( page );
         showUnits = page->property( "showUnits" ).toBool();
-        showWaterType = page->property( "showWaterType" ).toBool();
+        isWaterTypeBased = page->property( "isWaterTypeBased" ).toBool();
     }
 
     if ( page && initPage )
@@ -173,7 +174,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem * item, CSCUBACalculatorPage *
 
     loadFormulaForPage( page );
     this->showUnits( showUnits );
-    this->showWaterType( showWaterType );
+    this->showWaterType( isWaterTypeBased );
 }
 
 void CMainWindow::loadCalculators()
@@ -281,6 +282,15 @@ void CMainWindow::loadSVG( const QString &formula, const QByteArray &svg )
         {
             QMessageBox::critical( this, tr( "Error Loading SVG File" ), tr( "SVG was generated but could not be loaded" ) );
             fImpl->formulaFrame->setVisible( false );
+        }
+        else
+        {
+            auto maxSize = fImpl->stackedWidget->currentWidget()->size();
+            maxSize.setHeight( qMax( maxSize.height(), 200 ) );
+            maxSize.setWidth( maxSize.width() * 0.75 );
+            auto sz = fImpl->formulaWidget->sizeHint().scaled( maxSize, Qt::KeepAspectRatio );
+            fImpl->formulaWidget->setMinimumSize( sz );
+            fImpl->formulaWidget->setMaximumSize( sz );
         }
     }
 }

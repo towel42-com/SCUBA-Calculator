@@ -11,8 +11,9 @@ public:
     QStringList calculatorPath() const override;
 
     virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual bool usesSaltwater() const override { return true; }
-    virtual std::pair< std::optional< TOptionalVariantVector >, QString > compute( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+    virtual bool isWaterTypeBased() const { return true; }
+    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -35,22 +36,61 @@ CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
     return new CPage( this, parent );
 }
 
-std::pair< std::optional< TOptionalVariantVector >, QString > CCalculator::compute( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
+std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t /*triggerPos*/, const TOptionalVariantVector &values ) const
 {
-    if ( !valuesValid( values ) )
+    if ( values.size() != 2 )
         return {};
 
-    auto saltWater = std::get< bool >( values[ 0 ].value() );
-    auto volumeDisplaced = values[ 1 ];
-    auto negativeBuoyancy = values[ 2 ];
+    auto retVal = values;
 
-    if ( !volumeDisplaced.has_value() )
+    auto &&volumeDisplaced = retVal[ 0 ];
+    auto &&negativeBuoyancy = retVal[ 1 ];
+
+    if ( numEmpty( values ) == 0 )
     {
-        volumeDisplaced = std::get< double >( negativeBuoyancy.value() ) / weightOfWater( saltWater );
+        if ( updateFromRHS )
+        {
+            volumeDisplaced.reset();
+        }
+        else
+        {
+            negativeBuoyancy.reset();
+        }
+    }
+    return retVal;
+}
+
+std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+{
+    if ( values.size() != 2 )
+        return {};
+
+    auto volumeDisplaced = values[ 0 ];
+    auto negativeBuoyancy = values[ 1 ];
+
+    QString formula;
+    bool aOK = valuesValid( values );
+    if ( !aOK || !volumeDisplaced.has_value() )
+    {
+        if ( aOK )
+            volumeDisplaced = std::get< double >( negativeBuoyancy.value() ) / weightOfWater( saltWater() );
+        formula = QObject::tr( R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__" );
     }
     else if ( !negativeBuoyancy.has_value() )
     {
-        negativeBuoyancy = std::get< double >( volumeDisplaced.value() ) * weightOfWater( saltWater );
+        formula = QObject::tr( R"__(<negativeBuoyancy>=<volumeDisplaced>\times<weightOfWater>)__" );
+        negativeBuoyancy = std::get< double >( volumeDisplaced.value() ) * weightOfWater( saltWater() );
     }
-    return TOptionalVariantVector( { volumeDisplaced, negativeBuoyancy } );
+
+    updateFormula( formula, "<volumeDisplaced>", volumeDisplaced, QObject::tr( "Volume Displaced" ), volumeUnit( false, true ) ); 
+    updateFormula( formula, "<negativeBuoyancy>", negativeBuoyancy, QObject::tr( "Negative Buoyancy" ), weightUnit( false, true ) ); 
+    formula = formula.replace( "<weightOfWater>", weightOfWater( saltWater(), true ) );
+    formula = formula.replace( " ", R"(\ )" );
+
+    std::optional< TOptionalVariantVector > retVal;
+    if ( aOK )
+        retVal = { volumeDisplaced, negativeBuoyancy };
+    updateFormula( formula );
+
+    return retVal;
 }

@@ -15,7 +15,7 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
     auto psi = ( changedWidget == fImpl->bar ) ? TOptionalVariant() : getValue( fImpl->psi->text() );
     auto bar = ( changedWidget == fImpl->psi ) ? TOptionalVariant() : getValue( fImpl->bar->text() );

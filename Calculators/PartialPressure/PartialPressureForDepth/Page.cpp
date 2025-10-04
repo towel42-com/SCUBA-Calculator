@@ -63,16 +63,16 @@ void CPage::updateSurfacePercentage()
     updateValues( fImpl->surfacePercentage );
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto pressureString = tr( "Pressure (%1)" ).arg( pressureUnit() );
+    auto pressureString = tr( "Pressure (%1)" ).arg( pressureUnit( false ) );
     fImpl->pressureLabel->setText( pressureString );
     fImpl->pLabel->setText( pressureString );
 
-    auto depthString = tr( "(%1) + %2)/%2" ).arg( lengthUnit( false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( fImpl->saltwater->isChecked() ), 1 ) );
+    auto depthString = tr( "(%1) + %2)/%2" ).arg( lengthUnit( false, false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( saltWater() ), 1 ) );
     fImpl->depthLabel->setText( depthString );
 
-    fImpl->depthLabel->setText( tr( "(%1)" ).arg( lengthUnit( false ) ) );
+    fImpl->depthLabel->setText( tr( "(%1)" ).arg( lengthUnit( false, false ) ) );
     if ( changedWidget == nullptr )
         return;
 
@@ -108,7 +108,7 @@ void CPage::updateValues( QWidget *changedWidget )
             partialPressure.reset();
     }
 
-    auto newValues = calculator()->compute( { fImpl->saltwater->isChecked() ? 1.0 : 0.0, pressureForDepth, depthForPressure, partialPressure, surfacePercentage } );
+    auto newValues = calculator()->compute( { saltWater(), pressureForDepth, depthForPressure, partialPressure, surfacePercentage } );
     if ( !newValues.has_value() || ( newValues.value().size() != 4 ) )
         return;
 

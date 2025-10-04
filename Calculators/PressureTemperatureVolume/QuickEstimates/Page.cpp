@@ -15,11 +15,11 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    fImpl->tLabel->setText( tr( "(%1)" ).arg( tempUnit( false ) ) );
-    fImpl->pLabel->setText( tr( "(%1)" ).arg( pressureUnit() ) );
-    fImpl->PperT->setText( tr( "%1" ).arg( pressurePerTemp() ) );
+    fImpl->tLabel->setText( tr( "(%1)" ).arg( tempUnit( false, false ) ) );
+    fImpl->pLabel->setText( tr( "(%1)" ).arg( pressureUnit( false ) ) );
+    fImpl->PperT->setText( tr( "%1" ).arg( pressurePerTemp( false ) ) );
     if ( changedWidget == nullptr )
         return;
 

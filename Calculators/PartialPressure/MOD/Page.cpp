@@ -19,13 +19,13 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto pressureString = tr( "Total Pressure (%1)" ).arg( pressureUnit() );
+    auto pressureString = tr( "Total Pressure (%1)" ).arg( pressureUnit( false ) );
     fImpl->pressureLabel->setText( pressureString );
     fImpl->ambientPressureLabel->setText( pressureString );
 
-    auto depthString = tr( "(%1) + %2)/%2" ).arg( lengthUnit( false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( fImpl->saltwater->isChecked() ), 1 ) );
+    auto depthString = tr( "(%1) + %2)/%2" ).arg( lengthUnit( false, false ) ).arg( doubleToString( calculator()->depthToSingleAtmosphere( saltWater() ), 1 ) );
     fImpl->modLabel->setText( depthString );
     if ( changedWidget == nullptr )
         return;
@@ -59,7 +59,7 @@ void CPage::updateValues( QWidget *changedWidget )
         }
     }
 
-    auto newValues = calculator()->compute( { fImpl->saltwater->isChecked() ? 1.0 : 0.0, fImpl->maxPO2->value(), ambientPressure, po2, mod } );
+    auto newValues = calculator()->compute( { saltWater(), fImpl->maxPO2->value(), ambientPressure, po2, mod } );
     if ( !newValues.has_value() || ( newValues.value().size() != 3 ) )
         return;
 

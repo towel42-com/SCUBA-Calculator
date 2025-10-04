@@ -15,9 +15,9 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto pressureLabel = tr( "(%1)" ).arg( pressureUnit() );
+    auto pressureLabel = tr( "(%1)" ).arg( pressureUnit( false ) );
     fImpl->p1Label->setText( pressureLabel );
     fImpl->p2Label->setText( pressureLabel );
     if ( changedWidget == nullptr )

@@ -15,13 +15,13 @@ CPage::~CPage()
 {
 }
 
-void CPage::updateValues( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *changedWidget )
 {
-    auto tempLabel = tr( "(%1) + %2" ).arg( tempUnit( false ) ).arg( doubleToString( calculator()->absZero(), 1 ) );
+    auto tempLabel = tr( "(%1) + %2" ).arg( tempUnit( false, false ) ).arg( doubleToString( calculator()->absZero(), 1 ) );
     fImpl->tLabel->setText( tempLabel );
-    fImpl->pLabel->setText( tr( "(%1)" ).arg( pressureUnit() ) );
-    fImpl->vLabel->setText( tr( "(%1)" ).arg( volumeUnit( false ) ) );
-    fImpl->idealGasConstant->setText( idealGasConstant() );
+    fImpl->pLabel->setText( tr( "(%1)" ).arg( pressureUnit( false ) ) );
+    fImpl->vLabel->setText( tr( "(%1)" ).arg( volumeUnit( false, false ) ) );
+    fImpl->idealGasConstant->setText( idealGasConstant( false ) );
 
     if ( changedWidget == nullptr )
         return;

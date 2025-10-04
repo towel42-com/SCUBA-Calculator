@@ -30,17 +30,16 @@ void CPage::updateValuesInternal( QWidget *changedWidget )
 
     std::size_t triggerPos = -1;
     if ( changedWidget == fImpl->buoyancy )
-        triggerPos = 1;
+        triggerPos = 0;
     else if ( changedWidget == fImpl->weightOfObject )
-        triggerPos = 2;
+        triggerPos = 1;
     else if ( changedWidget == fImpl->volumeDisplaced )
-        triggerPos = 3;
+        triggerPos = 2;
 
     auto newValues = calculator()->setupValues( updateFromRHS(), triggerPos, { buoyancy, weightOfObject, volumeDisplaced } );
     if ( !newValues.has_value() || ( newValues.value().size() != 3 ) )
         return;
     
-    newValues.value().insert( newValues.value().begin(), saltWater() );
     newValues = calculator()->compute( newValues.value() );
     if ( !newValues.has_value() || ( newValues.value().size() != 3 ) )
         return;

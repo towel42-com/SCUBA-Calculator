@@ -6,54 +6,23 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
-    <height>351</height>
+    <width>493</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Title</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QRadioButton" name="saltwater">
-       <property name="text">
-        <string>Salt Water?</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="freshWater">
-       <property name="text">
-        <string>Fresh Water?</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QLabel" name="eq">
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Volume Required = (kg of negative buoyancy) / (kg per liter of water )</string>
+      <string>Volume required:</string>
      </property>
     </widget>
    </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item row="0" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLineEdit" name="volumeDisplaced">
        <property name="placeholderText">
@@ -62,12 +31,23 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="volumeDisplacedUnits">
        <property name="text">
-        <string>=</string>
+        <string>cuft</string>
        </property>
       </widget>
      </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Buoyancy:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLineEdit" name="negativeBuoyancy">
        <property name="placeholderText">
@@ -76,22 +56,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="negativeBuoyancyUnits">
        <property name="text">
-        <string>/</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="weightOfWater">
-       <property name="text">
-        <string>(mass per volume of water)</string>
+        <string>lbs</string>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item>
+   <item row="2" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
@@ -117,12 +90,6 @@
    </property>
   </action>
  </widget>
- <tabstops>
-  <tabstop>saltwater</tabstop>
-  <tabstop>freshWater</tabstop>
-  <tabstop>volumeDisplaced</tabstop>
-  <tabstop>negativeBuoyancy</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>
