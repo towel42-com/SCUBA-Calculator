@@ -57,9 +57,10 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
+
 DeployQt( ${PROJECT_NAME} . 
+    EXTRA_TARGETS_DIR Calculators
     EXTRA_TARGETS 
-        T42Qt6MathJax 
         BuoyancyOfObject
         OffsetNegativeBuoyancy
         EAD
@@ -77,7 +78,9 @@ DeployQt( ${PROJECT_NAME} .
         GasConsumptionTimeToFromDepth
         P1V1EqP2V2
         RelativeChangeInAmbientPressure
-        SABUtils
+    EXTRA_TARGETS2
+       T42Qt6MathJax 
+       SABUtils
 )
 
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )

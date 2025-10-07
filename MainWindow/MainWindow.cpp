@@ -196,7 +196,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *p
 
 void CMainWindow::loadCalculators()
 {
-    auto calcDir = QApplication::applicationDirPath();
+    auto calcDir = QApplication::applicationDirPath() + "/Calculators";
 
     auto ii = QDirIterator( calcDir, QStringList() << "*.dll" );
     while ( ii.hasNext() )
