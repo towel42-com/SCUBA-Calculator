@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,13 +8,18 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
     virtual bool isWaterTypeBased() const { return true; }
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -31,66 +37,38 @@ QStringList CCalculator::calculatorPath() const
     return { "Buoyancy Calculations" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    return   //
+        {
+            std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, ESide::eLHS ),   //
+            std::make_shared< SVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, ESide::eRHS ),   //
+            std::make_shared< SVariableInfo >( "weightOfWater", tr( "Weight of Water" ), EVariableType::eWeightOfWaterConst, EUnit::eWeight, ESide::eRHS )   //
+        };
 }
 
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t /*triggerPos*/, const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( values.size() != 2 )
-        return {};
-
-    auto retVal = values;
-
-    auto &&volumeDisplaced = retVal[ 0 ];
-    auto &&negativeBuoyancy = retVal[ 1 ];
-
-    if ( numEmpty( values ) == 0 )
-    {
-        if ( updateFromRHS )
-        {
-            volumeDisplaced.reset();
-        }
-        else
-        {
-            negativeBuoyancy.reset();
-        }
-    }
-    return retVal;
+    return tr( R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__" );
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::computeAndGenerateFormula() const
 {
-    if ( values.size() != 2 )
-        return {};
-
-    auto volumeDisplaced = values[ 0 ];
-    auto negativeBuoyancy = values[ 1 ];
-
+    auto negativeBuoyancy = getVariable( "negativeBuoyancy" );
+    auto volumeDisplaced = getVariable( "volumeDisplaced" );
     QString formula;
-    bool aOK = valuesValid( values );
-    if ( !aOK || !volumeDisplaced.has_value() )
+    bool aOK = numUnsetVariables() == 1;
+    if ( !aOK || !volumeDisplaced->has_value() )
     {
         if ( aOK )
-            volumeDisplaced = std::get< double >( negativeBuoyancy.value() ) / weightOfWater( saltWater() );
-        formula = QObject::tr( R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__" );
+            volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) );
+        formula = getDefaultFormula();
     }
-    else if ( !negativeBuoyancy.has_value() )
+    else if ( !negativeBuoyancy->has_value() )
     {
-        formula = QObject::tr( R"__(<negativeBuoyancy>=<volumeDisplaced>\times<weightOfWater>)__" );
-        negativeBuoyancy = std::get< double >( volumeDisplaced.value() ) * weightOfWater( saltWater() );
+        formula = tr( R"__(<negativeBuoyancy>=<volumeDisplaced>\times<weightOfWater>)__" );
+        negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) );
     }
 
-    updateFormula( formula, "<volumeDisplaced>", volumeDisplaced, QObject::tr( "Volume Displaced" ), volumeUnit( false, true ) ); 
-    updateFormula( formula, "<negativeBuoyancy>", negativeBuoyancy, QObject::tr( "Negative Buoyancy" ), weightUnit( false, true ) ); 
-    formula = formula.replace( "<weightOfWater>", weightOfWater( saltWater(), true ) );
-    formula = formula.replace( " ", R"(\ )" );
-
-    std::optional< TOptionalVariantVector > retVal;
-    if ( aOK )
-        retVal = { volumeDisplaced, negativeBuoyancy };
-    updateFormula( formula );
-
-    return retVal;
+    return formula;
 }

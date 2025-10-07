@@ -148,7 +148,91 @@ void CSCUBACalculator::renderDefaultFormulas() const
     }
 }
 
-void CSCUBACalculator::compute( bool updateFromRHS, QWidget *triggerWidget )
+void CSCUBACalculator::customDetermineVariableToUnset( ESide /*updateFromSide*/, QWidget * /*triggerWidget*/ )
+{
+}
+
+void CSCUBACalculator::determineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    if ( numUnsetVariables() != 0 )
+        return;
+
+    auto &&[ lhsVars, rhsVars, globals ] = getVariableSides();
+    getVariableSides();
+
+    TVariableInfo varToReset;
+
+    if ( lhsVars.empty() || rhsVars.empty() )
+        return;
+
+    if ( updateFromSide == ESide::eGlobal )
+    {
+        varToReset = {};
+    }
+    else if ( updateFromSide == ESide::eRHS )
+    {
+        if ( ( lhsVars.size() == 1 ) || ( rhsVars.size() == 1 ) )
+        {
+            varToReset = lhsVars.front();
+        }
+        else if ( rhsVars.size() == 2 )
+        {
+            Q_ASSERT( ( rhsVars.front()->fField == triggerWidget ) || ( rhsVars.back()->fField == triggerWidget ) );
+            if ( rhsVars.front()->fField == triggerWidget )
+                varToReset = rhsVars.back();
+            else if ( rhsVars.back()->fField == triggerWidget )
+                varToReset = rhsVars.front();
+        }
+    }
+    else if ( updateFromSide == ESide::eLHS )
+    {
+        if ( ( rhsVars.size() == 1 ) || ( lhsVars.size() == 1 ) )
+        {
+            varToReset = rhsVars.front();
+        }
+        else if ( lhsVars.size() == 2 )
+        {
+            Q_ASSERT( ( lhsVars.front()->fField == triggerWidget ) || ( lhsVars.back()->fField == triggerWidget ) );
+            if ( lhsVars.front()->fField == triggerWidget )
+                varToReset = lhsVars.back();
+            else if ( lhsVars.back()->fField == triggerWidget )
+                varToReset = lhsVars.front();
+        }
+    }
+
+    if ( varToReset )
+    {
+        varToReset->resetValue( false, false );
+        return;
+    }
+    customDetermineVariableToUnset( updateFromSide, triggerWidget );
+}
+
+std::tuple< TVariableInfoList, TVariableInfoList, TVariableInfoList > CSCUBACalculator::getVariableSides() const
+{
+    auto &&variables = getVariables();
+    std::list< TVariableInfo > lhs;
+    std::list< TVariableInfo > rhs;
+    std::list< TVariableInfo > global;
+
+    TVariableInfo lhsVar{};
+    std::pair< TVariableInfo, TVariableInfo > rhsVars;
+    for ( auto &&curr : variables )
+    {
+        if ( !curr->isVariable() )
+            continue;
+
+        if ( curr->fVariableLocation == ESide::eRHS )
+            rhs.push_back( curr );
+        else if ( curr->fVariableLocation == ESide::eLHS )
+            lhs.push_back( curr );
+        else
+            global.push_back( curr );
+    }
+    return { lhs, rhs, global };
+}
+
+void CSCUBACalculator::compute( ESide updateFromSide, QWidget *triggerWidget )
 {
     auto &&variables = getVariables();
     for ( auto &&curr : variables )
@@ -157,10 +241,7 @@ void CSCUBACalculator::compute( bool updateFromRHS, QWidget *triggerWidget )
         curr->updateValueFromField();
     }
 
-    if ( numUnsetVariables() == 0 )
-    {
-        determineUnsetVariable( updateFromRHS, triggerWidget );
-    }
+    determineVariableToUnset( updateFromSide, triggerWidget );
 
     auto formula = computeAndGenerateFormula();
 

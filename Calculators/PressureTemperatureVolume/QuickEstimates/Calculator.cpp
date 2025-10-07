@@ -7,12 +7,17 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,35 +35,39 @@ QStringList CCalculator::calculatorPath() const
     return { "Pressure, Temperature and Volume Calculations" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
-}
-
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
-{
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
     return {};
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    return {};
+}
 
-    auto t = values[ 0 ];
-    auto p = values[ 1 ];
+QString CCalculator::computeAndGenerateFormula() const
+{
+    return {};
+    //if ( !NUtilities::valuesValid( values ) )
+    //    return {};
 
-    // p*v = numMoles * R * t
-    if ( !t.has_value() )
-    {
-        t = pressurePerTemp() * std::get< double >( p.value() );
-    }
-    else if ( !p.has_value() )
-    {
-        p = std::get< double >( t.value() ) / pressurePerTemp();
-    }
-    return TOptionalVariantVector( { t, p } );
+    //auto t = values[ 0 ];
+    //auto p = values[ 1 ];
+
+    //// p*v = numMoles * R * t
+    //if ( !t.has_value() )
+    //{
+    //    t = NUtilities::NConstants::pressurePerTemp( imperial() ) * p.value();
+    //}
+    //else if ( !p.has_value() )
+    //{
+    //    p = t.value() / NUtilities::NConstants::pressurePerTemp( imperial() );
+    //}
+    //return TOptionalDoubleVector( { t, p } );
+}
+
+void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    (void)updateFromSide;
+    (void)triggerWidget;
 }

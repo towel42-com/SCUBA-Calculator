@@ -9,6 +9,7 @@
 #include <QFrame>
 #include <QSvgWidget>
 #include <QSvgRenderer>
+#include <QDoubleSpinBox>
 
 #include <list>
 #include <utility>
@@ -46,34 +47,25 @@ void CSCUBACalculatorPage::setSaltWater( bool saltWater )
     emit sigUpdateValues();
 }
 
-void CSCUBACalculatorPage::addWidgets( bool rhs, const std::list< QWidget * > &widgets )
-{
-    for ( auto &&ii : widgets )
-    {
-        addWidget( rhs, ii );
-    }
-}
-
 void CSCUBACalculatorPage::updateValues( QWidget *triggerWidget )
 {
     fNeedsInit = false;
-    calculator()->compute( updateFromRHS(), triggerWidget );
+    calculator()->compute( updateFromSide(), triggerWidget );
 }
 
-void CSCUBACalculatorPage::addWidget( bool rhs, QWidget *widget )
+void CSCUBACalculatorPage::addWidgets( ESide side, const std::list< QWidget * > &widgets )
 {
-    fWidgets[ widget ] = rhs;
+    for ( auto &&ii : widgets )
+    {
+        addWidget( side, ii );
+    }
+}
 
-    NSABUtils::setupWidgetChanged(
-        widget,
-        [ = ]( QObject * )
-        {
-            auto pos = fWidgets.find( widget );
-            if ( pos == fWidgets.end() )
-                return;
-            setUpdateFromRHS( ( *pos ).second );
-            updateValues( widget );
-        } );
+void CSCUBACalculatorPage::addWidget( ESide side, QWidget *widget )
+{
+    fVariables[ widget ] = side;
+
+    NSABUtils::setupWidgetChanged( widget, [ = ]( QObject *object ) { slotWidgetChanged( dynamic_cast< QWidget * >( object ) ); } );
 }
 
 bool CSCUBACalculatorPage::showUnits() const
@@ -91,17 +83,17 @@ bool CSCUBACalculatorPage::needsInit() const
     return fNeedsInit;
 }
 
-void CSCUBACalculatorPage::setUpdateFromRHS( bool updateFromRHS )
+void CSCUBACalculatorPage::setUpdateFromSide( ESide updateFromSide )
 {
-    fUpdateFromRHS = updateFromRHS;
+    fUpdateFromSide = updateFromSide;
 }
 
 void CSCUBACalculatorPage::slotWidgetChanged( QWidget *widget )
 {
-    auto pos = fWidgets.find( widget );
-    if ( pos == fWidgets.end() )
+    auto pos = fVariables.find( widget );
+    if ( pos == fVariables.end() )
         return;
-    setUpdateFromRHS( ( *pos ).second );
+    setUpdateFromSide( ( *pos ).second );
     updateValues( widget );
 }
 
@@ -123,8 +115,22 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
         curr->fLabel = new QLabel( retVal );
         curr->fLabel->setText( QString( "%1:" ).arg( curr->fDescription ) );
 
-        curr->fField = new QLineEdit( retVal );
-        curr->fField->setObjectName( curr->fName.data() );
+        if ( curr->fRange.has_value() )
+        {
+            auto spinBox = new QDoubleSpinBox( retVal );
+            curr->fField = spinBox;
+            spinBox->setObjectName( "curr->fName.data()" );
+            spinBox->setDecimals( 2 );
+            spinBox->setMinimum( curr->fRange.value().fMin );
+            spinBox->setMaximum( curr->fRange.value().fMax );
+            spinBox->setSingleStep( curr->fRange.value().fStep );
+            spinBox->setValue( curr->fRange.value().fDefaultValue );
+        }
+        else
+        {
+            curr->fField = new QLineEdit( retVal );
+            curr->fField->setObjectName( curr->fName.data() );
+        }
 
         curr->fUnitLabel = new QLabel( retVal );
 
@@ -133,7 +139,7 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
         hLayout->addWidget( curr->fUnitLabel );
 
         formLayout->addRow( curr->fLabel, hLayout );
-        retVal->addWidget( curr->fRHSVariable, curr->fField );
+        retVal->addWidget( curr->fVariableLocation, curr->fField );
 
         curr->updateLabels( calculator->imperial(), calculator->saltWater() );
     }

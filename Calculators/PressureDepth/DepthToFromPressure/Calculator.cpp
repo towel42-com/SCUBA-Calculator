@@ -7,13 +7,19 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
     virtual bool isWaterTypeBased() const override { return true; }
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -31,28 +37,33 @@ QStringList CCalculator::calculatorPath() const
     return { "Pressure and Depth Conversions" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
-}
-
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
-{
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
     return {};
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
-
-    auto saltWater = std::get< bool >( values[ 0 ].value() );
-    auto pressure = values[ 1 ];
-    auto depth = values[ 2 ];
-
-    calculateDepthToFromPressure( saltWater, pressure, depth );
-    return TOptionalVariantVector( { pressure, depth } );
+    return {};
 }
+
+QString CCalculator::computeAndGenerateFormula() const
+{
+    return {};
+    //if ( !NUtilities::valuesValid( values ) )
+    //    return {};
+
+    //auto pressure = values[ 0 ];
+    //auto depth = values[ 1 ];
+
+    //NUtilities::calculateDepthToFromPressure( imperial(), saltWater(), pressure, depth );
+    //return TOptionalDoubleVector( { pressure, depth } );
+}
+
+
+void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    (void)updateFromSide;
+    (void)triggerWidget;
+}
+

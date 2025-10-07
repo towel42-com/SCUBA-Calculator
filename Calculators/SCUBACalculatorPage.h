@@ -61,8 +61,8 @@ public:
     virtual const CSCUBACalculator *calculator() const final { return fCalculator; }
 
 protected:
-    virtual void addWidgets( bool rhs, const std::list< QWidget * > &widgets );
-    virtual void addWidget( bool rhs, QWidget *widget );
+    virtual void addWidgets( ESide varLocation, const std::list< QWidget * > &widgets );
+    virtual void addWidget( ESide varLocation, QWidget *widget );
     virtual void updateValues( QWidget *widget ) final;
 
 private Q_SLOTS:
@@ -73,16 +73,16 @@ Q_SIGNALS:
 private:
     virtual CSCUBACalculator *calculator() final { return fCalculator; }
 
-    virtual void setUpdateFromRHS( bool updateFromRHS ) final;
-    virtual bool updateFromRHS() const final { return fUpdateFromRHS; }
+    virtual void setUpdateFromSide( ESide updateFromSide ) final;
+    virtual ESide updateFromSide() const final { return fUpdateFromSide; }
 
 private:
     bool fNeedsInit{ true };
     bool fImperial{ false };
     bool fSaltWater{ false };
-    bool fUpdateFromRHS{ true };
+    ESide fUpdateFromSide{ ESide::eRHS };
     CSCUBACalculator *fCalculator{ nullptr };
-    std::unordered_map< QObject *, bool > fWidgets;
+    std::unordered_map< QObject *, ESide > fVariables;
 };
 
 #endif

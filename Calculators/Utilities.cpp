@@ -1,5 +1,6 @@
 #include "Utilities.h"
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 
 namespace NUtilities
 {
@@ -23,6 +24,8 @@ namespace NUtilities
                     return tempUnit( imperial, tex );
                 case EUnit::eAbsZeroTemperature:
                     return absZeroTempUnit( imperial, tex );
+                case EUnit::ePercent:
+                    return percentUnit( tex );
                 default:
                     return {};
             }
@@ -109,6 +112,12 @@ namespace NUtilities
             return retVal;
         }
 
+        QString percentUnit( bool tex )
+        {
+            QString retVal = tex ? R"(\%)" : "%";
+            return retVal;
+        }
+
         QString pressurePerTemp( bool imperial, bool tex )
         {
             auto retVal = tex ? QObject::tr( "%1 (\frac{%2}{%3}", "pressurePerTemp" ) : QObject::tr( "%1 (%2/%3)", "pressurePerTemp" );
@@ -127,11 +136,27 @@ namespace NUtilities
         QString idealGasConstant( bool imperial, bool tex )
         {
             if ( tex )
-                return QObject::tr( R"(__p(%1)\timesV(%2)=n(moles)\times%3\timesT(%4)__)", "idealGasConstant" ).arg( pressureUnit( imperial, tex ) ).arg( volumeUnit( imperial, tex ) ).arg( NConstants::idealGasConstant( imperial ) ).arg( tempUnit( imperial, tex ), "" );
+                return QObject::tr( R"__(p(%1)\timesV(%2)=n(moles)\times%3\timesT(%4))__", "idealGasConstant" ).arg( pressureUnit( imperial, tex ) ).arg( volumeUnit( imperial, tex ) ).arg( NConstants::idealGasConstant( imperial ) ).arg( tempUnit( imperial, tex ), "" );
             else
                 return QObject::tr( "%1 (%2)x(%3)/(n moles)x(%4)", "idealGasConstant" ).arg( NConstants::idealGasConstant( imperial ) ).arg( volumeUnit( imperial, tex ) ).arg( pressureUnit( imperial, tex ) ).arg( tempUnit( imperial, tex ) );
         }
 
+        QString percentN2AtSurface( bool tex )
+        {
+            return QObject::tr( R"__(%1%2)__", "percentN2AtSurface" ).arg( NConstants::percentN2AtSurface() ).arg( percentUnit( tex ) );
+        }
+
+        QString percentO2AtSurface( bool tex )
+        {
+            return QObject::tr( R"__(%1%2)__", "percentO2AtSurface" ).arg( NConstants::percentO2AtSurface() ).arg( percentUnit( tex ) );
+        }
+
+        QString depthToSingleAtmosphere( bool imperial, bool saltWater, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( doubleToString( NConstants::depthToSingleAtmosphere( imperial, saltWater ), 2 ) ).arg( lengthUnit( imperial, false, tex ) );
+            return retVal;
+        }
     }
 
     namespace NConstants
@@ -234,6 +259,26 @@ namespace NUtilities
         return retVal;
     }
 
+    void setValue( QDoubleSpinBox *spinBox, const TOptionalDouble &origValue, const TOptionalDouble &newValue, int /*numDecimal*/, bool notifyUI )
+    {
+        if ( !spinBox )
+            return;
+
+        if ( origValue.has_value() && newValue.has_value() && ( origValue.value() == newValue.value() ) )
+            return;
+
+        if ( !origValue.has_value() && !newValue.has_value() )
+            return;
+
+        if ( !notifyUI )
+            spinBox->blockSignals( true );
+
+        spinBox->setValue( newValue.has_value() ? newValue.value() : 0.0 );
+
+        if ( !notifyUI )
+            spinBox->blockSignals( false );
+    }
+
     void setValue( QLineEdit *le, const TOptionalDouble &origValue, const TOptionalDouble &newValue, int numDecimal, bool notifyUI )
     {
         if ( !le )
@@ -250,6 +295,14 @@ namespace NUtilities
 
         if ( !notifyUI )
             le->blockSignals( false );
+    }
+
+    void setValue( QWidget *widget, const TOptionalDouble &origValue, const TOptionalDouble &newValue, int numDecimal, bool notifyUI )
+    {
+        if ( dynamic_cast< QLineEdit * >( widget ) )
+            setValue( dynamic_cast< QLineEdit * >( widget ), origValue, newValue, numDecimal, notifyUI );
+        else if ( dynamic_cast< QDoubleSpinBox * >( widget ) )
+            setValue( dynamic_cast< QDoubleSpinBox * >( widget ), origValue, newValue, numDecimal, notifyUI );
     }
 
     bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty )

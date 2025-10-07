@@ -22,11 +22,9 @@
 
 set(qtproject_SRCS
     Calculator.cpp
-    Page.cpp
 )
 
 set(qtproject_H
-    Page.h
 )
 
 set(project_H
@@ -34,7 +32,6 @@ set(project_H
 )
 
 set(qtproject_UIS
-    Page.ui
 )
 
 set(qtproject_QRC

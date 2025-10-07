@@ -1,42 +1,43 @@
 #include "Page.h"
 #include "ui_Page.h"
 
-CPage::CPage( const CSCUBACalculator *calculator, QWidget *parent ) :
+CPage::CPage( CSCUBACalculator *calculator, QWidget *parent ) :
     CSCUBACalculatorPage( calculator, parent ),
     fImpl( new Ui::CPage )
 {
     fImpl->setupUi( this );
 
-    addWidgets( false, { fImpl->t } );
-    addWidgets( true, { fImpl->p } );
+    //addWidgets( false, { fImpl->t } );
+    //addWidgets( true, { fImpl->p } );
 }
 
 CPage::~CPage()
 {
 }
 
-void CPage::updateValuesInternal( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *triggerWidget )
 {
-    fImpl->tLabel->setText( tr( "(%1)" ).arg( tempUnit( false, false ) ) );
-    fImpl->pLabel->setText( tr( "(%1)" ).arg( pressureUnit( false ) ) );
-    fImpl->PperT->setText( tr( "%1" ).arg( pressurePerTemp( false ) ) );
-    if ( changedWidget == nullptr )
-        return;
+    (void)triggerWidget;
+    //fImpl->tLabel->setText( tr( "(%1)" ).arg( NUtilities::NUnitStrings::tempUnit( imperial(), false ) ) );
+    //fImpl->pLabel->setText( tr( "(%1)" ).arg( NUtilities::NUnitStrings::pressureUnit( imperial(), false ) ) );
+    //fImpl->PperT->setText( tr( "%1" ).arg( NUtilities::NUnitStrings::pressurePerTemp( imperial(), false ) ) );
+    //if ( triggerWidget == nullptr )
+    //    return;
 
-    auto t = getValue( fImpl->t->text() );
-    auto p = getValue( fImpl->p->text() );
+    //auto t = NUtilities::getValue( fImpl->t->text() );
+    //auto p = NUtilities::getValue( fImpl->p->text() );
 
-    if ( calculator()->numEmpty( { t, p } ) == 0 )
-    {
-        if ( changedWidget == fImpl->t )
-            p.reset();
-        else if ( changedWidget == fImpl->p )
-            t.reset();
-    }
-    auto newValues = calculator()->compute( { t, p } );
-    if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
-        return;
+    //if ( NUtilities::numEmpty( { t, p } ) == 0 )
+    //{
+    //    if ( triggerWidget == fImpl->t )
+    //        p.reset();
+    //    else if ( triggerWidget == fImpl->p )
+    //        t.reset();
+    //}
+    //auto newValues = calculator()->compute( { t, p } );
+    //if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
+    //    return;
 
-    setValue( fImpl->t, t, newValues.value()[ 0 ], 2 );
-    setValue( fImpl->p, p, newValues.value()[ 1 ], 2 );
+    //NUtilities::setValue( fImpl->t, t, newValues.value()[ 0 ], 2 );
+    //NUtilities::setValue( fImpl->p, p, newValues.value()[ 1 ], 2 );
 }

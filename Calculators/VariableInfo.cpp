@@ -1,14 +1,15 @@
 #include "VariableInfo.h"
 #include "Utilities.h"
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 #include <QLabel>
 
-SVariableInfo::SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, bool onRHSByDefault ) :
+SVariableInfo::SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, ESide variableLocation ) :
     fName( name ),
     fDescription( desc ),
     fType( type ),
     fUnit( unitType ),
-    fRHSVariable( onRHSByDefault )
+    fVariableLocation( variableLocation )
 {
 }
 
@@ -24,6 +25,7 @@ void SVariableInfo::updateLabels( bool imperial, bool /*saltWater*/ )
     {
         if ( dynamic_cast< QLineEdit * >( fField ) )
             dynamic_cast< QLineEdit * >( fField )->setPlaceholderText( QString( "%1 (%2)" ).arg( fDescription ).arg( unitText ) );
+
     }
     if ( fUnitLabel )
         fUnitLabel->setText( unitText );
@@ -46,8 +48,11 @@ void SVariableInfo::updateValueFromField()
     Q_ASSERT( fField );
     if ( !fField )
         return;
+
     if ( dynamic_cast< QLineEdit * >( fField ) )
         fValue = NUtilities::getValue( dynamic_cast< QLineEdit * >( fField )->text() );
+    else if ( dynamic_cast< QDoubleSpinBox * >( fField ) )
+        fValue = dynamic_cast< QDoubleSpinBox * >( fField )->value();
 }
 
 void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formula, bool defaultFormula ) const
@@ -87,6 +92,24 @@ void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formu
                     format = "%1";
                 }
                 break;
+            case EVariableType::eFN2AtSurfaceConst:
+                {
+                    value = NUtilities::NUnitStrings::percentN2AtSurface( true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eFO2AtSurfaceConst:
+                {
+                    value = NUtilities::NUnitStrings::percentO2AtSurface( true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eDepthToSingleAtmosphereConst:
+                {
+                    value = NUtilities::NUnitStrings::depthToSingleAtmosphere( imperial, saltWater, true );
+                    format = "%1";
+                }
+                break;
         };
     }
 
@@ -102,23 +125,30 @@ void SVariableInfo::updateFieldFromValue( bool notifyUI )
     if ( fType != EVariableType::eVariable )
         return;
 
-    if ( !dynamic_cast< QLineEdit * >( fField ) )
-        return;
-
-    auto currValue = NUtilities::getValue( dynamic_cast< QLineEdit * >( fField )->text() );
-
     Q_ASSERT( fField );
     if ( !fField )
         return;
+
+    TOptionalDouble currValue;
+    if ( dynamic_cast< QLineEdit * >( fField ) )
+        currValue = NUtilities::getValue( dynamic_cast< QLineEdit * >( fField )->text() );
+    else if ( dynamic_cast< QDoubleSpinBox * >( fField ) )
+        currValue = dynamic_cast< QDoubleSpinBox * >( fField )->value();
 
     if ( !fValue.has_value() )
     {
         if ( !notifyUI )
             fField->blockSignals( true );
-        dynamic_cast< QLineEdit * >( fField )->clear();
+        if ( dynamic_cast< QLineEdit * >( fField ) )
+            dynamic_cast< QLineEdit * >( fField )->clear();
+        else if ( dynamic_cast< QDoubleSpinBox * >( fField ) )
+        {
+            dynamic_cast< QDoubleSpinBox * >( fField )->setValue( fRange.value().fDefaultValue );
+            fValue = fRange.value().fDefaultValue;
+        }
         if ( !notifyUI )
             fField->blockSignals( false );
     }
 
-    NUtilities::setValue( dynamic_cast< QLineEdit * >( fField ), currValue, fValue, 2, notifyUI );
+    NUtilities::setValue( fField, currValue, fValue, 2, notifyUI );
 }

@@ -7,12 +7,17 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,34 +35,38 @@ QStringList CCalculator::calculatorPath() const
     return { "Pressure and Depth Conversions" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
-}
-
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
-{
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
     return {};
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    return {};
+}
 
-    auto depthFreshWater = values[ 0 ];
-    auto depthSaltWater = values[ 1 ];
+QString CCalculator::computeAndGenerateFormula() const
+{
+    return {};
+    //if ( !NUtilities::valuesValid( values ) )
+    //    return {};
 
-    if ( !depthFreshWater.has_value() )
-    {
-        depthFreshWater = std::get< double >( depthSaltWater.value() ) * 1.03;
-    }
-    else if ( !depthSaltWater.has_value() )
-    {
-        depthSaltWater = std::get< double >( depthFreshWater.value() ) / 1.03;
-    }
-    return TOptionalVariantVector( { depthFreshWater, depthSaltWater } );
+    //auto depthFreshWater = values[ 0 ];
+    //auto depthSaltWater = values[ 1 ];
+
+    //if ( !depthFreshWater.has_value() )
+    //{
+    //    depthFreshWater = depthSaltWater.value() * 1.03;
+    //}
+    //else if ( !depthSaltWater.has_value() )
+    //{
+    //    depthSaltWater = depthFreshWater.value() / 1.03;
+    //}
+    //return TOptionalDoubleVector( { depthFreshWater, depthSaltWater } );
+}
+
+void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    (void)updateFromSide;
+    (void)triggerWidget;
 }

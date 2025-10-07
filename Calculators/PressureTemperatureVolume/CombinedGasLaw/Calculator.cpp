@@ -7,12 +7,17 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,55 +35,61 @@ QStringList CCalculator::calculatorPath() const
     return { "Pressure, Temperature and Volume Calculations" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
-{
-    return new CPage( this, parent );
-}
 
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
     return {};
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    return {};
+}
 
-    auto t1 = values[ 0 ];
-    auto t2 = values[ 1 ];
-    auto v1 = values[ 2 ];
-    auto v2 = values[ 3 ];
-    auto p1 = values[ 4 ];
-    auto p2 = values[ 5 ];
+QString CCalculator::computeAndGenerateFormula() const
+{
+    return {};
+    //if ( !NUtilities::valuesValid( values ) )
+    //    return {};
 
-    // p1*v1/t1 = p2*v2/t2
-    if ( !t1.has_value() )
-    {
-        t1 = fromAbsZeroBasedTemp( absZeroBasedTemp( std::get< double >( t2.value() ) ) * ( std::get< double >( p1.value() ) / std::get< double >( p2.value() ) ) * ( std::get< double >( v1.value() ) / std::get< double >( v2.value() ) ) );
-    }
-    else if ( !t2.has_value() )
-    {
-        t2 = fromAbsZeroBasedTemp( absZeroBasedTemp( std::get< double >( t1.value() ) ) * ( std::get< double >( p2.value() ) / std::get< double >( p1.value() ) ) * ( std::get< double >( v2.value() ) / std::get< double >( v1.value() ) ) );
-    }
-    else if ( !v1.has_value() )
-    {
-        v1 = std::get< double >( v2.value() ) * ( absZeroBasedTemp( std::get< double >( t1.value() ) ) / absZeroBasedTemp( std::get< double >( t2.value() ) ) ) * ( std::get< double >( p2.value() ) / std::get< double >( p1.value() ) );
-    }
-    else if ( !v2.has_value() )
-    {
-        v2 = std::get< double >( v1.value() ) * ( absZeroBasedTemp( std::get< double >( t2.value() ) ) / absZeroBasedTemp( std::get< double >( t1.value() ) ) ) * ( std::get< double >( p1.value() ) / std::get< double >( p2.value() ) );
-    }
-    else if ( !p1.has_value() )
-    {
-        p1 = std::get< double >( p2.value() ) * ( std::get< double >( v2.value() ) / std::get< double >( v1.value() ) ) * ( absZeroBasedTemp( std::get< double >( t1.value() ) ) / absZeroBasedTemp( std::get< double >( t2.value() ) ) );
-    }
-    else if ( !p2.has_value() )
-    {
-        p2 = std::get< double >( p1.value() ) * ( std::get< double >( v1.value() ) / std::get< double >( v2.value() ) ) * ( absZeroBasedTemp( std::get< double >( t2.value() ) ) / absZeroBasedTemp( std::get< double >( t1.value() ) ) );
-    }
-    return TOptionalVariantVector( { t1, t2, v1, v2, p1, p2 } );
+    //auto t1 = values[ 0 ];
+    //auto t2 = values[ 1 ];
+    //auto v1 = values[ 2 ];
+    //auto v2 = values[ 3 ];
+    //auto p1 = values[ 4 ];
+    //auto p2 = values[ 5 ];
+
+    //// p1*v1/t1 = p2*v2/t2
+    //if ( !t1.has_value() )
+    //{
+    //    t1 = NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t2.value() ) * ( p1.value() / p2.value() ) * ( v1.value() / v2.value() ) );
+    //}
+    //else if ( !t2.has_value() )
+    //{
+    //    t2 = NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t1.value() ) * ( p2.value() / p1.value() ) * ( v2.value() / v1.value() ) );
+    //}
+    //else if ( !v1.has_value() )
+    //{
+    //    v1 = v2.value() * ( NUtilities::toAbsZeroBasedTemp( imperial(), t1.value() ) / NUtilities::toAbsZeroBasedTemp( imperial(), t2.value() ) ) * ( p2.value() / p1.value() );
+    //}
+    //else if ( !v2.has_value() )
+    //{
+    //    v2 = v1.value() * ( NUtilities::toAbsZeroBasedTemp( imperial(), t2.value() ) / NUtilities::toAbsZeroBasedTemp( imperial(), t1.value() ) ) * ( p1.value() / p2.value() );
+    //}
+    //else if ( !p1.has_value() )
+    //{
+    //    p1 = p2.value() * ( v2.value() / v1.value() ) * ( NUtilities::toAbsZeroBasedTemp( imperial(), t1.value() ) / NUtilities::toAbsZeroBasedTemp( imperial(), t2.value() ) );
+    //}
+    //else if ( !p2.has_value() )
+    //{
+    //    p2 = p1.value() * ( v1.value() / v2.value() ) * ( NUtilities::toAbsZeroBasedTemp( imperial(), t2.value() ) / NUtilities::toAbsZeroBasedTemp( imperial(), t1.value() ) );
+    //}
+    //return TOptionalDoubleVector( { t1, t2, v1, v2, p1, p2 } );
+}
+
+
+void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    (void)updateFromSide;
+    (void)triggerWidget;
 }

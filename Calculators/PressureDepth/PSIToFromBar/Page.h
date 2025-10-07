@@ -1,7 +1,7 @@
 #ifndef BUOYANCY_PAGE_H
 #define BUOYANCY_PAGE_H
 
-#include "SCUBACalculator.h"
+#include "SCUBACalculatorPage.h"
 
 #include <QWidget>
 #include <memory>
@@ -15,17 +15,16 @@ class CPage : public CSCUBACalculatorPage
 {
     Q_OBJECT
 public:
-    CPage( const CSCUBACalculator *calculator, QWidget *parent = 0 );
+    CPage( CSCUBACalculator *calculator, QWidget *parent = nullptr );
     ~CPage();
 
 public:
-    virtual bool showUnits() const { return false; }
 
 Q_SIGNALS:
 
 public Q_SLOTS:
 protected:
-    virtual void updateValuesInternal( QWidget *widgetChanged ) override;
+    virtual void updateValuesInternal( QWidget *widgetChanged );
 
 protected:
 private:

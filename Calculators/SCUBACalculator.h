@@ -64,7 +64,7 @@ public:
 
     virtual void setUpdateFormulaFunc( const TUpdateFormulaFunc &func ) final;
     virtual void renderDefaultFormulas() const final;
-    virtual void compute( bool updateFromRHS, QWidget *triggerWidget ) final;
+    virtual void compute( ESide updateFromSide, QWidget *triggerWidget ) final;
 
     virtual const TVariableInfoList &getVariables() const;
 
@@ -83,10 +83,15 @@ private:
     virtual void notifyOfNewFormula( const QString &eq, bool baseFormula ) const final;
     virtual QString finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool updateField ) const final;
 
-    virtual void determineUnsetVariable( bool updateFromRHS, QWidget *triggerWidget ) = 0;
     virtual TVariableInfoList getMyVariables() const = 0;
-    virtual QString computeAndGenerateFormula() const = 0;   // updates values and returns the formula
     virtual QString getDefaultFormula() const = 0;
+    virtual QString computeAndGenerateFormula() const = 0;   // updates values and returns the formula
+    virtual void determineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) final;
+
+private:
+    std::tuple< TVariableInfoList, TVariableInfoList, TVariableInfoList > getVariableSides() const;
+
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget );;
 
 protected:
     CSCUBACalculatorPage *fPage{ nullptr };

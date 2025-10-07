@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,13 +8,18 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
     virtual bool isWaterTypeBased() const override { return true; }
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -31,40 +37,47 @@ QStringList CCalculator::calculatorPath() const
     return { "Partial Pressure Calculations" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    return   //
+        {
+            std::make_shared< SVariableInfo >( "ead", tr( "Equivalent Air Depth EAD" ), EVariableType::eVariable, EUnit::eLength, ESide::eLHS ),   //
+            std::make_shared< SVariableInfo >( "fn2", tr( "FN2" ), EVariableType::eVariable, EUnit::ePercent, ESide::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, ESide::eRHS ),   //
+            std::make_shared< SVariableInfo >( "fn2AtSurface", tr( "FN2 @ Surface" ), EVariableType::eFN2AtSurfaceConst, EUnit::ePercent, ESide::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, ESide::eRHS ),   //
+        };
 }
 
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
-    return {};
+    return tr( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>})\times(<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__" );
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::computeAndGenerateFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    auto ead = getVariable( "ead" );
+    auto fn2 = getVariable( "fn2" );
+    auto depth = getVariable( "depth" );
 
-    auto saltWater = std::get< bool >( values[ 0 ].value() );
-    auto ead = values[ 1 ];
-    auto fn2 = values[ 2 ];
-    auto depth = values[ 3 ];
-
-    if ( !ead.has_value() )
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    if ( !aOK || !ead->has_value() )
     {
-        ead = ( ( std::get< double >( fn2.value() ) / percentN2AtSurface() ) * ( std::get< double >( depth.value() ) + depthToSingleAtmosphere( saltWater ) ) ) - depthToSingleAtmosphere( saltWater );
+        if ( aOK )
+            ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) );
+        formula = getDefaultFormula();
     }
-    else if ( !fn2.has_value() )
+    else if ( !fn2->has_value() )
     {
-        fn2 = ( percentN2AtSurface() * ( std::get< double >( ead.value() ) + depthToSingleAtmosphere( saltWater ) ) ) / ( std::get< double >( depth.value() ) + depthToSingleAtmosphere( saltWater ) );
+        fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) ) / ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) );
+        formula = tr( R"__(<fn2> = \frac{[<fn2AtSurface>\times(<ead>+<depthToSingleAtmosphere>)]}{(<depth>+<depthToSingleAtmosphere>)})__" );
     }
-    else if ( !depth.has_value() )
+    else if ( !depth->has_value() )
     {
-        depth = ( ( std::get< double >( ead.value() ) + depthToSingleAtmosphere( saltWater ) ) / ( std::get< double >( fn2.value() ) / percentN2AtSurface() ) ) - depthToSingleAtmosphere( saltWater );
+        depth->setValue( ( ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) );
+        formula = tr( R"__(<depth> = [\frac{(<ead>+<depthToSingleAtmosphere>)}{\frac{<fn2>}{<fn2AtSurface>}]-<depthToSingleAtmosphere>)__" );
     }
-    return TOptionalVariantVector( { ead, fn2, depth } );
+    return formula;
 }
+

@@ -36,11 +36,17 @@ namespace NUtilities
         CALCULATORS_EXPORT QString tempUnit( bool imperial, bool tex );   // C/F
         CALCULATORS_EXPORT QString absZeroTempUnit( bool imperial, bool tex );   //K/R
         CALCULATORS_EXPORT QString pressurePerTemp( bool imperial, bool tex );
+        CALCULATORS_EXPORT QString percentUnit( bool tex );
 
         CALCULATORS_EXPORT QString weightOfWater( bool imperial, bool seaWater, bool tex );
         CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool tex );
 
-        QString getUnitLabel( bool imperial, EUnit unitType, bool tex );
+        CALCULATORS_EXPORT QString percentN2AtSurface( bool tex );
+        CALCULATORS_EXPORT QString percentO2AtSurface( bool tex );
+
+        CALCULATORS_EXPORT QString depthToSingleAtmosphere( bool imperial, bool saltWater, bool tex );
+
+        CALCULATORS_EXPORT QString getUnitLabel( bool imperial, EUnit unitType, bool tex );
     }
 
     namespace NConstants
@@ -54,7 +60,6 @@ namespace NUtilities
 
         CALCULATORS_EXPORT double percentN2AtSurface();
         CALCULATORS_EXPORT double percentO2AtSurface();
-
     }
 
     CALCULATORS_EXPORT double toAbsZeroBasedTemp( bool imperial, double temp );
@@ -64,7 +69,7 @@ namespace NUtilities
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
     TOptionalDouble getValue( const QString &text );
-    void setValue( QLineEdit *le, const TOptionalDouble &origValue, const TOptionalDouble &value, int numDecimal, bool notifyUI );
+    void setValue( QWidget *widget, const TOptionalDouble &origValue, const TOptionalDouble &value, int numDecimal, bool notifyUI );
 
     bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
     QString doubleToString( const TOptionalDouble &value, int numDecimal );

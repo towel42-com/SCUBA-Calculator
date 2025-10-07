@@ -1,29 +1,30 @@
 #include "Page.h"
 #include "ui_Page.h"
 
-CPage::CPage( const CSCUBACalculator *calculator, QWidget *parent ) :
+CPage::CPage( CSCUBACalculator *calculator, QWidget *parent ) :
     CSCUBACalculatorPage( calculator, parent ),
     fImpl( new Ui::CPage )
 {
     fImpl->setupUi( this );
 
-    addWidget( false, fImpl->feet );
-    addWidget( true, fImpl->meters );
+    //addWidget( false, fImpl->feet );
+    //addWidget( true, fImpl->meters );
 }
 
 CPage::~CPage()
 {
 }
 
-void CPage::updateValuesInternal( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *triggerWidget )
 {
-    auto feet = ( changedWidget == fImpl->meters ) ? TOptionalVariant() : getValue( fImpl->feet->text() );
-    auto meters = ( changedWidget == fImpl->feet ) ? TOptionalVariant() : getValue( fImpl->meters->text() );
+    (void)triggerWidget;
+    //auto feet = ( triggerWidget == fImpl->meters ) ? TOptionalDouble() : NUtilities::getValue( fImpl->feet->text() );
+    //auto meters = ( triggerWidget == fImpl->feet ) ? TOptionalDouble() : NUtilities::getValue( fImpl->meters->text() );
 
-    auto newValues = calculator()->compute( { feet, meters } );
-    if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
-        return;
+    //auto newValues = calculator()->compute( { feet, meters } );
+    //if ( !newValues.has_value() || ( newValues.value().size() != 2 ) )
+    //    return;
 
-    setValue( fImpl->feet, feet, newValues.value()[ 0 ] );
-    setValue( fImpl->meters, meters, newValues.value()[ 1 ] );
+    //NUtilities::setValue( fImpl->feet, feet, newValues.value()[ 0 ] );
+    //NUtilities::setValue( fImpl->meters, meters, newValues.value()[ 1 ] );
 }

@@ -7,12 +7,19 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
+
+    virtual bool showUnits() const { return false; }
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,34 +37,38 @@ QStringList CCalculator::calculatorPath() const
     return { "Pressure and Depth Conversions" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
-}
-
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
-{
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
     return {};
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    return {};
+}
 
-    auto feet = values[ 0 ];
-    auto meters = values[ 1 ];
+QString CCalculator::computeAndGenerateFormula() const
+{
+    return {};
+    //if ( !NUtilities::valuesValid( values ) )
+    //    return {};
 
-    if ( !feet.has_value() )
-    {
-        feet = std::get< double >( meters.value() ) * 3.3;
-    }
-    else if ( !meters.has_value() )
-    {
-        meters = std::get< double >( feet.value() ) / 3.3;
-    }
-    return TOptionalVariantVector( { feet, meters } );
+    //auto feet = values[ 0 ];
+    //auto meters = values[ 1 ];
+
+    //if ( !feet.has_value() )
+    //{
+    //    feet = meters.value() * 3.3;
+    //}
+    //else if ( !meters.has_value() )
+    //{
+    //    meters = feet.value() / 3.3;
+    //}
+    //return TOptionalDoubleVector( { feet, meters } );
+}
+
+void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    (void)updateFromSide;
+    (void)triggerWidget;
 }

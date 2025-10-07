@@ -26,12 +26,20 @@
 #include "SCUBACalculatorFwd.h"
 #include <QString>
 
+struct SRange
+{
+    double fMin{ 0.0 };
+    double fMax{ 0.0 };
+    double fDefaultValue{ 0.0 };
+    double fStep{ 0.0 };
+};
+
 struct SVariableInfo
 {
-    SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, bool onRHSByDefault );
+    SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, ESide variableLocation );
     void updateLabels( bool imperial, bool saltWater );
 
-    void resetValue( bool updateUI, bool notifyUI ); // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
+    void resetValue( bool updateUI, bool notifyUI );   // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
     void updateFieldFromValue( bool notifyUI = false );   // updates fField from fValue
     void updateValueFromField();   // updates fValue from fField
 
@@ -48,11 +56,13 @@ struct SVariableInfo
     EVariableType fType{ EVariableType::eVariable };
     EUnit fUnit{ EUnit::eNone };
 
-    bool fRHSVariable{ true };
+    ESide fVariableLocation{ ESide::eRHS };
 
     TOptionalDouble fValue;
     QLabel *fLabel{ nullptr };
     QWidget *fField{ nullptr };
     QLabel *fUnitLabel{ nullptr };
+
+    std::optional< SRange > fRange;
 };
 #endif

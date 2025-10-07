@@ -1,54 +1,55 @@
 #include "Page.h"
 #include "ui_Page.h"
 
-CPage::CPage( const CSCUBACalculator *calculator, QWidget *parent ) :
+CPage::CPage( CSCUBACalculator *calculator, QWidget *parent ) :
     CSCUBACalculatorPage( calculator, parent ),
     fImpl( new Ui::CPage )
 {
     fImpl->setupUi( this );
 
-    addWidgets( false, { fImpl->p, fImpl->v } );
-    addWidgets( true, { fImpl->numMoles, fImpl->t } );
+    //addWidgets( false, { fImpl->p, fImpl->v } );
+    //addWidgets( true, { fImpl->numMoles, fImpl->t } );
 }
 
 CPage::~CPage()
 {
 }
 
-void CPage::updateValuesInternal( QWidget *changedWidget )
+void CPage::updateValuesInternal( QWidget *triggerWidget )
 {
-    auto tempLabel = tr( "(%1) + %2" ).arg( tempUnit( false, false ) ).arg( doubleToString( calculator()->absZero(), 1 ) );
-    fImpl->tLabel->setText( tempLabel );
-    fImpl->pLabel->setText( tr( "(%1)" ).arg( pressureUnit( false ) ) );
-    fImpl->vLabel->setText( tr( "(%1)" ).arg( volumeUnit( false, false ) ) );
-    fImpl->idealGasConstant->setText( idealGasConstant( false ) );
+    (void)triggerWidget;
+    //auto tempLabel = tr( "(%1) + %2" ).arg( NUtilities::NUnitStrings::tempUnit( imperial(), false ) ).arg( NUtilities::doubleToString( NUtilities::NConstants::absZero( imperial() ), 1 ) );
+    //fImpl->tLabel->setText( tempLabel );
+    //fImpl->pLabel->setText( tr( "(%1)" ).arg( NUtilities::NUnitStrings::pressureUnit( imperial(), false ) ) );
+    //fImpl->vLabel->setText( tr( "(%1)" ).arg( NUtilities::NUnitStrings::volumeUnit( imperial(), false ) ) );
+    //fImpl->idealGasConstant->setText( NUtilities::NUnitStrings::idealGasConstant( imperial(), false ) );
 
-    if ( changedWidget == nullptr )
-        return;
+    //if ( triggerWidget == nullptr )
+    //    return;
 
-    auto p = getValue( fImpl->p->text() );
-    auto v = getValue( fImpl->v->text() );
-    auto numMoles = getValue( fImpl->numMoles->text() );
-    auto t = getValue( fImpl->t->text() );
+    //auto p = NUtilities::getValue( fImpl->p->text() );
+    //auto v = NUtilities::getValue( fImpl->v->text() );
+    //auto numMoles = NUtilities::getValue( fImpl->numMoles->text() );
+    //auto t = NUtilities::getValue( fImpl->t->text() );
 
-    if ( calculator()->numEmpty( { p, v, numMoles, t } ) == 0 )
-    {
-        if ( changedWidget == fImpl->p )
-            v.reset();
-        else if ( changedWidget == fImpl->v )
-            t.reset();
-        else if ( changedWidget == fImpl->numMoles )
-            t.reset();
-        else if ( changedWidget == fImpl->t )
-            numMoles.reset();
-    }
+    //if ( NUtilities::numEmpty( { p, v, numMoles, t } ) == 0 )
+    //{
+    //    if ( triggerWidget == fImpl->p )
+    //        v.reset();
+    //    else if ( triggerWidget == fImpl->v )
+    //        t.reset();
+    //    else if ( triggerWidget == fImpl->numMoles )
+    //        t.reset();
+    //    else if ( triggerWidget == fImpl->t )
+    //        numMoles.reset();
+    //}
 
-    auto newValues = calculator()->compute( { p, v, numMoles, t } );
-    if ( !newValues.has_value() || ( newValues.value().size() != 4 ) )
-        return;
+    //auto newValues = calculator()->compute( { p, v, numMoles, t } );
+    //if ( !newValues.has_value() || ( newValues.value().size() != 4 ) )
+    //    return;
 
-    setValue( fImpl->p, p, newValues.value()[ 0 ], 2 );
-    setValue( fImpl->v, v, newValues.value()[ 1 ], 2 );
-    setValue( fImpl->numMoles, numMoles, newValues.value()[ 2 ], 2 );
-    setValue( fImpl->t, t, newValues.value()[ 3 ], 2 );
+    //NUtilities::setValue( fImpl->p, p, newValues.value()[ 0 ], 2 );
+    //NUtilities::setValue( fImpl->v, v, newValues.value()[ 1 ], 2 );
+    //NUtilities::setValue( fImpl->numMoles, numMoles, newValues.value()[ 2 ], 2 );
+    //NUtilities::setValue( fImpl->t, t, newValues.value()[ 3 ], 2 );
 }

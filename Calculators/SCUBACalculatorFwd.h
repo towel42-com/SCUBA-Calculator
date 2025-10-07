@@ -23,7 +23,6 @@
 #ifndef SCUBACALCULATOR_FWD_H
 #define SCUBACALCULATOR_FWD_H
 
-
 #if defined( WINDOWS ) || defined( WIN32 ) || defined( Q_OS_WINDOWS )
     #ifdef CALCULATORS_INTERNAL
         #define CALCULATORS_EXPORT __declspec( dllexport )
@@ -71,7 +70,8 @@ enum class EUnit
     eLength,
     ePressure,
     eTemperature,
-    eAbsZeroTemperature
+    eAbsZeroTemperature,
+    ePercent
 };
 
 enum class EVariableType
@@ -79,7 +79,17 @@ enum class EVariableType
     eVariable,
     ePressurePerTempConst,
     eWeightOfWaterConst,
-    eIdealGasConst
+    eIdealGasConst,
+    eFN2AtSurfaceConst,
+    eFO2AtSurfaceConst,
+    eDepthToSingleAtmosphereConst
+};
+
+enum class ESide
+{
+    eLHS,
+    eRHS,
+    eGlobal
 };
 
 struct SVariableInfo;

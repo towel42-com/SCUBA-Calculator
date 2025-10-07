@@ -7,12 +7,17 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual std::optional< TOptionalVariantVector > setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula() const override;
+    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,45 +35,50 @@ QStringList CCalculator::calculatorPath() const
     return { "Pressure, Temperature and Volume Calculations" };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
-}
-
-std::optional< TOptionalVariantVector > CCalculator::setupValues( bool updateFromRHS, std::size_t triggerPos, const TOptionalVariantVector &values ) const
-{
-    (void)updateFromRHS;
-    (void)triggerPos;
-    (void)values;
     return {};
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
-
-    auto p = values[ 0 ];
-    auto v = values[ 1 ];
-    auto numMoles = values[ 2 ];
-    auto t = values[ 3 ];
-
-    // p*v = numMoles * R * t
-    if ( !p.has_value() )
-    {
-        p = std::get< double >( numMoles.value() ) * idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) / std::get< double >( v.value() );
-    }
-    else if ( !v.has_value() )
-    {
-        v = std::get< double >( numMoles.value() ) * idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) / std::get< double >( p.value() );
-    }
-    else if ( !numMoles.has_value() )
-    {
-        numMoles = ( std::get< double >( p.value() ) * std::get< double >( v.value() ) ) / ( idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) );
-    }
-    else if ( !t.has_value() )
-    {
-        t = fromAbsZeroBasedTemp( ( std::get< double >( p.value() ) * std::get< double >( v.value() ) ) / ( idealGasConstant() * std::get< double >( numMoles.value() ) ) );
-    }
-    return TOptionalVariantVector( { p, v, numMoles, t } );
+    return {};
 }
+
+QString CCalculator::computeAndGenerateFormula() const
+{
+    return {};
+    //if ( !NUtilities::valuesValid( values ) )
+    //    return {};
+
+    //auto p = values[ 0 ];
+    //auto v = values[ 1 ];
+    //auto numMoles = values[ 2 ];
+    //auto t = values[ 3 ];
+
+    //// p*v = numMoles * R * t
+    //if ( !p.has_value() )
+    //{
+    //    p = numMoles.value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t.value() ) / v.value();
+    //}
+    //else if ( !v.has_value() )
+    //{
+    //    v = numMoles.value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t.value() ) / p.value();
+    //}
+    //else if ( !numMoles.has_value() )
+    //{
+    //    numMoles = ( p.value() * v.value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t.value() ) );
+    //}
+    //else if ( !t.has_value() )
+    //{
+    //    t = NUtilities::fromAbsZeroBasedTemp( imperial(), ( p.value() * v.value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles.value() ) );
+    //}
+    //return TOptionalDoubleVector( { p, v, numMoles, t } );
+}
+
+void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+{
+    (void)updateFromSide;
+    (void)triggerWidget;
+}
+
