@@ -3,6 +3,8 @@
 #include "ui_MainWindow.h"
 
 #include "SCUBACalculator.h"
+#include "SCUBACalculatorPage.h"
+
 #include "T42-Qt6MathJax/include/Qt6MathJax.h"
 
 #include <QDir>
@@ -34,16 +36,21 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fBlankPage = new QWidget;
     fImpl->stackedWidget->addWidget( fBlankPage );
 
+    fImpl->formulaWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatioByExpanding );
+
     fRenderingEngine = new NTowel42::CQt6MathJax( this );
     connect( fRenderingEngine, &NTowel42::CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotFormulaRendered );
     connect(
         fRenderingEngine, &NTowel42::CQt6MathJax::sigErrorMessage,
-        [ = ]( const QString msg )
+        [ = ]( const QString &msg )
         {
+            if ( currentCalculator() && currentCalculator()->svgFrame() )
+                currentCalculator()->svgFrame()->setVisible( false );
             fImpl->formulaFrame->setVisible( false );
             QMessageBox::critical( this, tr( "Error in MathJax Engine" ), msg );
         } );
 
+    connect( fImpl->reset, &QPushButton::clicked, this, &CMainWindow::slotResetCurrentPage );
     loadSettings();
     loadCalculators();
 
@@ -78,6 +85,15 @@ void CMainWindow::saveSettings()
     QSettings settings;
     settings.setValue( "ImperialUnits", fImpl->imperial->isChecked() );
     settings.setValue( "SaltWater", fImpl->saltWater->isChecked() );
+}
+
+CSCUBACalculator *CMainWindow::currentCalculator() const
+{
+    auto page = fImpl->stackedWidget->currentWidget();
+    if ( page == fBlankPage )
+        return nullptr;
+
+    return getCalculator( page );
 }
 
 void CMainWindow::slotUnitsChanged()
@@ -145,7 +161,7 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
     setCurrentPage( item, page, needsInit );
 }
 
-void CMainWindow::setCurrentPage( QTreeWidgetItem * item, CSCUBACalculatorPage *page, bool initPage )
+void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage )
 {
     bool showUnits = page != nullptr;
     bool isWaterTypeBased = page != nullptr;
@@ -165,16 +181,17 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem * item, CSCUBACalculatorPage *
         auto calc = getCalculator( item );
         if ( !calc )
             return;
-        auto func = getInitFunc( item );
-        if ( !func )
+        auto initFunc = getInitFunc( item );
+        if ( !initFunc )
             return;
 
-        func( calc, fImpl->imperial->isChecked(), fImpl->saltWater->isChecked() );
+        initFunc( calc, fImpl->imperial->isChecked(), fImpl->saltWater->isChecked() );
     }
 
-    loadFormulaForPage( page );
+    loadFormulasForPage( page );
     this->showUnits( showUnits );
     this->showWaterType( isWaterTypeBased );
+    fImpl->reset->setVisible( page != nullptr );
 }
 
 void CMainWindow::loadCalculators()
@@ -217,7 +234,7 @@ void CMainWindow::loadCalculators()
     fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
     fImpl->whichCalculator->resizeColumnToContents( 0 );
     auto colWidth = fImpl->whichCalculator->columnWidth( 0 );
-    fImpl->whichCalculator->setMinimumWidth( colWidth + 10 );
+    fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
 }
 
 void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSaltWater, TSetUpdateFormulaFunc setUpdateFormulaFunc, TInitFunc initFunc )
@@ -251,71 +268,38 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getP
     if ( setUpdateFormulaFunc )
     {
         setUpdateFormulaFunc(
-            calculator, [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula )   //
+            calculator, [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula, bool baseFormula )   //
             {   //
-                this->setFormulaForCalculator( calcPage, formula );
+                this->setFormulaForPage( calcPage, formula, baseFormula );
             } );
     }
 }
 
-void CMainWindow::loadSVG( const QString &formula, const QByteArray &svg )
-{
-    fFormulaToSVGMap[ formula ] = svg;
-
-    auto currWidget = fImpl->stackedWidget->currentWidget();
-    if ( currWidget == fBlankPage )
-        return;
-
-    auto pos = fPageToFormulaMap.find( currWidget );
-    Q_ASSERT( pos != fPageToFormulaMap.end() );
-    if ( pos == fPageToFormulaMap.end() )
-        return;
-
-    if ( ( *pos ).second != formula )
-        return;
-
-    fImpl->formulaFrame->setVisible( !svg.isEmpty() );
-    if ( !svg.isEmpty() )
-    {
-        fImpl->formulaWidget->load( svg );
-        if ( !fImpl->formulaWidget->renderer()->isValid() )
-        {
-            QMessageBox::critical( this, tr( "Error Loading SVG File" ), tr( "SVG was generated but could not be loaded" ) );
-            fImpl->formulaFrame->setVisible( false );
-        }
-        else
-        {
-            auto maxSize = fImpl->stackedWidget->currentWidget()->size();
-            maxSize.setHeight( qMax( maxSize.height(), 200 ) );
-            maxSize.setWidth( maxSize.width() * 0.75 );
-            auto sz = fImpl->formulaWidget->sizeHint().scaled( maxSize, Qt::KeepAspectRatio );
-            fImpl->formulaWidget->setMinimumSize( sz );
-            fImpl->formulaWidget->setMaximumSize( sz );
-        }
-    }
-}
-
-void CMainWindow::slotFormulaRendered( const QString &formula, const QByteArray &svg )
-{
-    loadSVG( formula, svg );
-}
-
-void CMainWindow::loadFormulaForPage( CSCUBACalculatorPage *page )
+void CMainWindow::loadFormulasForPage( CSCUBACalculatorPage *page )
 {
     if ( !page )
     {
         fImpl->formulaFrame->setVisible( false );
+        if ( currentCalculator() && currentCalculator()->svgFrame() )
+            currentCalculator()->svgFrame()->setVisible( false );
         return;
     }
-    auto pos = fPageToFormulaMap.find( page );
-    if ( pos == fPageToFormulaMap.end() )
-    {
+
+    auto formula = formulaForPage( page, true );
+    if ( formula.has_value() )
+        renderSVG( formula.value() );
+    else
         fImpl->formulaFrame->setVisible( false );
-        return;
-    }
 
-    auto formula = ( *pos ).second;
+    formula = formulaForPage( page, false );
+    if ( formula.has_value() )
+        renderSVG( formula.value() );
+    else if ( currentCalculator() && currentCalculator()->svgFrame() )
+        currentCalculator()->svgFrame()->setVisible( false );
+}
 
+void CMainWindow::renderSVG( const QString &formula )
+{
     auto pos2 = fFormulaToSVGMap.find( formula );
     if ( pos2 != fFormulaToSVGMap.end() )
     {
@@ -326,24 +310,46 @@ void CMainWindow::loadFormulaForPage( CSCUBACalculatorPage *page )
     fRenderingEngine->renderSVG( formula );
 }
 
-void CMainWindow::setFormulaForCalculator( CSCUBACalculatorPage *page, const QString &formula )
+std::optional< QString > CMainWindow::formulaForPage( QWidget *page, bool baseFormula )
 {
-    fImpl->formulaFrame->setVisible( false );
-    if ( formula.isEmpty() )
-        return;
+    auto &&map = baseFormula ? fPageToBaseFormulaMap : fPageToResultFormulaMap;
+    auto pos = map.find( page );
 
-    auto pos = fPageToFormulaMap.find( page );
-    if ( pos != fPageToFormulaMap.end() )
+    auto calculator = getCalculator( page );
+
+    if ( pos == map.end() )
+    {
+        qDebug().noquote().nospace() << "Page: '" << calculator->calculatorName() << "' has no " << ( baseFormula ? "base" : "result" ) << " formula.";
+        return {};
+    }
+    qDebug().noquote().nospace() << "Page: '" << calculator->calculatorName() << "' " << ( baseFormula ? "base" : "result" ) << " formula is '" << ( *pos ).second << "'";
+    return ( *pos ).second;
+}
+
+void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool baseFormula )
+{
+    if ( formula.isEmpty() )
+    {
+        if ( baseFormula )
+            fImpl->formulaFrame->setVisible( false );
+        else if ( currentCalculator() && currentCalculator()->svgFrame() )
+            currentCalculator()->svgFrame()->setVisible( false );
+        return;
+    }
+
+    auto &&map = baseFormula ? fPageToBaseFormulaMap : fPageToResultFormulaMap;
+    auto pos = map.find( page );
+    if ( pos != map.end() )
     {
         if ( ( *pos ).second == formula )
         {
-            loadFormulaForPage( page );
+            loadFormulasForPage( page );
             return;
         }
-        fPageToFormulaMap.erase( pos );
+        map.erase( pos );
     }
-    fPageToFormulaMap[ page ] = formula;
-    loadFormulaForPage( page );
+    map[ page ] = formula;
+    loadFormulasForPage( page );
 }
 
 void CMainWindow::showUnits( bool show )
@@ -364,6 +370,12 @@ CSCUBACalculator *CMainWindow::getCalculator( QTreeWidgetItem *leaf ) const
     if ( pos != fCalculators.end() )
         return ( *pos ).second.fCalculator;
     return nullptr;
+}
+
+CSCUBACalculator *CMainWindow::getCalculator( QWidget *page ) const
+{
+    auto leaf = getItemForPage( page );
+    return getCalculator( leaf );
 }
 
 TInitFunc CMainWindow::getInitFunc( QTreeWidgetItem *leaf ) const
@@ -431,4 +443,77 @@ QTreeWidgetItem *CMainWindow::findItem( QTreeWidgetItem *parent, const QStringLi
         return foundChild;
 
     return findItem( foundChild, path.mid( 1 ), createIfNecessary );
+}
+
+void CMainWindow::loadSVG( const QString &formula, const QByteArray &svg )
+{
+    fFormulaToSVGMap[ formula ] = svg;
+
+    auto currPage = fImpl->stackedWidget->currentWidget();
+    if ( currPage == fBlankPage )
+        return;
+
+    auto baseFormula = formulaForPage( currPage, true );
+    auto resultFormula = formulaForPage( currPage, false );
+
+    if ( baseFormula.has_value() && resultFormula.has_value() && ( baseFormula.value() == resultFormula.value() ) )
+        resultFormula.reset();
+
+    if ( baseFormula.has_value() && ( baseFormula.value() != formula ) )
+    {
+        baseFormula.reset();
+    }
+
+    if ( resultFormula.has_value() && ( resultFormula.value() != formula ) )
+    {
+        resultFormula.reset();
+    }
+
+    for ( auto &&isBaseFormula : { false, true } )
+    {
+        if ( isBaseFormula && !baseFormula.has_value() )
+            continue;
+        if ( !isBaseFormula && !resultFormula.has_value() )
+            continue;
+
+        auto frame = isBaseFormula ? fImpl->formulaFrame : ( currentCalculator() ? currentCalculator()->svgFrame() : nullptr );
+        auto svgWidget = isBaseFormula ? fImpl->formulaWidget : ( currentCalculator() ? currentCalculator()->svgWidget() : nullptr );
+
+        frame->setVisible( !svg.isEmpty() );
+        if ( !svg.isEmpty() )
+        {
+            svgWidget->load( svg );
+            if ( !svgWidget->renderer()->isValid() )
+            {
+                QMessageBox::critical( this, tr( "Error Loading SVG File" ), tr( "SVG was generated but could not be loaded" ) );
+                frame->setVisible( false );
+            }
+            else
+            {
+                auto maxSize = fImpl->whichCalculator->size();
+                maxSize.setHeight( 200 );
+                maxSize.setWidth( maxSize.width() * 0.75 );
+                auto sz = svgWidget->sizeHint().scaled( maxSize, Qt::KeepAspectRatio );
+                svgWidget->setMaximumSize( sz );
+                svgWidget->setMinimumSize( sz );
+            }
+        }
+    }
+}
+
+void CMainWindow::slotFormulaRendered( const QString &formula, const QByteArray &svg )
+{
+    loadSVG( formula, svg );
+}
+
+void CMainWindow::slotResetCurrentPage()
+{
+    auto page = fImpl->stackedWidget->currentWidget();
+    if ( page == fBlankPage )
+        return;
+
+    auto calc = getCalculator( page );
+    if ( !calc )
+        return;
+    calc->resetVariables();
 }
