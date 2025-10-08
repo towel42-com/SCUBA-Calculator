@@ -45,6 +45,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString percentO2AtSurface( bool tex );
 
         CALCULATORS_EXPORT QString depthToSingleAtmosphere( bool imperial, bool saltWater, bool tex );
+        CALCULATORS_EXPORT QString feetToMeters( bool tex );
 
         CALCULATORS_EXPORT QString getUnitLabel( bool imperial, EUnit unitType, bool tex );
     }
@@ -57,6 +58,8 @@ namespace NUtilities
         CALCULATORS_EXPORT double pressureOffset( bool imperial );
         CALCULATORS_EXPORT double depthToSingleAtmosphere( bool imperial, bool saltWater );
         CALCULATORS_EXPORT double idealGasConstant( bool imperial );
+
+        CALCULATORS_EXPORT double feetToMeters();
 
         CALCULATORS_EXPORT double percentN2AtSurface();
         CALCULATORS_EXPORT double percentO2AtSurface();

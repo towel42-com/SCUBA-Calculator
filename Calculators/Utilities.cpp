@@ -73,7 +73,7 @@ namespace NUtilities
             else
             {
                 if ( singular )
-                    return QObject::tr( "meter", "lengthUnit" );
+                    return QObject::tr( "m", "lengthUnit" );
                 else
                     return QObject::tr( "meters", "lengthUnit" );
             }
@@ -157,6 +157,13 @@ namespace NUtilities
             retVal = retVal.arg( doubleToString( NConstants::depthToSingleAtmosphere( imperial, saltWater ), 2 ) ).arg( lengthUnit( imperial, false, tex ) );
             return retVal;
         }
+
+        QString feetToMeters( bool tex )
+        {
+            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::feetToMeters(), 3 ) ).arg( lengthUnit( false, true, true ) ).arg( lengthUnit( true, true, true ) );
+            return retVal;
+        }
     }
 
     namespace NConstants
@@ -198,6 +205,11 @@ namespace NUtilities
             {
                 return 0.08206;
             }
+        }
+
+        double feetToMeters()
+        {
+            return 0.3048;
         }
 
         double percentN2AtSurface()
