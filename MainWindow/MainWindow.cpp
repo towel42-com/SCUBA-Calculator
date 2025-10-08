@@ -4,7 +4,6 @@
 
 #include "SCUBACalculator.h"
 #include "SCUBACalculatorPage.h"
-
 #include "T42-Qt6MathJax/include/Qt6MathJax.h"
 
 #include <QDir>
@@ -14,6 +13,8 @@
 #include <QMessageBox>
 #include <QSvgRenderer>
 #include <QButtonGroup>
+#include <QResizeEvent>
+#include <QRegularExpression>
 
 #include <libloaderapi.h>
 
@@ -35,8 +36,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     setAttribute( Qt::WA_DeleteOnClose );
     fBlankPage = new QWidget;
     fImpl->stackedWidget->addWidget( fBlankPage );
-
-    fImpl->formulaWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatioByExpanding );
+    fImpl->stackedWidget->installEventFilter( this );
 
     fRenderingEngine = new NTowel42::CQt6MathJax( this );
     connect( fRenderingEngine, &NTowel42::CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotFormulaRendered );
@@ -287,27 +287,28 @@ void CMainWindow::loadFormulasForPage( CSCUBACalculatorPage *page )
 
     auto formula = formulaForPage( page, true );
     if ( formula.has_value() )
-        renderSVG( formula.value() );
+        fImpl->formulaFrame->setVisible( renderSVG( formula.value() ) );
     else
         fImpl->formulaFrame->setVisible( false );
 
     formula = formulaForPage( page, false );
     if ( formula.has_value() )
-        renderSVG( formula.value() );
-    else if ( currentCalculator() && currentCalculator()->svgFrame() )
+        currentCalculator()->svgFrame()->setVisible( renderSVG( formula.value() ) );
+    else if ( currentCalculator() )
         currentCalculator()->svgFrame()->setVisible( false );
 }
 
-void CMainWindow::renderSVG( const QString &formula )
+bool CMainWindow::renderSVG( const QString &formula )
 {
     auto pos2 = fFormulaToSVGMap.find( formula );
     if ( pos2 != fFormulaToSVGMap.end() )
     {
         auto svg = ( *pos2 ).second;
         loadSVG( formula, svg );
-        return;
+        return true;
     };
     fRenderingEngine->renderSVG( formula );
+    return false;
 }
 
 std::optional< QString > CMainWindow::formulaForPage( QWidget *page, bool baseFormula )
@@ -332,7 +333,7 @@ void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &
     {
         if ( baseFormula )
             fImpl->formulaFrame->setVisible( false );
-        else if ( currentCalculator() && currentCalculator()->svgFrame() )
+        else if ( currentCalculator()  )
             currentCalculator()->svgFrame()->setVisible( false );
         return;
     }
@@ -478,24 +479,24 @@ void CMainWindow::loadSVG( const QString &formula, const QByteArray &svg )
 
         auto frame = isBaseFormula ? fImpl->formulaFrame : ( currentCalculator() ? currentCalculator()->svgFrame() : nullptr );
         auto svgWidget = isBaseFormula ? fImpl->formulaWidget : ( currentCalculator() ? currentCalculator()->svgWidget() : nullptr );
+        if ( isBaseFormula )
+            fCurrFormulas.first = formula;
+        else
+            fCurrFormulas.second = formula;
 
         frame->setVisible( !svg.isEmpty() );
+
         if ( !svg.isEmpty() )
         {
             svgWidget->load( svg );
-            if ( !svgWidget->renderer()->isValid() )
+            if ( svgWidget->renderer()->isValid() )
             {
-                QMessageBox::critical( this, tr( "Error Loading SVG File" ), tr( "SVG was generated but could not be loaded" ) );
-                frame->setVisible( false );
+                updateSVGSize( isBaseFormula );
             }
             else
             {
-                auto maxSize = fImpl->whichCalculator->size();
-                maxSize.setHeight( 200 );
-                maxSize.setWidth( maxSize.width() * 0.75 );
-                auto sz = svgWidget->sizeHint().scaled( maxSize, Qt::KeepAspectRatio );
-                svgWidget->setMaximumSize( sz );
-                svgWidget->setMinimumSize( sz );
+                QMessageBox::critical( this, tr( "Error Loading SVG File" ), tr( "SVG was generated but could not be loaded" ) );
+                frame->setVisible( false );
             }
         }
     }
@@ -516,4 +517,32 @@ void CMainWindow::slotResetCurrentPage()
     if ( !calc )
         return;
     calc->resetVariables();
+}
+
+bool CMainWindow::eventFilter( QObject *obj, QEvent *event )
+{
+    if ( ( obj == fImpl->stackedWidget ) && ( event->type() == QEvent::Resize ) )
+    {
+        updateSVGSizes();
+    }
+    return QObject::eventFilter( obj, event );
+}
+
+void CMainWindow::updateSVGSizes()
+{
+    if ( !currentCalculator() )
+        return;
+
+    updateSVGSize( true );
+    updateSVGSize( false );
+}
+
+void CMainWindow::updateSVGSize( bool isBaseFormula )
+{
+    auto widget = isBaseFormula ? fImpl->formulaWidget : currentCalculator()->svgWidget();
+    auto frame = isBaseFormula ? fImpl->formulaFrame : currentCalculator()->svgFrame();
+    auto formula = isBaseFormula ? fCurrFormulas.first : fCurrFormulas.second;
+    auto maxWidth = ( frame->size() * 0.9 ).width();
+
+    NTowel42::updateSVGSize( widget, formula, maxWidth, true );
 }

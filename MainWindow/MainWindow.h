@@ -20,7 +20,7 @@ namespace NTowel42
 
 class CSCUBACalculator;
 class QTreeWidgetItem;
-
+class QSvgWidget;
 class CMainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -30,6 +30,9 @@ public:
 
 public:
     void loadCalculators();
+	
+private:
+    bool eventFilter( QObject *obj, QEvent *event );
 
 Q_SIGNALS:
 
@@ -41,7 +44,7 @@ public Q_SLOTS:
     void slotResetCurrentPage();
 
 private:
-    CSCUBACalculator*currentCalculator() const;
+    CSCUBACalculator *currentCalculator() const;
     void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
     void loadSettings();
     void saveSettings();
@@ -51,15 +54,18 @@ private:
 
     void loadFormulasForPage( CSCUBACalculatorPage *page );
 
-private:
-    void renderSVG( const QString &formula );
+    bool renderSVG( const QString &formula );
     std::optional< QString > formulaForPage( QWidget *page, bool baseFormula );
 
     void loadSVG( const QString &formula, const QByteArray &svg );
+
+    void updateSVGSizes();
+    void updateSVGSize( bool defaultFormula );
+
     void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool baseFormula );
 
     CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;
-    CSCUBACalculator *getCalculator(QWidget *page) const;
+    CSCUBACalculator *getCalculator( QWidget *page ) const;
     QTreeWidgetItem *getItemForPage( QWidget *page ) const;
 
     TGetPageFunc getGetPageFunc( QTreeWidgetItem *leaf ) const;
@@ -87,6 +93,7 @@ private:
     TWidgetToFormulaMap fPageToResultFormulaMap;   //widget -> current result
     std::unordered_map< QString, QByteArray > fFormulaToSVGMap;
     NTowel42::CQt6MathJax *fRenderingEngine{ nullptr };
+    std::pair< QString, QString > fCurrFormulas;
 };
 
 #endif
