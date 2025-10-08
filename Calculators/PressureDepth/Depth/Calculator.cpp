@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -38,31 +39,40 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    return {};
+    auto retVal = TVariableInfoList (//
+        {
+            std::make_shared< SVariableInfo >( "feet", tr( "Feet" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "meters", tr( "Meters" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "feetToMeters", tr( "Feet To Meters" ), EVariableType::eFeetToMetersConst, EUnit::eNone, EVariableLoc::eRHS ),   //
+        } );
+
+    retVal.front()->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( true, true, false ) );
+    (*std::next( retVal.begin() ) )->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( false, true, false ) );
+    return retVal;
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    return tr( R"__(<meters>=<feet> \times <feetToMeters>)__" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    return {};
-    //if ( !NUtilities::valuesValid( values ) )
-    //    return {};
+    auto feet = getVariable( "feet" );
+    auto meters = getVariable( "meters" );
 
-    //auto feet = values[ 0 ];
-    //auto meters = values[ 1 ];
-
-    //if ( !feet.has_value() )
-    //{
-    //    feet = meters.value() * 3.3;
-    //}
-    //else if ( !meters.has_value() )
-    //{
-    //    meters = feet.value() / 3.3;
-    //}
-    //return TOptionalDoubleVector( { feet, meters } );
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    if ( !aOK || !meters->has_value() )
+    {
+        if ( aOK )
+            meters->setValue( feet->value() * NUtilities::NConstants::feetToMeters() );
+        formula = getDefaultFormula();
+    }
+    else if ( !feet->has_value() )
+    {
+        feet->setValue( meters->value() / NUtilities::NConstants::feetToMeters() );
+        return tr( R"__(<feet>=\frac{<meters>}{<feetToMeters>})__" );
+    }
+    return formula;
 }
-
