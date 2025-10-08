@@ -87,13 +87,26 @@ void SVariableInfo::updateLabels( bool imperial, bool /*saltWater*/ )
 
     Q_ASSERT( fField && fUnitLabel );
 
-    auto unitText = NUtilities::NUnitStrings::getUnitLabel( imperial, fUnit, false );
+    auto unitText = this->unitText( imperial, false );
 
     if ( lineEdit() )
-        lineEdit()->setPlaceholderText( QString( "%1 (%2)" ).arg( fDescription ).arg( unitText ) );
+    {
+        auto placeHolder = fDescription;
+        if ( !unitText.isEmpty() )
+            placeHolder += QString( "(%1)" ).arg( unitText );
+
+        lineEdit()->setPlaceholderText( placeHolder );
+    }
 
     if ( fUnitLabel )
         fUnitLabel->setText( unitText );
+}
+
+QString SVariableInfo::unitText( bool imperial, bool tex ) const
+{
+    if ( fUnitText.has_value() )
+        return fUnitText.value();
+    return NUtilities::NUnitStrings::getUnitLabel( imperial, fUnit, tex );
 }
 
 void SVariableInfo::resetValue( bool updateUI, bool notifyUI )
@@ -216,18 +229,29 @@ void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formu
                     format = "%1";
                 }
                 break;
+            case EVariableType::eFeetToMetersConst:
+                {
+                    value = NUtilities::NUnitStrings::feetToMeters( true );
+                    format = "%1";
+                }
+                break;
         };
     }
 
     auto newString = QString( format ).arg( value );
     if ( ( fType == EVariableType::eVariable ) || ( fType == EVariableType::eHidden ) )
-        newString = newString.arg( NUtilities::NUnitStrings::getUnitLabel( imperial, fUnit, true ) );
+    {
+        auto unit = unitText( imperial, true );
+        newString = newString.arg( unit );
+        newString.replace( " ()", "" );
+    }
 
     auto token = QString( "<%1>" ).arg( name() );
     if ( fType == EVariableType::eHidden )
     {
         auto labelString = QString( "%1 (%2)" ).arg( fDescription );
-        labelString = labelString.arg( NUtilities::NUnitStrings::getUnitLabel( imperial, fUnit, true ) );
+        labelString = labelString.arg( unitText( imperial, true ) );
+        labelString.replace( " ()", "" );
         formula = formula.replace( token, labelString );
 
         token = QString( "<%1_value>" ).arg( name() );

@@ -52,6 +52,9 @@ struct SVariableInfo
 
     void updateLabels( bool imperial, bool saltWater );
 
+public:
+    QString unitText( bool imperial, bool tex ) const;
+
     void resetValue( bool updateUI, bool notifyUI );   // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
 
     void updateFieldFromValue( bool notifyUI = false );   // updates fField from fValue
@@ -65,9 +68,11 @@ struct SVariableInfo
     void setValue( TOptionalDouble value ) { fValue = value; }
 
     bool isVariable() const { return fType == EVariableType::eVariable; }
+    bool isWidget( QWidget *widget ) const;
+
     void setRange( const std::optional< SRange > &range ) { fRange = range; }
     void setValues( const TOptionalNamedValueItemList &values ) { fValues = values; }
-    bool isWidget( QWidget *widget ) const;
+    void setUnitLabel( const QString &string ) { fUnitText = string; }   // overrides default behavior and always uses this string for the label
 
     QLineEdit *lineEdit() const;
     QDoubleSpinBox *doubleSpinBox() const;
@@ -102,8 +107,7 @@ private:
 
     std::optional< SRange > fRange;
     TOptionalNamedValueItemList fValues;
-
-private:
+    std::optional< QString > fUnitText;
     TOptionalDouble fValue;
 };
 #endif
