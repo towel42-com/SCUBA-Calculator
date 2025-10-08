@@ -65,14 +65,17 @@ namespace NUtilities
     CALCULATORS_EXPORT double toAbsZeroBasedTemp( bool imperial, double temp );
     CALCULATORS_EXPORT double fromAbsZeroBasedTemp( bool imperial, double temp );
 
+    CALCULATORS_EXPORT double pressureFromDepth( bool imperial, bool saltWater, double depth );
+    CALCULATORS_EXPORT double depthFromPressure( bool imperial, bool saltWater, double pressure );
     CALCULATORS_EXPORT void calculateDepthToFromPressure( bool imperial, bool saltWater, TOptionalDouble &pressure, TOptionalDouble &depth );
+
+    CALCULATORS_EXPORT QString pressureFromDepthFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName );
+    CALCULATORS_EXPORT QString depthFromPressureFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName );
+
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
-    TOptionalDouble getValue( const QString &text );
-    void setValue( QWidget *widget, const TOptionalDouble &origValue, const TOptionalDouble &value, int numDecimal, bool notifyUI );
-
-    bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
-    QString doubleToString( const TOptionalDouble &value, int numDecimal );
+    CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
+    CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
 };
 
 #endif

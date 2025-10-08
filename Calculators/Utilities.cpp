@@ -1,6 +1,6 @@
 #include "Utilities.h"
-#include <QLineEdit>
-#include <QDoubleSpinBox>
+#include <QString>
+#include <QObject>
 
 namespace NUtilities
 {
@@ -136,7 +136,7 @@ namespace NUtilities
         QString idealGasConstant( bool imperial, bool tex )
         {
             if ( tex )
-                return QObject::tr( R"__(p(%1)\timesV(%2)=n(moles)\times%3\timesT(%4))__", "idealGasConstant" ).arg( pressureUnit( imperial, tex ) ).arg( volumeUnit( imperial, tex ) ).arg( NConstants::idealGasConstant( imperial ) ).arg( tempUnit( imperial, tex ), "" );
+                return QObject::tr( R"__(p(%1) \times V(%2)=n(moles)\times%3\timesT(%4))__", "idealGasConstant" ).arg( pressureUnit( imperial, tex ) ).arg( volumeUnit( imperial, tex ) ).arg( NConstants::idealGasConstant( imperial ) ).arg( tempUnit( imperial, tex ), "" );
             else
                 return QObject::tr( "%1 (%2)x(%3)/(n moles)x(%4)", "idealGasConstant" ).arg( NConstants::idealGasConstant( imperial ) ).arg( volumeUnit( imperial, tex ) ).arg( pressureUnit( imperial, tex ) ).arg( tempUnit( imperial, tex ) );
         }
@@ -221,19 +221,43 @@ namespace NUtilities
         return temp - NConstants::absZero( imperial );
     }
 
+    QString pressureFromDepthFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName )
+    {
+        return QString( R"__(<%1>=\frac{<%2>}{<%3>} + 1)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( depthToSingleATMFieldName );
+    }
+
+    double pressureFromDepth( bool imperial, bool saltWater, double depth )
+    {
+        auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, saltWater );
+        return ( depth / depthOfATM ) + 1;
+    }
+
+    QString depthFromPressureFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName )
+    {
+        return QString( R"__(<%2>=(<%1>-1)*<%3>)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( depthToSingleATMFieldName );
+    }
+
+    double depthFromPressure( bool imperial, bool saltWater, double pressure )
+    {
+        auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, saltWater );
+        return ( pressure - 1 ) * depthOfATM;
+    }
+
     void calculateDepthToFromPressure( bool imperial, bool saltWater, TOptionalDouble &pressure, TOptionalDouble &depth )
     {
         if ( !pressure.has_value() && !depth.has_value() )
             return;
 
-        auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, saltWater );
+        if ( pressure.has_value() && depth.has_value() )
+            return;
+
         if ( !depth.has_value() )
         {
-            depth = ( pressure.value() - 1 ) * depthOfATM;
+            depth = depthFromPressure( imperial, saltWater, pressure.value() );
         }
         else if ( !pressure.has_value() )
         {
-            pressure = ( depth.value() / depthOfATM ) + 1;
+            pressure = pressureFromDepth( imperial, saltWater, depth.value() );
         }
     }
 
@@ -246,63 +270,6 @@ namespace NUtilities
             numEmpty += value.has_value() ? 0 : 1;
         }
         return numEmpty;
-    }
-
-    TOptionalDouble getValue( const QString &text )
-    {
-        if ( text.trimmed().isEmpty() )
-            return {};
-        bool aOK = false;
-        auto retVal = text.trimmed().toDouble( &aOK );
-        if ( !aOK )
-            return {};
-        return retVal;
-    }
-
-    void setValue( QDoubleSpinBox *spinBox, const TOptionalDouble &origValue, const TOptionalDouble &newValue, int /*numDecimal*/, bool notifyUI )
-    {
-        if ( !spinBox )
-            return;
-
-        if ( origValue.has_value() && newValue.has_value() && ( origValue.value() == newValue.value() ) )
-            return;
-
-        if ( !origValue.has_value() && !newValue.has_value() )
-            return;
-
-        if ( !notifyUI )
-            spinBox->blockSignals( true );
-
-        spinBox->setValue( newValue.has_value() ? newValue.value() : 0.0 );
-
-        if ( !notifyUI )
-            spinBox->blockSignals( false );
-    }
-
-    void setValue( QLineEdit *le, const TOptionalDouble &origValue, const TOptionalDouble &newValue, int numDecimal, bool notifyUI )
-    {
-        if ( !le )
-            return;
-
-        auto newValueString = doubleToString( newValue, numDecimal );
-        if ( doubleToString( origValue, numDecimal ) == newValueString )
-            return;
-
-        if ( !notifyUI )
-            le->blockSignals( true );
-
-        le->setText( newValueString );
-
-        if ( !notifyUI )
-            le->blockSignals( false );
-    }
-
-    void setValue( QWidget *widget, const TOptionalDouble &origValue, const TOptionalDouble &newValue, int numDecimal, bool notifyUI )
-    {
-        if ( dynamic_cast< QLineEdit * >( widget ) )
-            setValue( dynamic_cast< QLineEdit * >( widget ), origValue, newValue, numDecimal, notifyUI );
-        else if ( dynamic_cast< QDoubleSpinBox * >( widget ) )
-            setValue( dynamic_cast< QDoubleSpinBox * >( widget ), origValue, newValue, numDecimal, notifyUI );
     }
 
     bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty )
