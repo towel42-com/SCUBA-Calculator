@@ -83,7 +83,8 @@ enum class EVariableType
     eIdealGasConst,
     eFN2AtSurfaceConst,
     eFO2AtSurfaceConst,
-    eDepthToSingleAtmosphereConst
+    eDepthToSingleAtmosphereConst,
+    eFeetToMetersConst
 };
 
 enum class EVariableLoc
