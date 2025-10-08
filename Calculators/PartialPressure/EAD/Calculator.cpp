@@ -65,17 +65,17 @@ QString CCalculator::computeAndGenerateFormula() const
     if ( !aOK || !ead->has_value() )
     {
         if ( aOK )
-            ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) );
+            ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
         formula = getDefaultFormula();
     }
     else if ( !fn2->has_value() )
     {
-        fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) ) / ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) );
+        fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) / ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) );
         formula = tr( R"__(<fn2> = \frac{[<fn2AtSurface> \times (<ead>+<depthToSingleAtmosphere>)]}{(<depth>+<depthToSingleAtmosphere>)})__" );
     }
     else if ( !depth->has_value() )
     {
-        depth->setValue( ( ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) );
+        depth->setValue( ( ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
         formula = tr( R"__(<depth> = [\frac{(<ead>+<depthToSingleAtmosphere>)}{\frac{<fn2>}{<fn2AtSurface>}]-<depthToSingleAtmosphere>)__" );
     }
     return formula;

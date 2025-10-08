@@ -76,18 +76,18 @@ bool SVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *form
     formLayout->addRow( fLabel, hLayout );
     page->addWidget( fVariableLocation, fField );
 
-    updateLabels( page->imperial(), page->saltWater() );
+    updateLabels( page->imperial(), page->seaWater() );
     return true;
 }
 
-void SVariableInfo::updateLabels( bool imperial, bool /*saltWater*/ )
+void SVariableInfo::updateLabels( bool imperial, bool seaWater )
 {
     if ( fType != EVariableType::eVariable )
         return;
 
     Q_ASSERT( fField && fUnitLabel );
 
-    auto unitText = this->unitText( imperial, false );
+    auto unitText = this->unitText( imperial, seaWater, false );
 
     if ( lineEdit() )
     {
@@ -102,11 +102,11 @@ void SVariableInfo::updateLabels( bool imperial, bool /*saltWater*/ )
         fUnitLabel->setText( unitText );
 }
 
-QString SVariableInfo::unitText( bool imperial, bool tex ) const
+QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex ) const
 {
     if ( fUnitText.has_value() )
         return fUnitText.value();
-    return NUtilities::NUnitStrings::getUnitLabel( imperial, fUnit, tex );
+    return NUtilities::NUnitStrings::getUnitLabel( imperial, seaWater, fUnit, true, tex );
 }
 
 void SVariableInfo::resetValue( bool updateUI, bool notifyUI )
@@ -173,7 +173,7 @@ TOptionalDouble SVariableInfo::valueForString( const QString &text ) const
     return retVal;
 }
 
-void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formula, bool isBaseFormula ) const
+void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, bool isBaseFormula ) const
 {
     QString value;
     QString format;
@@ -195,19 +195,19 @@ void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formu
                 }
             case EVariableType::ePressurePerTempConst:
                 {
-                    value = NUtilities::NUnitStrings::pressurePerTemp( imperial, true );
+                    value = NUtilities::NUnitStrings::pressurePerTemp( imperial, true, true );
                     format = "%1";
                 }
                 break;
             case EVariableType::eWeightOfWaterConst:
                 {
-                    value = NUtilities::NUnitStrings::weightOfWater( imperial, saltWater, true );
+                    value = NUtilities::NUnitStrings::weightOfWater( imperial, seaWater, true, true );
                     format = "%1";
                 }
                 break;
             case EVariableType::eIdealGasConst:
                 {
-                    value = NUtilities::NUnitStrings::idealGasConstant( imperial, true );
+                    value = NUtilities::NUnitStrings::idealGasConstant( imperial, true, true );
                     format = "%1";
                 }
                 break;
@@ -225,13 +225,19 @@ void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formu
                 break;
             case EVariableType::eDepthToSingleAtmosphereConst:
                 {
-                    value = NUtilities::NUnitStrings::depthToSingleAtmosphere( imperial, saltWater, true );
+                    value = NUtilities::NUnitStrings::depthToSingleAtmosphere( imperial, seaWater, true, true );
                     format = "%1";
                 }
                 break;
             case EVariableType::eFeetToMetersConst:
                 {
-                    value = NUtilities::NUnitStrings::feetToMeters( true );
+                    value = NUtilities::NUnitStrings::feetToMeters( true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eFreshWaterToSeaWaterConst:
+                {
+                    value = NUtilities::NUnitStrings::freshWaterToSeaWater( imperial, true, true );
                     format = "%1";
                 }
                 break;
@@ -241,7 +247,7 @@ void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formu
     auto newString = QString( format ).arg( value );
     if ( ( fType == EVariableType::eVariable ) || ( fType == EVariableType::eHidden ) )
     {
-        auto unit = unitText( imperial, true );
+        auto unit = unitText( imperial, seaWater, true );
         newString = newString.arg( unit );
         newString.replace( " ()", "" );
     }
@@ -250,7 +256,7 @@ void SVariableInfo::updateFormula( bool imperial, bool saltWater, QString &formu
     if ( fType == EVariableType::eHidden )
     {
         auto labelString = QString( "%1 (%2)" ).arg( fDescription );
-        labelString = labelString.arg( unitText( imperial, true ) );
+        labelString = labelString.arg( unitText( imperial, seaWater, true ) );
         labelString.replace( " ()", "" );
         formula = formula.replace( token, labelString );
 

@@ -64,17 +64,17 @@ QString CCalculator::computeAndGenerateFormula() const
     if ( !aOK || !buoyancy->has_value() )
     {
         if ( aOK )
-            buoyancy->setValue( weightOfObject->value() - ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) ) );
+            buoyancy->setValue( weightOfObject->value() - ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) ) );
         formula = getDefaultFormula();
     }
     else if ( !weightOfObject->has_value() )
     {
-        weightOfObject->setValue( buoyancy->value() + ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) ) );
+        weightOfObject->setValue( buoyancy->value() + ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) ) );
         formula = tr( R"__(<weightOfObject>=<buoyancy> + <volumeDisplaced> \times <weightOfWater>)__" );
     }
     else if ( !volumeDisplaced->has_value() )
     {
-        volumeDisplaced->setValue( ( weightOfObject->value() - buoyancy->value() ) / NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) );
+        volumeDisplaced->setValue( ( weightOfObject->value() - buoyancy->value() ) / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
         formula = tr( R"__(<volumeDisplaced>=\frac{(<weightOfObject> - <buoyancy>)}{<weightOfWater>})__" );
     }
 

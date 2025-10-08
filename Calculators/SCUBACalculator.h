@@ -44,7 +44,7 @@ public:
     Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
 
     CSCUBACalculator( QObject *parent = nullptr );
-    virtual void init( bool imperial, bool saltWater ) final;   // initializes the default equations and sets the equations to the current setup
+    virtual void init( bool imperial, bool seaWater ) final;   // initializes the default equations and sets the equations to the current setup
     virtual ~CSCUBACalculator();
 
     virtual QString calculatorName() const = 0;
@@ -56,8 +56,8 @@ public:
     virtual bool imperial() const final;
     virtual void setImperial( bool imperial ) final;
 
-    virtual bool saltWater() const final;
-    virtual void setSaltWater( bool saltWater ) final;
+    virtual bool seaWater() const final;
+    virtual void setSeaWater( bool seaWater ) final;
 
     virtual bool isWaterTypeBased() const { return false; }
     virtual bool showUnits() const { return true; }
@@ -82,7 +82,7 @@ protected:
 
     virtual void notifyOfNewFormula( const QString &eq, bool baseFormula ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
-    virtual QString finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool isBaseFormula ) const final;
+    virtual QString finalizeFormula( bool imperial, bool seaWater, const QString &formula, bool isBaseFormula ) const final;
     virtual QString finalizeFormula( const QString &formula, bool isBaseFormula ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
@@ -110,8 +110,8 @@ protected:
 
 extern "C" CALCULATORS_EXPORT CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit );
 extern "C" CALCULATORS_EXPORT void setImperial( CSCUBACalculator *calculator, bool imperial );
-extern "C" CALCULATORS_EXPORT void setSaltWater( CSCUBACalculator *calculator, bool saltWater );
+extern "C" CALCULATORS_EXPORT void setSeaWater( CSCUBACalculator *calculator, bool seaWater );
 extern "C" CALCULATORS_EXPORT void setUpdateFormulaFunc( CSCUBACalculator *calculator, const TUpdateFormulaFunc & );
-extern "C" CALCULATORS_EXPORT void initCalculatorPage( CSCUBACalculator *calculator, bool imperial, bool saltwater );
+extern "C" CALCULATORS_EXPORT void initCalculatorPage( CSCUBACalculator *calculator, bool imperial, bool seawater );
 
 #endif

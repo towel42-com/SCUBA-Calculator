@@ -61,13 +61,13 @@ QString CCalculator::computeAndGenerateFormula() const
     if ( !aOK || !volumeDisplaced->has_value() )
     {
         if ( aOK )
-            volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) );
+            volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
         formula = getDefaultFormula();
     }
     else if ( !negativeBuoyancy->has_value() )
     {
         formula = tr( R"__(<negativeBuoyancy>=<volumeDisplaced> \times <weightOfWater>)__" );
-        negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) );
+        negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
     }
 
     return formula;

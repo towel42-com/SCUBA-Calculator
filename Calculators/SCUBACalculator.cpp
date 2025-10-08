@@ -34,11 +34,11 @@ CSCUBACalculatorPage *CSCUBACalculator::getPage( QWidget *parent )
     return fPage;
 }
 
-void CSCUBACalculator::init( bool imperial, bool saltWater )
+void CSCUBACalculator::init( bool imperial, bool seaWater )
 {
     setObjectName( calculatorName() );
     if ( fPage )
-        fPage->init( imperial, saltWater );
+        fPage->init( imperial, seaWater );
 }
 
 void CSCUBACalculator::setImperial( bool imperial )
@@ -47,10 +47,10 @@ void CSCUBACalculator::setImperial( bool imperial )
         fPage->setImperial( imperial );
 }
 
-void CSCUBACalculator::setSaltWater( bool saltWater )
+void CSCUBACalculator::setSeaWater( bool seaWater )
 {
     if ( fPage )
-        fPage->setSaltWater( saltWater );
+        fPage->setSeaWater( seaWater );
 }
 
 void CSCUBACalculator::setUpdateFormulaFunc( const TUpdateFormulaFunc &func )
@@ -65,10 +65,10 @@ bool CSCUBACalculator::imperial() const
     return false;
 }
 
-bool CSCUBACalculator::saltWater() const
+bool CSCUBACalculator::seaWater() const
 {
     if ( fPage )
-        return fPage->saltWater();
+        return fPage->seaWater();
     return false;
 }
 
@@ -147,9 +147,9 @@ void CSCUBACalculator::renderDefaultFormulas() const
 
     for ( auto imperial : { true, false } )
     {
-        for ( auto saltWater : { true, false } )
+        for ( auto seaWater : { true, false } )
         {
-            auto formula = finalizeFormula( imperial, saltWater, baseFormula, true );
+            auto formula = finalizeFormula( imperial, seaWater, baseFormula, true );
             defaultFormulas.insert( formula );
         }
     }
@@ -225,7 +225,7 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     auto &&variables = getVariables();
     for ( auto &&curr : variables )
     {
-        curr->updateLabels( imperial(), saltWater() );
+        curr->updateLabels( imperial(), seaWater() );
         curr->updateValueFromField();
     }
 
@@ -252,14 +252,14 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
     }
 }
 
-QString CSCUBACalculator::finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool isBaseFormula ) const
+QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const QString &formula, bool isBaseFormula ) const
 {
     auto &&variables = getVariables();
 
     QString retVal = formula;
     for ( auto &&curr : variables )
     {
-        curr->updateFormula( imperial, saltWater, retVal, isBaseFormula );
+        curr->updateFormula( imperial, seaWater, retVal, isBaseFormula );
     }
 
     retVal = retVal.replace( " ", R"(\ )" );
@@ -268,7 +268,7 @@ QString CSCUBACalculator::finalizeFormula( bool imperial, bool saltWater, const 
 
 QString CSCUBACalculator::finalizeFormula( const QString &formula, bool isBaseFormula ) const
 {
-    return finalizeFormula( imperial(), saltWater(), formula, isBaseFormula );
+    return finalizeFormula( imperial(), seaWater(), formula, isBaseFormula );
 }
 
 extern "C" CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit )
@@ -290,11 +290,11 @@ extern "C" void setImperial( CSCUBACalculator *calculator, bool imperial )
     calculator->setImperial( imperial );
 }
 
-extern "C" void setSaltWater( CSCUBACalculator *calculator, bool saltWater )
+extern "C" void setSeaWater( CSCUBACalculator *calculator, bool seaWater )
 {
     if ( !calculator )
         return;
-    calculator->setSaltWater( saltWater );
+    calculator->setSeaWater( seaWater );
 }
 
 extern "C" CALCULATORS_EXPORT void setUpdateFormulaFunc( CSCUBACalculator *calculator, const TUpdateFormulaFunc &func )
@@ -304,9 +304,9 @@ extern "C" CALCULATORS_EXPORT void setUpdateFormulaFunc( CSCUBACalculator *calcu
     calculator->setUpdateFormulaFunc( func );
 }
 
-extern "C" CALCULATORS_EXPORT void initCalculatorPage( CSCUBACalculator *calculator, bool imperial, bool saltWater )
+extern "C" CALCULATORS_EXPORT void initCalculatorPage( CSCUBACalculator *calculator, bool imperial, bool seaWater )
 {
     if ( !calculator )
         return;
-    calculator->init( imperial, saltWater );
+    calculator->init( imperial, seaWater );
 }

@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -36,31 +37,39 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    return {};
+    auto retVal = TVariableInfoList(   //
+        {
+            std::make_shared< SVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "freshWaterToSeaWater", tr( "Freshwater to Seawater" ), EVariableType::eFreshWaterToSeaWaterConst, EUnit::eNone, EVariableLoc::eRHS ),   //
+        } );
+
+    return retVal;
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    return tr( R"__(<freshWater>=<seaWater> \times <freshWaterToSeaWater>)__" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    return {};
-    //if ( !NUtilities::valuesValid( values ) )
-    //    return {};
+    auto freshWater = getVariable( "freshWater" );
+    auto seaWater = getVariable( "seaWater" );
 
-    //auto depthFreshWater = values[ 0 ];
-    //auto depthSaltWater = values[ 1 ];
-
-    //if ( !depthFreshWater.has_value() )
-    //{
-    //    depthFreshWater = depthSaltWater.value() * 1.03;
-    //}
-    //else if ( !depthSaltWater.has_value() )
-    //{
-    //    depthSaltWater = depthFreshWater.value() / 1.03;
-    //}
-    //return TOptionalDoubleVector( { depthFreshWater, depthSaltWater } );
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    if ( !aOK || !freshWater->has_value() )
+    {
+        if ( aOK )
+            freshWater->setValue( seaWater->value() * NUtilities::NConstants::freshWaterToSeaWater() );
+        formula = getDefaultFormula();
+    }
+    else if ( !seaWater->has_value() )
+    {
+        seaWater->setValue( freshWater->value() / NUtilities::NConstants::freshWaterToSeaWater() );
+        return tr( R"__(<seaWater>=\frac{<freshWater>}{<freshWaterToSeaWater>})__" );
+    }
+    return formula;
 }
 

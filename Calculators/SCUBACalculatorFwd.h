@@ -52,13 +52,13 @@ using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QS
 using TInstantiateCalcFunc = CSCUBACalculator *(*)();
 using TGetPageFunc = CSCUBACalculatorPage *(*)( CSCUBACalculator *calculator, QWidget *, bool *needsInit );
 using TSetBoolFunc = void ( * )( CSCUBACalculator *calculator, bool );
-using TInitFunc = void ( * )( CSCUBACalculator *calculator, bool imperial, bool saltWater );
+using TInitFunc = void ( * )( CSCUBACalculator *calculator, bool imperial, bool seaWater );
 using TSetUpdateFormulaFunc = void ( * )( CSCUBACalculator *calculator, const TUpdateFormulaFunc & );
 
 constexpr char kInstantiateCalcFuncName[] = "instantiateCalculator";
 constexpr char kGetPageFuncName[] = "getPage";
 constexpr char kSetImperialFuncName[] = "setImperial";
-constexpr char kSetSaltWaterFuncName[] = "setSaltWater";
+constexpr char kSetSeaWaterFuncName[] = "setSeaWater";
 constexpr char kSetUpdateFormulaFuncName[] = "setUpdateFormulaFunc";
 constexpr char kInitFuncName[] = "initCalculatorPage";
 
@@ -68,6 +68,7 @@ enum class EUnit
     eVolume,
     eWeight,
     eLength,
+    eDepth,
     ePressure,
     eTemperature,
     eAbsZeroTemperature,
@@ -84,7 +85,8 @@ enum class EVariableType
     eFN2AtSurfaceConst,
     eFO2AtSurfaceConst,
     eDepthToSingleAtmosphereConst,
-    eFeetToMetersConst
+    eFeetToMetersConst,
+    eFreshWaterToSeaWaterConst
 };
 
 enum class EVariableLoc

@@ -47,13 +47,13 @@ public:
 
     static std::tuple< CSCUBACalculatorPage *, QFrame*, QSvgWidget *, std::size_t > constructPage( CSCUBACalculator *calculator, QWidget *parent );
 
-    virtual void init( bool imperial, bool saltWater ) final;
+    virtual void init( bool imperial, bool seaWater ) final;
 
     virtual bool imperial() const final { return fImperial; }
     virtual void setImperial( bool imperial ) final;
 
-    virtual bool saltWater() const final { return fSaltWater; }
-    virtual void setSaltWater( bool saltWater ) final;
+    virtual bool seaWater() const final { return fSeaWater; }
+    virtual void setSeaWater( bool seaWater ) final;
 
     virtual bool showUnits() const;
     virtual bool isWaterTypeBased() const;
@@ -81,7 +81,7 @@ private:
 private:
     bool fNeedsInit{ true };
     bool fImperial{ false };
-    bool fSaltWater{ false };
+    bool fSeaWater{ false };
     EVariableLoc fUpdateFromSide{ EVariableLoc::eRHS };
     CSCUBACalculator *fCalculator{ nullptr };
     std::unordered_map< QObject *, EVariableLoc > fVariables;

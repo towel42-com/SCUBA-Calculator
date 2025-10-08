@@ -47,16 +47,16 @@
         <item row="3" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QRadioButton" name="saltWater">
+           <widget class="QRadioButton" name="seaWater">
             <property name="text">
-             <string>Salt Water?</string>
+             <string>Seawater?</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="freshWater">
             <property name="text">
-             <string>Fresh Water?</string>
+             <string>Freshwater?</string>
             </property>
            </widget>
           </item>

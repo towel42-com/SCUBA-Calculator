@@ -1,5 +1,5 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -38,7 +38,10 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    return {};
+    return   //
+        {
+            //std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+        };
 }
 
 QString CCalculator::getDefaultFormula() const
@@ -55,7 +58,7 @@ QString CCalculator::computeAndGenerateFormula() const
     //auto pressure = values[ 0 ];
     //auto depth = values[ 1 ];
 
-    //NUtilities::calculateDepthToFromPressure( imperial(), saltWater(), pressure, depth );
+    //NUtilities::calculateDepthToFromPressure( imperial(), seaWater(), pressure, depth );
     //return TOptionalDoubleVector( { pressure, depth } );
 }
 

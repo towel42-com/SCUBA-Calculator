@@ -50,7 +50,7 @@ private:
     void saveSettings();
     void showUnits( bool show );
     void showWaterType( bool show );
-    void addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSaltWaterFunc, TSetUpdateFormulaFunc setUpdateEqFunc, TInitFunc initFunc );
+    void addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSeaWaterFunc, TSetUpdateFormulaFunc setUpdateEqFunc, TInitFunc initFunc );
 
     void loadFormulasForPage( CSCUBACalculatorPage *page );
 
@@ -70,7 +70,7 @@ private:
 
     TGetPageFunc getGetPageFunc( QTreeWidgetItem *leaf ) const;
     TSetBoolFunc getSetImperialFunc( QTreeWidgetItem *leaf ) const;
-    TSetBoolFunc getSetSaltWaterFunc( QTreeWidgetItem *leaf ) const;
+    TSetBoolFunc getSetSeaWaterFunc( QTreeWidgetItem *leaf ) const;
     TInitFunc getInitFunc( QTreeWidgetItem *leaf ) const;
 
     QTreeWidgetItem *findItem( QTreeWidgetItem *parent, const QStringList &path, bool createIfNecessary );
@@ -84,7 +84,7 @@ private:
         TInitFunc fInitFunc{ nullptr };
         TGetPageFunc fGetPageFunc{ nullptr };
         TSetBoolFunc fSetImperialFunc{ nullptr };
-        TSetBoolFunc fSetSaltWaterFunc{ nullptr };
+        TSetBoolFunc fSetSeaWaterFunc{ nullptr };
     };
     std::unordered_map< QTreeWidgetItem *, SPageInfo > fCalculators;
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;

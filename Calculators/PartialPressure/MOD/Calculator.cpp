@@ -84,19 +84,19 @@ QString CCalculator::computeAndGenerateFormula() const
     {
         if ( aOK && ( fo2->value() != 0.0 ) )
         {
-            mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) );
+            mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
         }
         formula = getDefaultFormula();
     }
     else if ( !maxPO2->has_value() )
     {
-        maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) + 1 ) );
+        maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
         formula = tr( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__" );
     }
     else if ( !fo2->has_value() )
     {
         if ( mod->value() != 0.0 )
-            fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) + 1 ) );
+            fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
 
         formula = tr( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<depthToSingleAtmosphere>})+1})__" );
     }

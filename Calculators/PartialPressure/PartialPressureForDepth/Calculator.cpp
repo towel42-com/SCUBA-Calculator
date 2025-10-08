@@ -79,18 +79,18 @@ QString CCalculator::computeAndGenerateFormula() const
     {
         if ( aOK )
         {
-            ata->setValue( NUtilities::pressureFromDepth( imperial(), saltWater(), depth->value() ) );
+            ata->setValue( NUtilities::pressureFromDepth( imperial(), seaWater(), depth->value() ) );
             partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
         }
         formula = getDefaultFormula();
     }
     else if ( !depth->has_value() )
     {
-        depth->setValue( NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
+        depth->setValue( NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
     }
     else if ( !partialPressureAtSurface->has_value() )
     {
-        ata->setValue( NUtilities::pressureFromDepth( imperial(), saltWater(), depth->value() ) );
+        ata->setValue( NUtilities::pressureFromDepth( imperial(), seaWater(), depth->value() ) );
         partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
 

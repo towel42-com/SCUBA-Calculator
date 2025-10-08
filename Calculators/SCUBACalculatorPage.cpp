@@ -22,10 +22,10 @@ CSCUBACalculatorPage::~CSCUBACalculatorPage()
 {
 }
 
-void CSCUBACalculatorPage::init( bool imperial, bool saltWater )
+void CSCUBACalculatorPage::init( bool imperial, bool seaWater )
 {
     fImperial = imperial;
-    fSaltWater = saltWater;
+    fSeaWater = seaWater;
 
     calculator()->renderDefaultFormulas();
 
@@ -38,9 +38,9 @@ void CSCUBACalculatorPage::setImperial( bool imperial )
     updateValues( nullptr );
 }
 
-void CSCUBACalculatorPage::setSaltWater( bool saltWater )
+void CSCUBACalculatorPage::setSeaWater( bool seaWater )
 {
-    fSaltWater = saltWater;
+    fSeaWater = seaWater;
     emit sigUpdateValues();
 }
 

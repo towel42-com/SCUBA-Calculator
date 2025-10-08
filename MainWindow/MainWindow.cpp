@@ -29,7 +29,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     bg->addButton( fImpl->metric );
 
     bg = new QButtonGroup( this );
-    bg->addButton( fImpl->saltWater );
+    bg->addButton( fImpl->seaWater );
     bg->addButton( fImpl->freshWater );
 
     setWindowIcon( QIcon( ":/resources/scubacalc.png" ) );
@@ -57,7 +57,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     connect( fImpl->whichCalculator, &QTreeWidget::currentItemChanged, this, &CMainWindow::slotSelectCalculator );
     connect( fImpl->imperial, &QRadioButton::toggled, this, &CMainWindow::slotUnitsChanged );
     connect( fImpl->metric, &QRadioButton::toggled, this, &CMainWindow::slotUnitsChanged );
-    connect( fImpl->saltWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
+    connect( fImpl->seaWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
     connect( fImpl->freshWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
 
     slotSelectCalculator( nullptr );
@@ -74,8 +74,8 @@ void CMainWindow::loadSettings()
         fImpl->imperial->setChecked( true );
     else
         fImpl->metric->setChecked( true );
-    if ( settings.value( "SaltWater", true ).toBool() )
-        fImpl->saltWater->setChecked( true );
+    if ( settings.value( "SeaWater", true ).toBool() )
+        fImpl->seaWater->setChecked( true );
     else
         fImpl->freshWater->setChecked( true );
 }
@@ -84,7 +84,7 @@ void CMainWindow::saveSettings()
 {
     QSettings settings;
     settings.setValue( "ImperialUnits", fImpl->imperial->isChecked() );
-    settings.setValue( "SaltWater", fImpl->saltWater->isChecked() );
+    settings.setValue( "SeaWater", fImpl->seaWater->isChecked() );
 }
 
 CSCUBACalculator *CMainWindow::currentCalculator() const
@@ -131,11 +131,11 @@ void CMainWindow::slotWaterChanged()
     auto calc = getCalculator( item );
     if ( !calc )
         return;
-    auto func = getSetSaltWaterFunc( item );
+    auto func = getSetSeaWaterFunc( item );
     if ( !func )
         return;
 
-    func( calc, fImpl->saltWater->isChecked() );
+    func( calc, fImpl->seaWater->isChecked() );
 }
 
 void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
@@ -185,7 +185,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *p
         if ( !initFunc )
             return;
 
-        initFunc( calc, fImpl->imperial->isChecked(), fImpl->saltWater->isChecked() );
+        initFunc( calc, fImpl->imperial->isChecked(), fImpl->seaWater->isChecked() );
     }
 
     loadFormulasForPage( page );
@@ -224,11 +224,11 @@ void CMainWindow::loadCalculators()
             continue;
         auto getPageFunc = (TGetPageFunc)GetProcAddress( hLib, kGetPageFuncName );
         auto setImperial = (TSetBoolFunc)GetProcAddress( hLib, kSetImperialFuncName );
-        auto setSaltWater = (TSetBoolFunc)GetProcAddress( hLib, kSetSaltWaterFuncName );
+        auto setSeaWater = (TSetBoolFunc)GetProcAddress( hLib, kSetSeaWaterFuncName );
         auto setUpdateFormulaFunc = (TSetUpdateFormulaFunc)GetProcAddress( hLib, kSetUpdateFormulaFuncName );
 
         auto calculator = (CSCUBACalculator *)constructor();
-        addCalculator( calculator, getPageFunc, setImperial, setSaltWater, setUpdateFormulaFunc, initFunc );
+        addCalculator( calculator, getPageFunc, setImperial, setSeaWater, setUpdateFormulaFunc, initFunc );
     }
     fImpl->whichCalculator->expandAll();
     fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
@@ -237,7 +237,7 @@ void CMainWindow::loadCalculators()
     fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
 }
 
-void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSaltWater, TSetUpdateFormulaFunc setUpdateFormulaFunc, TInitFunc initFunc )
+void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSeaWater, TSetUpdateFormulaFunc setUpdateFormulaFunc, TInitFunc initFunc )
 {
     auto path = calculator->calculatorPath();
     if ( path.isEmpty() )
@@ -247,7 +247,7 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getP
 
     path.push_back( calculatorName );
     auto leaf = findItem( fImpl->whichCalculator->invisibleRootItem(), path, true );
-    fCalculators[ leaf ] = { calculator, initFunc, getPageFunc, setImperialFunc, setSaltWater };
+    fCalculators[ leaf ] = { calculator, initFunc, getPageFunc, setImperialFunc, setSeaWater };
 
     if ( !getGetPageFunc( leaf ) )
     {
@@ -361,7 +361,7 @@ void CMainWindow::showUnits( bool show )
 
 void CMainWindow::showWaterType( bool show )
 {
-    fImpl->saltWater->setVisible( show );
+    fImpl->seaWater->setVisible( show );
     fImpl->freshWater->setVisible( show );
 }
 
@@ -411,11 +411,11 @@ TSetBoolFunc CMainWindow::getSetImperialFunc( QTreeWidgetItem *leaf ) const
     return nullptr;
 }
 
-TSetBoolFunc CMainWindow::getSetSaltWaterFunc( QTreeWidgetItem *leaf ) const
+TSetBoolFunc CMainWindow::getSetSeaWaterFunc( QTreeWidgetItem *leaf ) const
 {
     auto pos = fCalculators.find( leaf );
     if ( pos != fCalculators.end() )
-        return ( *pos ).second.fSetSaltWaterFunc;
+        return ( *pos ).second.fSetSeaWaterFunc;
     return nullptr;
 }
 
