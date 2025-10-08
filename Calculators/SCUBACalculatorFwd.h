@@ -76,6 +76,7 @@ enum class EUnit
 
 enum class EVariableType
 {
+    eHidden,
     eVariable,
     ePressurePerTempConst,
     eWeightOfWaterConst,
@@ -85,7 +86,7 @@ enum class EVariableType
     eDepthToSingleAtmosphereConst
 };
 
-enum class ESide
+enum class EVariableLoc
 {
     eLHS,
     eRHS,
@@ -95,4 +96,9 @@ enum class ESide
 struct SVariableInfo;
 using TVariableInfo = std::shared_ptr< SVariableInfo >;
 using TVariableInfoList = std::list< TVariableInfo >;
+
+using TNamedValueItem = std::pair< QString, TOptionalDouble >;
+using TNamedValueItemList = std::list< TNamedValueItem >;
+using TOptionalNamedValueItemList = std::optional< TNamedValueItemList >;
+
 #endif
