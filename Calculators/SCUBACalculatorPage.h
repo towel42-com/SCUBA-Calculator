@@ -33,6 +33,8 @@ class QFrame;
 
 class CSCUBACalculatorPage : public QWidget
 {
+    friend struct SVariableInfo;
+
 public:
     Q_OBJECT;
 
@@ -61,8 +63,8 @@ public:
     virtual const CSCUBACalculator *calculator() const final { return fCalculator; }
 
 protected:
-    virtual void addWidgets( ESide varLocation, const std::list< QWidget * > &widgets );
-    virtual void addWidget( ESide varLocation, QWidget *widget );
+    virtual void addWidgets( EVariableLoc varLocation, const std::list< QWidget * > &widgets );
+    virtual void addWidget( EVariableLoc varLocation, QWidget *widget );
     virtual void updateValues( QWidget *widget ) final;
 
 private Q_SLOTS:
@@ -73,16 +75,16 @@ Q_SIGNALS:
 private:
     virtual CSCUBACalculator *calculator() final { return fCalculator; }
 
-    virtual void setUpdateFromSide( ESide updateFromSide ) final;
-    virtual ESide updateFromSide() const final { return fUpdateFromSide; }
+    virtual void setUpdateFromSide( EVariableLoc updateFromSide ) final;
+    virtual EVariableLoc updateFromSide() const final { return fUpdateFromSide; }
 
 private:
     bool fNeedsInit{ true };
     bool fImperial{ false };
     bool fSaltWater{ false };
-    ESide fUpdateFromSide{ ESide::eRHS };
+    EVariableLoc fUpdateFromSide{ EVariableLoc::eRHS };
     CSCUBACalculator *fCalculator{ nullptr };
-    std::unordered_map< QObject *, ESide > fVariables;
+    std::unordered_map< QObject *, EVariableLoc > fVariables;
 };
 
 #endif

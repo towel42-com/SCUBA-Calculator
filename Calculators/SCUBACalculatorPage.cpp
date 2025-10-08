@@ -4,12 +4,9 @@
 #include "SABUtils/WidgetChanged.h"
 
 #include <QFormLayout>
-#include <QLabel>
-#include <QLineEdit>
 #include <QFrame>
 #include <QSvgWidget>
 #include <QSvgRenderer>
-#include <QDoubleSpinBox>
 
 #include <list>
 #include <utility>
@@ -53,7 +50,7 @@ void CSCUBACalculatorPage::updateValues( QWidget *triggerWidget )
     calculator()->compute( updateFromSide(), triggerWidget );
 }
 
-void CSCUBACalculatorPage::addWidgets( ESide side, const std::list< QWidget * > &widgets )
+void CSCUBACalculatorPage::addWidgets( EVariableLoc side, const std::list< QWidget * > &widgets )
 {
     for ( auto &&ii : widgets )
     {
@@ -61,7 +58,7 @@ void CSCUBACalculatorPage::addWidgets( ESide side, const std::list< QWidget * > 
     }
 }
 
-void CSCUBACalculatorPage::addWidget( ESide side, QWidget *widget )
+void CSCUBACalculatorPage::addWidget( EVariableLoc side, QWidget *widget )
 {
     fVariables[ widget ] = side;
 
@@ -83,7 +80,7 @@ bool CSCUBACalculatorPage::needsInit() const
     return fNeedsInit;
 }
 
-void CSCUBACalculatorPage::setUpdateFromSide( ESide updateFromSide )
+void CSCUBACalculatorPage::setUpdateFromSide( EVariableLoc updateFromSide )
 {
     fUpdateFromSide = updateFromSide;
 }
@@ -109,57 +106,30 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
     auto &&variables = calculator->getVariables();
     for ( auto &&curr : variables )
     {
-        if ( curr->fType != EVariableType::eVariable )
-            continue;
-        numVariables++;
-        curr->fLabel = new QLabel( retVal );
-        curr->fLabel->setText( QString( "%1:" ).arg( curr->fDescription ) );
-
-        if ( curr->fRange.has_value() )
-        {
-            auto spinBox = new QDoubleSpinBox( retVal );
-            curr->fField = spinBox;
-            spinBox->setObjectName( "curr->fName.data()" );
-            spinBox->setDecimals( 2 );
-            spinBox->setMinimum( curr->fRange.value().fMin );
-            spinBox->setMaximum( curr->fRange.value().fMax );
-            spinBox->setSingleStep( curr->fRange.value().fStep );
-            spinBox->setValue( curr->fRange.value().fDefaultValue );
-        }
-        else
-        {
-            curr->fField = new QLineEdit( retVal );
-            curr->fField->setObjectName( curr->fName.data() );
-        }
-
-        curr->fUnitLabel = new QLabel( retVal );
-
-        auto hLayout = new QHBoxLayout();
-        hLayout->addWidget( curr->fField );
-        hLayout->addWidget( curr->fUnitLabel );
-
-        formLayout->addRow( curr->fLabel, hLayout );
-        retVal->addWidget( curr->fVariableLocation, curr->fField );
-
-        curr->updateLabels( calculator->imperial(), calculator->saltWater() );
+        if ( curr->createWidgets( retVal, formLayout ) )
+            numVariables++;
     }
 
     auto svgFrame = new QFrame( retVal );
+    QSizePolicy sizePolicy( QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred );
+    sizePolicy.setHorizontalStretch( 0 );
+    sizePolicy.setVerticalStretch( 1 );
+    sizePolicy.setHeightForWidth( svgFrame->sizePolicy().hasHeightForWidth() );
+    svgFrame->setSizePolicy( sizePolicy );
+
     svgFrame->setFrameShape( QFrame::Shape::StyledPanel );
     svgFrame->setFrameShadow( QFrame::Shadow::Raised );
     auto hBoxLayout = new QHBoxLayout( svgFrame );
-    hBoxLayout->addItem( new QSpacerItem( 40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum ) );
 
     auto svgWidget = new QSvgWidget( svgFrame );
     svgWidget->setMinimumSize( QSize( 0, 10 ) );
-    svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatioByExpanding );
 
-    hBoxLayout->addWidget( svgWidget, 0, Qt::AlignCenter );
-
-    hBoxLayout->addItem( new QSpacerItem( 40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum ) );
+    hBoxLayout->addWidget( svgWidget, 0, Qt::AlignmentFlag::AlignHCenter | Qt::AlignmentFlag::AlignVCenter );
 
     formLayout->addRow( svgFrame );
-    formLayout->setItem( formLayout->rowCount(), QFormLayout::LabelRole, new QSpacerItem( 20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding ) );
+
+    auto spacerItem = new QSpacerItem( 20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::MinimumExpanding );
+    formLayout->addItem( spacerItem );
 
     return { retVal, svgFrame, svgWidget, numVariables };
 }

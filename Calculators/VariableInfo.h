@@ -25,6 +25,13 @@
 
 #include "SCUBACalculatorFwd.h"
 #include <QString>
+#include <QStringList>
+#include <list>
+
+class QLineEdit;
+class QDoubleSpinBox;
+class QFormLayout;
+class QComboBox;
 
 struct SRange
 {
@@ -36,33 +43,67 @@ struct SRange
 
 struct SVariableInfo
 {
-    SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, ESide variableLocation );
+    SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
+
+    QString name() const { return fName; }
+    EVariableLoc variableLoc() const { return fVariableLocation; }
+
+    bool createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout );
+
     void updateLabels( bool imperial, bool saltWater );
 
     void resetValue( bool updateUI, bool notifyUI );   // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
+
     void updateFieldFromValue( bool notifyUI = false );   // updates fField from fValue
     void updateValueFromField();   // updates fValue from fField
+    void updateFormula( bool imperial, bool saltWater, QString &newFormula, bool isBaseFormula ) const;
 
-    void updateFormula( bool imperial, bool saltWater, QString &newFormula, bool defaultFormula ) const;
-
-    double value() const { return fValue.value(); }   // user responsible for calling has_value first
+    int numDecimals() const { return ( fUnit == EUnit::ePercent ) ? 0 : 2; }
+    double formulaValue() const;   // user responsible for calling has_value first
+    double value() const;   // user responsible for calling has_value first
     bool has_value() const { return fValue.has_value(); }
-    void setValue( double value ) { fValue = value; }
+    void setValue( TOptionalDouble value ) { fValue = value; }
 
     bool isVariable() const { return fType == EVariableType::eVariable; }
+    void setRange( const std::optional< SRange > &range ) { fRange = range; }
+    void setValues( const TOptionalNamedValueItemList &values ) { fValues = values; }
+    bool isWidget( QWidget *widget ) const;
+
+    QLineEdit *lineEdit() const;
+    QDoubleSpinBox *doubleSpinBox() const;
+    QComboBox *comboBox() const;
+
+private:
+    TOptionalDouble currFieldValue() const;
+
+private:
+    bool isLineEntry() const;
+
+    TOptionalDouble valueForString( const QString &text ) const;
+    void updateFieldFromValue( QDoubleSpinBox *spinBox, bool notifyUI );
+    void updateFieldFromValue( QComboBox *comboBox, bool notifyUI );
+    void updateFieldFromValue( QLineEdit *lineEdit, bool notifyUI );
+
+private:
+    void clearField( bool notifyUI );
+
     QString fName;
     QString fDescription;   // used as place holder text as well
-
     EVariableType fType{ EVariableType::eVariable };
     EUnit fUnit{ EUnit::eNone };
 
-    ESide fVariableLocation{ ESide::eRHS };
+    EVariableLoc fVariableLocation{ EVariableLoc::eRHS };
 
-    TOptionalDouble fValue;
     QLabel *fLabel{ nullptr };
     QWidget *fField{ nullptr };
     QLabel *fUnitLabel{ nullptr };
 
+    std::list< QWidget * > fExtraInputWidgets;
+
     std::optional< SRange > fRange;
+    TOptionalNamedValueItemList fValues;
+
+private:
+    TOptionalDouble fValue;
 };
 #endif
