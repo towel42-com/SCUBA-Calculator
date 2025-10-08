@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -19,7 +20,6 @@ public:
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula() const override;
-    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -39,55 +39,60 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    return {};
+    auto retVal = TVariableInfoList(   //
+        {
+            std::make_shared< SVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eHidden, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, EVariableLoc::eRHS ),   //
+        } );
+
+    ( *std::prev( std::prev( retVal.end() ) ) )
+        ->setValues(   //
+            TOptionalNamedValueItemList( {
+                //
+                std::make_pair( tr( "Oxygen" ), NUtilities::NConstants::percentO2AtSurface() ),   //
+                std::make_pair( tr( "Nitrogen" ), NUtilities::NConstants::percentN2AtSurface() ),   //
+                std::make_pair( tr( "Other" ), TOptionalDouble() )   //
+            } ) );   //
+    return retVal;
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    auto pressureFromDepthFormula = NUtilities::pressureFromDepthFormula( "ata", "depthToSingleAtmosphere", "depth" );
+    auto ppatDepth = QString( R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__" );
+    return pressureFromDepthFormula + R"( \newline\newline )" + ppatDepth;
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    return {};
-    //bool depthForPressureOK = ( values[ 0 ].has_value() && ( values[ 1 ].has_value() || values[ 2 ].has_value() ) );
-    //bool po2OK = ( values[ 3 ].has_value() && values[ 4 ].has_value() );
+    auto ata = getVariable( "ata" );
+    auto partialPressureAtDepth = getVariable( "partialPressureAtDepth" );
+    auto depth = getVariable( "depth" );
+    auto partialPressureAtSurface = getVariable( "partialPressureAtSurface" );
 
-    //if ( !NUtilities::valuesValid( values ) && !po2OK && !depthForPressureOK )
-    //    return {};
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    if ( !aOK || !partialPressureAtDepth->has_value() )
+    {
+        if ( aOK )
+        {
+            ata->setValue( NUtilities::pressureFromDepth( imperial(), saltWater(), depth->value() ) );
+            partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
+        }
+        formula = getDefaultFormula();
+    }
+    else if ( !depth->has_value() )
+    {
+        depth->setValue( NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
+    }
+    else if ( !partialPressureAtSurface->has_value() )
+    {
+        ata->setValue( NUtilities::pressureFromDepth( imperial(), saltWater(), depth->value() ) );
+        partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
+    }
 
-    //auto pressureForDepth = values[ 1 ];
-    //auto depthForPressure = values[ 2 ];
-    //auto partialPressure = values[ 3 ];
-    //auto surfacePressure = values[ 4 ];
-
-    //if ( po2OK && ( !pressureForDepth.has_value() && !depthForPressure.has_value() ) )
-    //{
-    //    pressureForDepth = partialPressure.value() / surfacePressure.value();
-    //    depthForPressureOK = true;
-    //}
-
-    //if ( depthForPressureOK && ( !pressureForDepth.has_value() || !depthForPressure.has_value() ) )
-    //{
-    //    NUtilities::calculateDepthToFromPressure( imperial(), saltWater(), pressureForDepth, depthForPressure );
-    //}
-
-    //if ( NUtilities::valuesValid( { pressureForDepth, partialPressure, surfacePressure } ) )
-    //{
-    //    if ( !partialPressure.has_value() )
-    //    {
-    //        partialPressure = pressureForDepth.value() * surfacePressure.value();
-    //    }
-    //    else if ( !surfacePressure.has_value() )
-    //    {
-    //        surfacePressure = partialPressure.value() / partialPressure.value();
-    //    }
-    //}
-    //return TOptionalDoubleVector( { pressureForDepth, depthForPressure, partialPressure, surfacePressure } );
-}
-
-void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
-{
-    (void)updateFromSide;
-    (void)triggerWidget;
+    return formula;
 }

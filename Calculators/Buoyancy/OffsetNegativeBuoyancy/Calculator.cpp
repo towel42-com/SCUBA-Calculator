@@ -41,9 +41,9 @@ std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() cons
 {
     return   //
         {
-            std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, ESide::eLHS ),   //
-            std::make_shared< SVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, ESide::eRHS ),   //
-            std::make_shared< SVariableInfo >( "weightOfWater", tr( "Weight of Water" ), EVariableType::eWeightOfWaterConst, EUnit::eWeight, ESide::eRHS )   //
+            std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "weightOfWater", tr( "Weight of Water" ), EVariableType::eWeightOfWaterConst, EUnit::eWeight, EVariableLoc::eRHS )   //
         };
 }
 
@@ -66,7 +66,7 @@ QString CCalculator::computeAndGenerateFormula() const
     }
     else if ( !negativeBuoyancy->has_value() )
     {
-        formula = tr( R"__(<negativeBuoyancy>=<volumeDisplaced>\times<weightOfWater>)__" );
+        formula = tr( R"__(<negativeBuoyancy>=<volumeDisplaced> \times <weightOfWater>)__" );
         negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), saltWater() ) );
     }
 

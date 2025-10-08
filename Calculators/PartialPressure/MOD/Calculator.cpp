@@ -20,6 +20,8 @@ public:
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula() const override;
+
+    virtual TVariableInfo customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -41,18 +43,33 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< SVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eLength, ESide::eLHS ),   //
-            std::make_shared< SVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, ESide::eRHS ),   //
-            std::make_shared< SVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, ESide::eRHS ),   //
-            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, ESide::eRHS ),   //
+            std::make_shared< SVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, EVariableLoc::eRHS ),   //
         } );
-    ( *std::next( retVal.begin() ) )->fRange = { 0.21, 2.0, 1.4, 0.1 };
+    ( *std::next( retVal.begin() ) )->setRange( SRange( { 0.21, 2.0, 1.4, 0.1 } ) );
     return retVal;
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1]\times<depthToSingleAtmosphere>)__" );
+    return tr( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__" );
+}
+
+TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
+{
+    TVariableInfo retVal;
+    if ( preDefaultBehavior )
+    {
+        if ( getVariable( "mod" )->isWidget( triggerWidget ) )
+        {
+            retVal = getVariable( "fo2" );
+        }
+    }
+    else
+        retVal = CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+    return retVal;
 }
 
 QString CCalculator::computeAndGenerateFormula() const
@@ -65,7 +82,7 @@ QString CCalculator::computeAndGenerateFormula() const
     bool aOK = numUnsetVariables() == 1;
     if ( !aOK || !mod->has_value() )
     {
-        if ( aOK )
+        if ( aOK && ( fo2->value() != 0.0 ) )
         {
             mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) );
         }
@@ -74,12 +91,14 @@ QString CCalculator::computeAndGenerateFormula() const
     else if ( !maxPO2->has_value() )
     {
         maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) + 1 ) );
-        formula = tr( R"__(<maxPO2>=<fo2>\times[(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__" );
+        formula = tr( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__" );
     }
     else if ( !fo2->has_value() )
     {
-        fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) + 1 ) );
-        formula = tr( R"__(<fo2>=\frac{<maxPO2>}[(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__" );
+        if ( mod->value() != 0.0 )
+            fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) + 1 ) );
+
+        formula = tr( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<depthToSingleAtmosphere>})+1})__" );
     }
     return formula;
 }

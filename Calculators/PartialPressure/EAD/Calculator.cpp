@@ -41,17 +41,17 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            std::make_shared< SVariableInfo >( "ead", tr( "Equivalent Air Depth EAD" ), EVariableType::eVariable, EUnit::eLength, ESide::eLHS ),   //
-            std::make_shared< SVariableInfo >( "fn2", tr( "FN2" ), EVariableType::eVariable, EUnit::ePercent, ESide::eRHS ),   //
-            std::make_shared< SVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, ESide::eRHS ),   //
-            std::make_shared< SVariableInfo >( "fn2AtSurface", tr( "FN2 @ Surface" ), EVariableType::eFN2AtSurfaceConst, EUnit::ePercent, ESide::eRHS ),   //
-            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, ESide::eRHS ),   //
+            std::make_shared< SVariableInfo >( "ead", tr( "Equivalent Air Depth EAD" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "fn2", tr( "FN2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "fn2AtSurface", tr( "FN2 @ Surface" ), EVariableType::eFN2AtSurfaceConst, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, EVariableLoc::eRHS ),   //
         };
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>})\times(<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__" );
+    return tr( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
@@ -71,7 +71,7 @@ QString CCalculator::computeAndGenerateFormula() const
     else if ( !fn2->has_value() )
     {
         fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) ) / ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), saltWater() ) ) );
-        formula = tr( R"__(<fn2> = \frac{[<fn2AtSurface>\times(<ead>+<depthToSingleAtmosphere>)]}{(<depth>+<depthToSingleAtmosphere>)})__" );
+        formula = tr( R"__(<fn2> = \frac{[<fn2AtSurface> \times (<ead>+<depthToSingleAtmosphere>)]}{(<depth>+<depthToSingleAtmosphere>)})__" );
     }
     else if ( !depth->has_value() )
     {

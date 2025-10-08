@@ -17,7 +17,6 @@ public:
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula() const override;
-    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -74,11 +73,5 @@ QString CCalculator::computeAndGenerateFormula() const
     //    t = NUtilities::fromAbsZeroBasedTemp( imperial(), ( p.value() * v.value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles.value() ) );
     //}
     //return TOptionalDoubleVector( { p, v, numMoles, t } );
-}
-
-void CCalculator::customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
-{
-    (void)updateFromSide;
-    (void)triggerWidget;
 }
 
