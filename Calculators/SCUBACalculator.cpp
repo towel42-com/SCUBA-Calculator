@@ -36,6 +36,7 @@ CSCUBACalculatorPage *CSCUBACalculator::getPage( QWidget *parent )
 
 void CSCUBACalculator::init( bool imperial, bool saltWater )
 {
+    setObjectName( calculatorName() );
     if ( fPage )
         fPage->init( imperial, saltWater );
 }
@@ -81,11 +82,21 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
 {
     if ( fVariables.empty() )
     {
+        fLHSVariables.clear();
+        fRHSVariables.clear();
+        fGlobalVariables.clear();
         fVariableMap.clear();
+
         fVariables = getMyVariables();
         for ( auto &&curr : fVariables )
         {
-            fVariableMap[ curr->fName ] = curr;
+            fVariableMap[ curr->name() ] = curr;
+            if ( curr->variableLoc() == EVariableLoc::eLHS )
+                fLHSVariables.push_back( curr );
+            else if ( curr->variableLoc() == EVariableLoc::eRHS )
+                fRHSVariables.push_back( curr );
+            else if ( curr->variableLoc() == EVariableLoc::eGlobal )
+                fGlobalVariables.push_back( curr );
         }
     }
     return fVariables;
@@ -103,7 +114,8 @@ void CSCUBACalculator::resetVariables()
         ( *ii )->resetValue( true, false );
     }
 
-    auto formula = finalizeFormula( imperial(), saltWater(), getDefaultFormula(), true );
+    auto formula = finalizeFormula( getDefaultFormula(), true );
+    updateFields( nullptr );
     notifyOfNewFormula( formula, false );
 }
 
@@ -112,9 +124,9 @@ std::size_t CSCUBACalculator::numUnsetVariables() const
     std::size_t retVal = 0;
     for ( auto &&ii : fVariables )
     {
-        if ( ii->fType != EVariableType::eVariable )
+        if ( !ii->isVariable() )
             continue;
-        if ( !ii->fValue.has_value() )
+        if ( !ii->has_value() )
             retVal++;
     }
     return retVal;
@@ -137,7 +149,7 @@ void CSCUBACalculator::renderDefaultFormulas() const
     {
         for ( auto saltWater : { true, false } )
         {
-            auto formula = finalizeFormula( imperial, saltWater, baseFormula, false );
+            auto formula = finalizeFormula( imperial, saltWater, baseFormula, true );
             defaultFormulas.insert( formula );
         }
     }
@@ -148,91 +160,67 @@ void CSCUBACalculator::renderDefaultFormulas() const
     }
 }
 
-void CSCUBACalculator::customDetermineVariableToUnset( ESide /*updateFromSide*/, QWidget * /*triggerWidget*/ )
+TVariableInfo CSCUBACalculator::customDetermineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
 {
+    return {};
 }
 
-void CSCUBACalculator::determineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget )
+void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
     if ( numUnsetVariables() != 0 )
         return;
 
-    auto &&[ lhsVars, rhsVars, globals ] = getVariableSides();
-    getVariableSides();
-
-    TVariableInfo varToReset;
-
-    if ( lhsVars.empty() || rhsVars.empty() )
+    if ( fLHSVariables.empty() || fRHSVariables.empty() )
         return;
 
-    if ( updateFromSide == ESide::eGlobal )
+    auto varToReset = customDetermineVariableToUnset( updateFromSide, triggerWidget, true );
+
+    if ( !varToReset && ( updateFromSide == EVariableLoc::eGlobal ) )
     {
         varToReset = {};
     }
-    else if ( updateFromSide == ESide::eRHS )
+    else if ( !varToReset && ( updateFromSide == EVariableLoc::eRHS ) )
     {
-        if ( ( lhsVars.size() == 1 ) || ( rhsVars.size() == 1 ) )
+        if ( ( fLHSVariables.size() == 1 ) || ( fRHSVariables.size() == 1 ) )
         {
-            varToReset = lhsVars.front();
+            varToReset = fLHSVariables.front();
         }
-        else if ( rhsVars.size() == 2 )
+        else if ( fRHSVariables.size() == 2 )
         {
-            Q_ASSERT( ( rhsVars.front()->fField == triggerWidget ) || ( rhsVars.back()->fField == triggerWidget ) );
-            if ( rhsVars.front()->fField == triggerWidget )
-                varToReset = rhsVars.back();
-            else if ( rhsVars.back()->fField == triggerWidget )
-                varToReset = rhsVars.front();
+            Q_ASSERT( ( fRHSVariables.front()->isWidget( triggerWidget ) ) || ( fRHSVariables.back()->isWidget( triggerWidget ) ) );
+            if ( fRHSVariables.front()->isWidget( triggerWidget ) )
+                varToReset = fRHSVariables.back();
+            else if ( fRHSVariables.back()->isWidget( triggerWidget ) )
+                varToReset = fRHSVariables.front();
         }
     }
-    else if ( updateFromSide == ESide::eLHS )
+    else if ( !varToReset && ( updateFromSide == EVariableLoc::eLHS ) )
     {
-        if ( ( rhsVars.size() == 1 ) || ( lhsVars.size() == 1 ) )
+        if ( ( fRHSVariables.size() == 1 ) || ( fLHSVariables.size() == 1 ) )
         {
-            varToReset = rhsVars.front();
+            varToReset = fRHSVariables.front();
         }
-        else if ( lhsVars.size() == 2 )
+        else if ( fLHSVariables.size() == 2 )
         {
-            Q_ASSERT( ( lhsVars.front()->fField == triggerWidget ) || ( lhsVars.back()->fField == triggerWidget ) );
-            if ( lhsVars.front()->fField == triggerWidget )
-                varToReset = lhsVars.back();
-            else if ( lhsVars.back()->fField == triggerWidget )
-                varToReset = lhsVars.front();
+            Q_ASSERT( ( fLHSVariables.front()->isWidget( triggerWidget ) ) || ( fLHSVariables.back()->isWidget( triggerWidget ) ) );
+            if ( fLHSVariables.front()->isWidget( triggerWidget ) )
+                varToReset = fLHSVariables.back();
+            else if ( fLHSVariables.back()->isWidget( triggerWidget ) )
+                varToReset = fLHSVariables.front();
         }
     }
+
+    if ( !varToReset )
+        varToReset = customDetermineVariableToUnset( updateFromSide, triggerWidget, false );
 
     if ( varToReset )
     {
         varToReset->resetValue( false, false );
         return;
     }
-    customDetermineVariableToUnset( updateFromSide, triggerWidget );
 }
 
-std::tuple< TVariableInfoList, TVariableInfoList, TVariableInfoList > CSCUBACalculator::getVariableSides() const
-{
-    auto &&variables = getVariables();
-    std::list< TVariableInfo > lhs;
-    std::list< TVariableInfo > rhs;
-    std::list< TVariableInfo > global;
-
-    TVariableInfo lhsVar{};
-    std::pair< TVariableInfo, TVariableInfo > rhsVars;
-    for ( auto &&curr : variables )
-    {
-        if ( !curr->isVariable() )
-            continue;
-
-        if ( curr->fVariableLocation == ESide::eRHS )
-            rhs.push_back( curr );
-        else if ( curr->fVariableLocation == ESide::eLHS )
-            lhs.push_back( curr );
-        else
-            global.push_back( curr );
-    }
-    return { lhs, rhs, global };
-}
-
-void CSCUBACalculator::compute( ESide updateFromSide, QWidget *triggerWidget )
+void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
     auto &&variables = getVariables();
     for ( auto &&curr : variables )
@@ -245,27 +233,42 @@ void CSCUBACalculator::compute( ESide updateFromSide, QWidget *triggerWidget )
 
     auto formula = computeAndGenerateFormula();
 
-    formula = finalizeFormula( imperial(), saltWater(), formula, false );
+    formula = finalizeFormula( formula, false );
+    updateFields( triggerWidget );
     notifyOfNewFormula( formula, false );
 
-    formula = finalizeFormula( imperial(), saltWater(), getDefaultFormula(), true );
+    formula = finalizeFormula( getDefaultFormula(), true );
     notifyOfNewFormula( formula, true );
 }
 
-QString CSCUBACalculator::finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool defaultFormula ) const
+void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
+{
+    auto &&variables = getVariables();
+
+    for ( auto &&curr : variables )
+    {
+        if ( !curr->isWidget( triggerWidget ) )
+            curr->updateFieldFromValue();
+    }
+}
+
+QString CSCUBACalculator::finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool isBaseFormula ) const
 {
     auto &&variables = getVariables();
 
     QString retVal = formula;
     for ( auto &&curr : variables )
     {
-        curr->updateFormula( imperial, saltWater, retVal, defaultFormula );
-        if ( !defaultFormula )
-            curr->updateFieldFromValue();
+        curr->updateFormula( imperial, saltWater, retVal, isBaseFormula );
     }
 
     retVal = retVal.replace( " ", R"(\ )" );
     return retVal;
+}
+
+QString CSCUBACalculator::finalizeFormula( const QString &formula, bool isBaseFormula ) const
+{
+    return finalizeFormula( imperial(), saltWater(), formula, isBaseFormula );
 }
 
 extern "C" CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit )

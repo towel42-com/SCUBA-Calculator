@@ -64,7 +64,7 @@ public:
 
     virtual void setUpdateFormulaFunc( const TUpdateFormulaFunc &func ) final;
     virtual void renderDefaultFormulas() const final;
-    virtual void compute( ESide updateFromSide, QWidget *triggerWidget ) final;
+    virtual void compute( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
     virtual const TVariableInfoList &getVariables() const;
 
@@ -77,28 +77,33 @@ protected:
     std::size_t numUnsetVariables() const;
     TVariableInfo getVariable( const QString &varName ) const;
 
-private:
+protected:
     virtual TVariableInfoList &getVariables();
 
     virtual void notifyOfNewFormula( const QString &eq, bool baseFormula ) const final;
-    virtual QString finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool updateField ) const final;
+    virtual void updateFields( QWidget *triggerWidget ) const final;
+    virtual QString finalizeFormula( bool imperial, bool saltWater, const QString &formula, bool isBaseFormula ) const final;
+    virtual QString finalizeFormula( const QString &formula, bool isBaseFormula ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
     virtual QString getDefaultFormula() const = 0;
     virtual QString computeAndGenerateFormula() const = 0;   // updates values and returns the formula
-    virtual void determineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget ) final;
 
-private:
-    std::tuple< TVariableInfoList, TVariableInfoList, TVariableInfoList > getVariableSides() const;
+    virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
-    virtual void customDetermineVariableToUnset( ESide updateFromSide, QWidget *triggerWidget );;
+    virtual TVariableInfo customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
+    // only necessary if the number of variables on either side is greater than two.
 
 protected:
     CSCUBACalculatorPage *fPage{ nullptr };
     QSvgWidget *fSvgWidget{ nullptr };
     QFrame *fSvgFrame{ nullptr };
     TUpdateFormulaFunc fUpdateFormulaFunc;
+    TVariableInfoList fLHSVariables;
+    TVariableInfoList fRHSVariables;
+    TVariableInfoList fGlobalVariables;
     TVariableInfoList fVariables;
+
     std::unordered_map< QString, TVariableInfo > fVariableMap;
     std::size_t fNumVariables{ 0 };   // if there are constants in the variable list, this value will not equal fVariables.size();
 };
