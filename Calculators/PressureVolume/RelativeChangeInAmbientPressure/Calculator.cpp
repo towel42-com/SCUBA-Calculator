@@ -34,43 +34,51 @@ QStringList CCalculator::calculatorPath() const
     return { tr( "Pressure and Volume Conversions" ) };
 }
 
+
 TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            //std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "relChange", tr( "Relative Change in Ambient Pressure" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
         };
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    QString formula;
-    return formula;
+    return R"__(<relChange> = \frac{<p2>}{<p1>})__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
-    isBaseFormula = true;
-    return {};
-    //if ( !NUtilities::valuesValid( values ) )
-    //    return {};
+    auto relChange = getVariable( "relChange" );
+    auto p1 = getVariable( "p1" );
+    auto p2 = getVariable( "p2" );
 
-    //auto relChange = values[ 0 ];
-    //auto p1 = values[ 1 ];
-    //auto p2 = values[ 2 ];
-
-    //if ( !relChange.has_value() )
-    //{
-    //    relChange = p2.value() / p1.value();
-    //}
-    //else if ( !p2.has_value() )
-    //{
-    //    p2 = relChange.value() * p1.value();
-    //}
-    //else if ( !p1.has_value() )
-    //{
-    //    p1 = p2.value() / relChange.value();
-    //}
-    //return TOptionalDoubleVector( { relChange, p1, p2 } );
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
+    {
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !relChange->has_value() )
+    {
+        relChange->setValue( p2->value() / p1->value() );
+        formula = tr( R"__(<relChange> = \frac{<p2>}{<p1>})__" );
+    }
+    else if ( !p1->has_value() )
+    {
+        p1->setValue( p2->value() / relChange->value() );
+        formula = tr( R"__(<p1> = \frac{<p2>}{<relChange>})__" );
+    }
+    else if ( !p2->has_value() )
+    {
+        p2->setValue( relChange->value() * p1->value() );
+        formula = tr( R"__(<p2> = <p2> \times <relChange>)__" );
+    }
+    return formula;
 }
 
