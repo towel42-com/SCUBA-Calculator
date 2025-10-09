@@ -27,12 +27,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Depth Freshwater to Seawater";
+    return tr( "Depth Freshwater to Seawater" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Depth Conversions" };
+    return { tr( "Pressure and Depth Conversions" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const

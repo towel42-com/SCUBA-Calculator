@@ -27,12 +27,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Ideal Gas Law";
+    return tr( "Ideal Gas Law" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -50,7 +50,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<p> \times <v> = <numMoles> \times <idealGasConstant> \times <t>)__" );
+    return R"__(<p> \times <v> = <numMoles> \times <idealGasConstant> \times <t>)__";
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const

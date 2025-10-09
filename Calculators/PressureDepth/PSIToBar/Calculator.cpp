@@ -29,12 +29,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "PSI to BAR";
+    return tr( "PSI to BAR" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Depth Conversions" };
+    return { tr( "Pressure and Depth Conversions" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const

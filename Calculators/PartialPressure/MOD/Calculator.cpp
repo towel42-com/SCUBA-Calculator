@@ -31,12 +31,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Maximum Operating Depth (MOD)";
+    return tr( "Maximum Operating Depth (MOD)" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Partial Pressure Calculations" };
+    return { tr( "Partial Pressure Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -69,7 +69,7 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__" );
+    return R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__";
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const

@@ -29,12 +29,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Partial Pressure for Given Depth";
+    return tr( "Calculating Partial Pressure for Given Depth" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Partial Pressure Calculations" };
+    return { tr( "Partial Pressure Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -61,9 +61,10 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    auto depthToPressureFormula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
-    auto ppatDepth = QString( R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__" );
-    return depthToPressureFormula + R"( \newline\newline )" + ppatDepth;
+    auto formula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
+    formula += R"__( \newline\newline )__";
+    formula += R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__";
+    return formula;
 }
 
 QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const

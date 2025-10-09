@@ -27,12 +27,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Pressure Following a Change in Temperature";
+    return tr( "Calculating Pressure Following a Change in Temperature" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -73,7 +73,7 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
 QString CCalculator::getDefaultFormula() const
 {
     QString formula;
-    formula = tr( R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__" );
+    formula = R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__";
     return formula;
 }
 

@@ -28,12 +28,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Volume Following a Change in Temperature";
+    return tr( "Calculating Volume Following a Change in Temperature" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const

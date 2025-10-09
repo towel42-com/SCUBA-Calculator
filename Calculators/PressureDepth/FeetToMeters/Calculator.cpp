@@ -29,12 +29,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Feet to Meters";
+    return tr( "Feet to Meters" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Depth Conversions" };
+    return { tr( "Pressure and Depth Conversions" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const

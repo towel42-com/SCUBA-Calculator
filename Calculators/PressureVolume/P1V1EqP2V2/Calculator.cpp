@@ -26,12 +26,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Volume/Pressure Following a Change in Pressure/Volume (P1xV1=P2xV2)";
+    return tr( "Calculating Volume/Pressure Following a Change in Pressure/Volume (P1xV1=P2xV2)" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Volume Conversions" };
+    return { tr( "Pressure and Volume Conversions" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -44,7 +44,8 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    QString formula;
+    return formula;
 }
 
 QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const

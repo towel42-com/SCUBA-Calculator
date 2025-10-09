@@ -26,12 +26,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Gas Consumption Time to-from Specific Depth";
+    return tr( "Calculating Gas Consumption Time to-from Specific Depth" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Volume Conversions" };
+    return { tr( "Pressure and Volume Conversions" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const

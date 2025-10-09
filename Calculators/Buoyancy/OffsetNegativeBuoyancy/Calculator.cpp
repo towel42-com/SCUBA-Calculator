@@ -29,12 +29,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Offsetting Negative Buoyancy";
+    return tr( "Offsetting Negative Buoyancy" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Buoyancy Calculations" };
+    return { tr( "Buoyancy Calculations" ) };
 }
 
 std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() const
@@ -49,7 +49,7 @@ std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() cons
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__" );
+    return R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__";
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const

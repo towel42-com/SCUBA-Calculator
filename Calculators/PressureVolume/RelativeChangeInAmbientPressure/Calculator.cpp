@@ -26,12 +26,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Relative Change in Ambient Pressure";
+    return tr( "Calculating Relative Change in Ambient Pressure" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Volume Conversions" };
+    return { tr( "Pressure and Volume Conversions" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -44,7 +44,8 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    QString formula;
+    return formula;
 }
 
 QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const

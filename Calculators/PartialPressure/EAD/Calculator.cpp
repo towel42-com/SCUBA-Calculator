@@ -29,12 +29,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Equivalent Air Depth (EAD)";
+    return tr( "Equivalent Air Depth (EAD)" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Partial Pressure Calculations" };
+    return { tr( "Partial Pressure Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -51,7 +51,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__" );
+    return R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__";
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const

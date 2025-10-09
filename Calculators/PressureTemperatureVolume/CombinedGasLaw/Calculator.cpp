@@ -28,12 +28,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Combined Gas Law";
+    return tr( "Combined Gas Law" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -77,7 +77,7 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(\frac{<p1> \times <v1>}{<t1>} = \frac{<p2> \times <v2>}{<t2>})__" );
+    return R"__(\frac{<p1> \times <v1>}{<t1>} = \frac{<p2> \times <v2>}{<t2>})__";
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const

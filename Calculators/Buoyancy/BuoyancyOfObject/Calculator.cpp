@@ -29,12 +29,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Buoyancy Characteristics of an Object";
+    return tr( "Buoyancy Characteristics of an Object" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Buoyancy Calculations" };
+    return { tr( "Buoyancy Calculations" ) };
 }
 
 std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() const
@@ -50,7 +50,7 @@ std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() cons
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<buoyancy>=<weightOfObject> - [<volumeDisplaced> \times <weightOfWater>])__" );
+    return R"__(<buoyancy>=<weightOfObject> - [<volumeDisplaced> \times <weightOfWater>])__";
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
