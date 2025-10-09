@@ -17,7 +17,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 
     virtual bool showUnits() const { return false; }
 };
@@ -39,7 +39,7 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    auto retVal = TVariableInfoList (//
+    auto retVal = TVariableInfoList(   //
         {
             std::make_shared< SVariableInfo >( "feet", tr( "Feet" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
             std::make_shared< SVariableInfo >( "meters", tr( "Meters" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
@@ -47,7 +47,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         } );
 
     retVal.front()->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( true, true, false ) );
-    (*std::next( retVal.begin() ) )->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( false, true, false ) );
+    ( *std::next( retVal.begin() ) )->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( false, true, false ) );
     return retVal;
 }
 
@@ -56,17 +56,22 @@ QString CCalculator::getDefaultFormula() const
     return NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto feet = getVariable( "feet" );
     auto meters = getVariable( "meters" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !feet->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            feet->setValue( NUtilities::metersToFeet( meters->value() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !feet->has_value() )
+    {
+        feet->setValue( NUtilities::metersToFeet( meters->value() ) );
         formula = getDefaultFormula();
     }
     else if ( !meters->has_value() )

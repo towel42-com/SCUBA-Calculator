@@ -153,7 +153,7 @@ void CSCUBACalculator::initVariables()
             fGlobalVariables.push_back( curr );
     }
 
-    //Q_ASSERT( !fLHSVariables.empty() && !fRHSVariables.empty() );
+    Q_ASSERT( ( fLHSVariables.empty() && fRHSVariables.empty() ) || ( !fLHSVariables.empty() && !fRHSVariables.empty() ) );
 }
 
 void CSCUBACalculator::resetVariables()
@@ -280,11 +280,12 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
     determineVariableToUnset( updateFromSide, triggerWidget );
 
-    auto formula = computeAndGenerateFormula();
+    bool isBaseFormula = false;
+    auto formula = computeAndGenerateFormula( isBaseFormula );
 
-    formula = finalizeFormula( formula, false );
+    formula = finalizeFormula( formula, isBaseFormula );
     updateFields( triggerWidget );
-    notifyOfNewFormula( formula, false );
+    notifyOfNewFormula( formula, isBaseFormula );
 
     formula = finalizeFormula( getDefaultFormula(), true );
     notifyOfNewFormula( formula, true );
@@ -296,7 +297,7 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
 
     for ( auto &&curr : variables )
     {
-        if ( !curr->isWidget( triggerWidget ) )
+        if ( !curr->isWidget( triggerWidget ) || !curr->currFieldValue().has_value() )
             curr->updateFieldFromValue();
     }
 }

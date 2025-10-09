@@ -19,7 +19,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -53,7 +53,7 @@ QString CCalculator::getDefaultFormula() const
     return tr( R"__(<buoyancy>=<weightOfObject> - [<volumeDisplaced> \times <weightOfWater>])__" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto buoyancy = getVariable( "buoyancy" );
     auto weightOfObject = getVariable( "weightOfObject" );
@@ -61,10 +61,15 @@ QString CCalculator::computeAndGenerateFormula() const
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !buoyancy->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            buoyancy->setValue( weightOfObject->value() - ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !buoyancy->has_value() )
+    {
+        buoyancy->setValue( weightOfObject->value() - ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) ) );
         formula = getDefaultFormula();
     }
     else if ( !weightOfObject->has_value() )

@@ -17,7 +17,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 
     virtual bool showUnits() const { return false; }
 };
@@ -56,17 +56,22 @@ QString CCalculator::getDefaultFormula() const
     return NUtilities::psiToBarFormula( "psi", "bar", "psiToBar" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto psi = getVariable( "psi" );
     auto bar = getVariable( "bar" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !bar->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            bar->setValue( NUtilities::psiToBar( psi->value() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !bar->has_value() )
+    {
+        bar->setValue( NUtilities::psiToBar( psi->value() ) );
         formula = getDefaultFormula();
     }
     else if ( !psi->has_value() )

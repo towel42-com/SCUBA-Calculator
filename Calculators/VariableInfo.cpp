@@ -87,7 +87,7 @@ void SVariableInfo::updateLabels( bool imperial, bool seaWater )
 
     Q_ASSERT( fField && fUnitLabel );
 
-    auto unitText = this->unitText( imperial, seaWater, false );
+    auto unitText = this->unitText( imperial, seaWater, false, false );
 
     if ( lineEdit() )
     {
@@ -102,11 +102,41 @@ void SVariableInfo::updateLabels( bool imperial, bool seaWater )
         fUnitLabel->setText( unitText );
 }
 
-QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex ) const
+QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, bool isBaseFormula ) const
 {
     if ( fUnitText.has_value() )
         return fUnitText.value();
-    return NUtilities::NUnitStrings::getUnitLabel( imperial, seaWater, fUnit, true, tex );
+
+    switch ( fUnit )
+    {
+        case EUnit::eNone:
+            return {};
+        case EUnit::eVolume:
+            return NUtilities::NUnitStrings::volumeUnit( imperial, true, tex );
+        case EUnit::eWeight:
+            return NUtilities::NUnitStrings::weightUnit( imperial, true, tex );
+        case EUnit::eLength:
+            return NUtilities::NUnitStrings::lengthUnit( imperial, true, tex );
+        case EUnit::eDepth:
+            return NUtilities::NUnitStrings::depthUnit( imperial, seaWater, true, tex );
+        case EUnit::ePressure:
+            return NUtilities::NUnitStrings::pressureUnit( imperial, true, tex );
+        case EUnit::eAtmospheres:
+            return NUtilities::NUnitStrings::atmosphereUnit( imperial, true, tex );
+        case EUnit::eTemperature:
+            return NUtilities::NUnitStrings::tempUnit( imperial, true, tex );
+        case EUnit::eAbsZeroTemperature:
+            {
+                if ( tex && isBaseFormula )
+                    return NUtilities::NUnitStrings::absZeroTempUnit( imperial, true, true );
+                else
+                    return NUtilities::NUnitStrings::tempUnit( imperial, true, false );
+            }
+        case EUnit::ePercent:
+            return NUtilities::NUnitStrings::percentUnit( tex );
+        default:
+            return {};
+    }
 }
 
 void SVariableInfo::resetValue( bool updateUI, bool notifyUI )
@@ -246,13 +276,18 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     value = NUtilities::NUnitStrings::psiToBar( true, true );
                     format = "%1";
                 }
+            case EVariableType::eAbsZeroOffsetConst:
+                {
+                    value = NUtilities::NUnitStrings::absZeroOffset( imperial, true, true );
+                    format = "%1";
+                }
         };
     }
 
     auto newString = QString( format ).arg( value );
     if ( ( fType == EVariableType::eVariable ) || ( fType == EVariableType::eHidden ) )
     {
-        auto unit = unitText( imperial, seaWater, true );
+        auto unit = unitText( imperial, seaWater, true, isBaseFormula );
         newString = newString.arg( unit );
         newString.replace( " ()", "" );
     }
@@ -261,7 +296,7 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
     if ( fType == EVariableType::eHidden )
     {
         auto labelString = QString( "%1 (%2)" ).arg( fDescription );
-        labelString = labelString.arg( unitText( imperial, seaWater, true ) );
+        labelString = labelString.arg( unitText( imperial, seaWater, true, isBaseFormula ) );
         labelString.replace( " ()", "" );
         formula = formula.replace( token, labelString );
 

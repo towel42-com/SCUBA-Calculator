@@ -19,7 +19,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -52,16 +52,21 @@ QString CCalculator::getDefaultFormula() const
     return tr( R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto negativeBuoyancy = getVariable( "negativeBuoyancy" );
     auto volumeDisplaced = getVariable( "volumeDisplaced" );
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !volumeDisplaced->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !volumeDisplaced->has_value() )
+    {
+        volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
         formula = getDefaultFormula();
     }
     else if ( !negativeBuoyancy->has_value() )

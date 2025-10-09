@@ -17,7 +17,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -52,17 +52,22 @@ QString CCalculator::getDefaultFormula() const
     return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto freshWater = getVariable( "freshWater" );
     auto seaWater = getVariable( "seaWater" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !seaWater->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            seaWater->setValue( NUtilities::depthFreshwaterToSeawater( freshWater->value() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !seaWater->has_value() )
+    {
+        seaWater->setValue( NUtilities::depthFreshwaterToSeawater( freshWater->value() ) );
         formula = getDefaultFormula();
     }
     else if ( !freshWater->has_value() )
@@ -72,4 +77,3 @@ QString CCalculator::computeAndGenerateFormula() const
     }
     return formula;
 }
-

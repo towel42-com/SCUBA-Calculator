@@ -19,7 +19,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -54,7 +54,7 @@ QString CCalculator::getDefaultFormula() const
     return tr( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto ead = getVariable( "ead" );
     auto fn2 = getVariable( "fn2" );
@@ -62,10 +62,15 @@ QString CCalculator::computeAndGenerateFormula() const
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !ead->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !ead->has_value() )
+    {
+        ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
         formula = getDefaultFormula();
     }
     else if ( !fn2->has_value() )
@@ -80,4 +85,3 @@ QString CCalculator::computeAndGenerateFormula() const
     }
     return formula;
 }
-

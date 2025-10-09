@@ -53,7 +53,7 @@ struct SVariableInfo
     void updateLabels( bool imperial, bool seaWater );
 
 public:
-    QString unitText( bool imperial, bool seaWater, bool tex ) const;
+    QString unitText( bool imperial, bool seaWater, bool tex, bool isBaseFormula ) const;
 
     void resetValue( bool updateUI, bool notifyUI );   // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
 
@@ -64,6 +64,8 @@ public:
     int numDecimals() const { return ( fUnit == EUnit::ePercent ) ? 0 : 2; }
     double formulaValue() const;   // user responsible for calling has_value first
     double value() const;   // user responsible for calling has_value first
+    TOptionalDouble currFieldValue() const;
+
     bool has_value() const { return fValue.has_value(); }
     void setValue( TOptionalDouble value ) { fValue = value; }
 
@@ -77,9 +79,6 @@ public:
     QLineEdit *lineEdit() const;
     QDoubleSpinBox *doubleSpinBox() const;
     QComboBox *comboBox() const;
-
-private:
-    TOptionalDouble currFieldValue() const;
 
 private:
     bool isLineEntry() const;

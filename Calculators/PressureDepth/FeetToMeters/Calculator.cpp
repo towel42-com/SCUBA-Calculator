@@ -17,7 +17,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 
     virtual bool showUnits() const { return false; }
 };
@@ -56,17 +56,22 @@ QString CCalculator::getDefaultFormula() const
     return NUtilities::feetToMetersFormula( "feet", "meters", "metersToFeet" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto feet = getVariable( "feet" );
     auto meters = getVariable( "meters" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !meters->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            meters->setValue( NUtilities::feetToMeters( feet->value() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !meters->has_value() )
+    {
+        meters->setValue( NUtilities::feetToMeters( feet->value() ) );
         formula = getDefaultFormula();
     }
     else if ( !feet->has_value() )

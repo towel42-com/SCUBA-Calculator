@@ -6,35 +6,6 @@ namespace NUtilities
 {
     namespace NUnitStrings
     {
-        QString getUnitLabel( bool imperial, bool seaWater, EUnit unit, bool useAbbreviations, bool tex )
-        {
-            switch ( unit )
-            {
-                case EUnit::eNone:
-                    return {};
-                case EUnit::eVolume:
-                    return volumeUnit( imperial, useAbbreviations, tex );
-                case EUnit::eWeight:
-                    return weightUnit( imperial, useAbbreviations, tex );
-                case EUnit::eLength:
-                    return lengthUnit( imperial, useAbbreviations, tex );
-                case EUnit::eDepth:
-                    return depthUnit( imperial, seaWater, useAbbreviations, tex );
-                case EUnit::ePressure:
-                    return pressureUnit( imperial, useAbbreviations, tex );
-                case EUnit::eAtmospheres:
-                    return atmosphereUnit( imperial, useAbbreviations, tex );
-                case EUnit::eTemperature:
-                    return tempUnit( imperial, useAbbreviations, tex );
-                case EUnit::eAbsZeroTemperature:
-                    return absZeroTempUnit( imperial, useAbbreviations, tex );
-                case EUnit::ePercent:
-                    return percentUnit( tex );
-                default:
-                    return {};
-            }
-        };
-
         QString volumeUnit( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal;
@@ -163,13 +134,15 @@ namespace NUtilities
 
         QString absZeroTempUnit( bool imperial, bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"(^{\circ})" : "\u00B0";
+            QString retVal;
+
+            retVal += tex ? R"(^{\circ})" : "\u00B0";
             if ( imperial )
             {
                 if ( useAbbreviations )
                     retVal += QObject::tr( "R", "absZeroTempUnit" );
                 else
-                    retVal += QObject::tr( "ankine", "absZeroTempUnit" );
+                    retVal += QObject::tr( "rankine", "absZeroTempUnit" );
             }
             else
             {
@@ -247,11 +220,18 @@ namespace NUtilities
             retVal = retVal.arg( doubleToString( NConstants::barToPSI(), 1 ) ).arg( pressureUnit( true, useAbbreviations, true ) ).arg( pressureUnit( false, useAbbreviations, true ) );
             return retVal;
         }
+
+        QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( doubleToString( NConstants::absZeroOffset( imperial ), 0 ) ).arg( tempUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
     }
 
     namespace NConstants
     {
-        double absZero( bool imperial )
+        double absZeroOffset( bool imperial )
         {
             return imperial ? 460.0 : 273.0;
         }
@@ -318,12 +298,12 @@ namespace NUtilities
 
     double toAbsZeroBasedTemp( bool imperial, double temp )
     {
-        return temp + NConstants::absZero( imperial );
+        return temp + NConstants::absZeroOffset( imperial );
     }
 
     double fromAbsZeroBasedTemp( bool imperial, double temp )
     {
-        return temp - NConstants::absZero( imperial );
+        return temp - NConstants::absZeroOffset( imperial );
     }
 
     QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName, const QString &psiToBarConstFieldName )

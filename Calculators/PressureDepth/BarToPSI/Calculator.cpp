@@ -16,7 +16,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 
     virtual bool showUnits() const { return false; }
 };
@@ -38,7 +38,7 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    auto retVal = TVariableInfoList( //
+    auto retVal = TVariableInfoList(   //
         {
             std::make_shared< SVariableInfo >( "psi", tr( "PSI" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
             std::make_shared< SVariableInfo >( "bar", tr( "BAR" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
@@ -56,17 +56,22 @@ QString CCalculator::getDefaultFormula() const
     return NUtilities::barToPSIFormula( "psi", "bar", "psiToBar" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto psi = getVariable( "psi" );
     auto bar = getVariable( "bar" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !psi->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            psi->setValue( NUtilities::barToPSI( bar->value() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !psi->has_value() )
+    {
+        psi->setValue( NUtilities::barToPSI( bar->value() ) );
         formula = getDefaultFormula();
     }
     else if ( !bar->has_value() )
@@ -76,4 +81,3 @@ QString CCalculator::computeAndGenerateFormula() const
     }
     return formula;
 }
-

@@ -92,7 +92,7 @@ protected:
 
     virtual TVariableInfoList getMyVariables() const = 0;
     virtual QString getDefaultFormula() const = 0;
-    virtual QString computeAndGenerateFormula() const = 0;   // updates values and returns the formula
+    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const = 0;   // updates values and returns the formula
 
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 

@@ -88,7 +88,8 @@ enum class EVariableType
     eDepthToSingleAtmosphereConst,
     eMetersToFeetConst,
     eSeaWaterToFreshWaterConst,
-    ePSIToBarConst
+    ePSIToBarConst,
+    eAbsZeroOffsetConst
 };
 
 enum class EVariableLoc

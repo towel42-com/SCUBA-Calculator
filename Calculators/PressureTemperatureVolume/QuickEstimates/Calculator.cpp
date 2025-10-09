@@ -16,7 +16,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -47,8 +47,9 @@ QString CCalculator::getDefaultFormula() const
     return {};
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
 {
+    isBaseFormula = true;
     return {};
     //if ( !NUtilities::valuesValid( values ) )
     //    return {};

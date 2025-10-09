@@ -19,7 +19,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 
     virtual TVariableInfo customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 };
@@ -72,20 +72,23 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
     return retVal;
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto mod = getVariable( "mod" );
     auto maxPO2 = getVariable( "maxPO2" );
     auto fo2 = getVariable( "fo2" );
 
     QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !mod->has_value() )
+    bool aOK = ( numUnsetVariables() == 1 ) && ( fo2->value() != 0.0 );
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK && ( fo2->value() != 0.0 ) )
-        {
-            mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
-        }
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !mod->has_value() )
+    {
+        mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
         formula = getDefaultFormula();
     }
     else if ( !maxPO2->has_value() )

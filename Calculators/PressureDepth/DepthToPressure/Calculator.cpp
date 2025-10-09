@@ -19,7 +19,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -52,17 +52,22 @@ QString CCalculator::getDefaultFormula() const
     return NUtilities::depthToPressureFormula( "pressure", "depth", "depthToSingleAtmosphere" );
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto pressure = getVariable( "pressure" );
     auto depth = getVariable( "depth" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !pressure->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-            pressure->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !pressure->has_value() )
+    {
+        pressure->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
         formula = getDefaultFormula();
     }
     else if ( !depth->has_value() )
@@ -72,4 +77,3 @@ QString CCalculator::computeAndGenerateFormula() const
     }
     return formula;
 }
-

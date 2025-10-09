@@ -50,13 +50,12 @@ namespace NUtilities
         CALCULATORS_EXPORT QString metersToFeet( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString psiToBar( bool useAbbreviations, bool tex );
-
-        CALCULATORS_EXPORT QString getUnitLabel( bool imperial, bool seaWater, EUnit unit, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex );
     }
 
     namespace NConstants
     {
-        CALCULATORS_EXPORT double absZero( bool imperial );
+        CALCULATORS_EXPORT double absZeroOffset( bool imperial );
         CALCULATORS_EXPORT double pressurePerTemp( bool imperial );
         CALCULATORS_EXPORT double weightOfWater( bool imperial, bool seaWater );
         CALCULATORS_EXPORT double pressureOffset( bool imperial );

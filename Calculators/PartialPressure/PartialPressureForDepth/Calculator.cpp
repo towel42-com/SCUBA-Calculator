@@ -19,7 +19,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula() const override;
+    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -66,7 +66,7 @@ QString CCalculator::getDefaultFormula() const
     return depthToPressureFormula + R"( \newline\newline )" + ppatDepth;
 }
 
-QString CCalculator::computeAndGenerateFormula() const
+QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
 {
     auto ata = getVariable( "ata" );
     auto partialPressureAtDepth = getVariable( "partialPressureAtDepth" );
@@ -75,13 +75,16 @@ QString CCalculator::computeAndGenerateFormula() const
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !partialPressureAtDepth->has_value() )
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        if ( aOK )
-        {
-            ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
-            partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
-        }
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !partialPressureAtDepth->has_value() )
+    {
+        ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
         formula = getDefaultFormula();
     }
     else if ( !depth->has_value() )
