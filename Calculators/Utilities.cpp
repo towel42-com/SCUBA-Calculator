@@ -245,7 +245,7 @@ namespace NUtilities
         QString pressureOffset( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::pressureOffset( imperial ), 1 ) ).arg( atmosphereUnit( imperial, useAbbreviations, tex ) );
+            retVal = retVal.arg( doubleToString( NConstants::pressureOffset( imperial ), 1 ) ).arg( pressureUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
     }

@@ -52,11 +52,6 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::getDefaultFormula() const
-{
-    return tr( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__" );
-}
-
 TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
 {
     TVariableInfo retVal;
@@ -70,6 +65,11 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
     else
         retVal = CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
     return retVal;
+}
+
+QString CCalculator::getDefaultFormula() const
+{
+    return tr( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__" );
 }
 
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
