@@ -7,6 +7,7 @@
 #include <QFrame>
 #include <QSvgWidget>
 #include <QSvgRenderer>
+#include <QGroupBox>
 
 #include <list>
 #include <utility>
@@ -103,12 +104,20 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
     auto retVal = new CSCUBACalculatorPage( calculator, parent );
     auto formLayout = new QFormLayout( retVal );
 
-    auto &&variables = calculator->getVariables();
-    for ( auto &&curr : variables )
-    {
-        if ( curr->createWidgets( retVal, formLayout ) )
-            numVariables++;
-    }
+    auto &&[ groupBox, currNumVariables ] = loadVariables( tr( "Global" ), calculator->getGlobalVariables(), retVal );
+    numVariables += currNumVariables;
+    if ( groupBox )
+        formLayout->addRow( groupBox );
+
+    std::tie( groupBox, currNumVariables ) = loadVariables( tr( "LHS" ), calculator->getLHSVariables(), retVal );
+    numVariables += currNumVariables;
+    if ( groupBox )
+        formLayout->addRow( groupBox );
+
+    std::tie( groupBox, currNumVariables ) = loadVariables( tr( "RHS" ), calculator->getRHSVariables(), retVal );
+    numVariables += currNumVariables;
+    if ( groupBox )
+        formLayout->addRow( groupBox );
 
     auto svgFrame = new QFrame( retVal );
     QSizePolicy sizePolicy( QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred );
@@ -133,3 +142,28 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
 
     return { retVal, svgFrame, svgWidget, numVariables };
 }
+
+std::pair< QGroupBox *, std::size_t > CSCUBACalculatorPage::loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page )
+{
+    if ( variables.empty() )
+        return { nullptr, 0 };
+
+    auto groupBox = new QGroupBox( tr( "%1 Variables:" ).arg( name ), page );
+    auto formLayout = new QFormLayout( groupBox );
+
+    std::size_t numVariables = 0;
+    for ( auto &&curr : variables )
+    {
+        if ( curr->createWidgets( page, formLayout ) )
+            numVariables++;
+    }
+    return { groupBox, numVariables };
+}
+
+//QFrame *line;
+//line = new QFrame( layoutWidget );
+//line->setObjectName( "line" );
+//line->setFrameShape( QFrame::Shape::HLine );
+//line->setFrameShadow( QFrame::Shadow::Sunken );
+//
+//gridLayout->addWidget( line, 2, 0, 1, 1 );

@@ -82,22 +82,7 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
 {
     if ( fVariables.empty() )
     {
-        fLHSVariables.clear();
-        fRHSVariables.clear();
-        fGlobalVariables.clear();
-        fVariableMap.clear();
-
-        fVariables = getMyVariables();
-        for ( auto &&curr : fVariables )
-        {
-            fVariableMap[ curr->name() ] = curr;
-            if ( curr->variableLoc() == EVariableLoc::eLHS )
-                fLHSVariables.push_back( curr );
-            else if ( curr->variableLoc() == EVariableLoc::eRHS )
-                fRHSVariables.push_back( curr );
-            else if ( curr->variableLoc() == EVariableLoc::eGlobal )
-                fGlobalVariables.push_back( curr );
-        }
+        initVariables();
     }
     return fVariables;
 }
@@ -105,6 +90,70 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
 const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables() const
 {
     return fVariables;
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fGlobalVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariables() const
+{
+    return fGlobalVariables;
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fRHSVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables() const
+{
+    return fRHSVariables;
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fLHSVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables() const
+{
+    return fLHSVariables;
+}
+
+void CSCUBACalculator::initVariables()
+{
+    fLHSVariables.clear();
+    fRHSVariables.clear();
+    fGlobalVariables.clear();
+    fVariableMap.clear();
+
+    fVariables = getMyVariables();
+    for ( auto &&curr : fVariables )
+    {
+        fVariableMap[ curr->name() ] = curr;
+        if ( curr->variableLoc() == EVariableLoc::eLHS )
+            fLHSVariables.push_back( curr );
+        else if ( curr->variableLoc() == EVariableLoc::eRHS )
+            fRHSVariables.push_back( curr );
+        else if ( curr->variableLoc() == EVariableLoc::eGlobal )
+            fGlobalVariables.push_back( curr );
+    }
+
+    //Q_ASSERT( !fLHSVariables.empty() && !fRHSVariables.empty() );
 }
 
 void CSCUBACalculator::resetVariables()

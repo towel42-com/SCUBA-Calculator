@@ -37,8 +37,6 @@ class CALCULATORS_EXPORT CSCUBACalculator : public QObject
 {
     Q_OBJECT;
 
-    friend class CSCUBACalculatorPage;
-
 public:
     Q_PROPERTY( bool showUnits READ showUnits );
     Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
@@ -66,19 +64,26 @@ public:
     virtual void renderDefaultFormulas() const final;
     virtual void compute( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
-    virtual const TVariableInfoList &getVariables() const;
-
     virtual void resetVariables();
 
     virtual QFrame *svgFrame() const { return fSvgFrame; }
     virtual QSvgWidget *svgWidget() const { return fSvgWidget; }
 
+    virtual TVariableInfoList &getVariables();
+    virtual TVariableInfoList &getGlobalVariables();
+    virtual TVariableInfoList &getLHSVariables();
+    virtual TVariableInfoList &getRHSVariables();
+
+    virtual const TVariableInfoList &getVariables() const;
+    virtual const TVariableInfoList &getGlobalVariables() const;
+    virtual const TVariableInfoList &getLHSVariables() const;
+    virtual const TVariableInfoList &getRHSVariables() const;
+
 protected:
+    void initVariables();
     std::size_t numUnsetVariables() const;
     TVariableInfo getVariable( const QString &varName ) const;
 
-protected:
-    virtual TVariableInfoList &getVariables();
 
     virtual void notifyOfNewFormula( const QString &eq, bool baseFormula ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;

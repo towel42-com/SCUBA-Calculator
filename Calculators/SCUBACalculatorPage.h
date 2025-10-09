@@ -30,6 +30,7 @@
 
 class QSvgWidget;
 class QFrame;
+class QGroupBox;
 
 class CSCUBACalculatorPage : public QWidget
 {
@@ -47,6 +48,7 @@ public:
 
     static std::tuple< CSCUBACalculatorPage *, QFrame*, QSvgWidget *, std::size_t > constructPage( CSCUBACalculator *calculator, QWidget *parent );
 
+public:
     virtual void init( bool imperial, bool seaWater ) final;
 
     virtual bool imperial() const final { return fImperial; }
@@ -73,6 +75,7 @@ Q_SIGNALS:
     void sigUpdateValues();
 
 private:
+    static std::pair< QGroupBox *, std::size_t > loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page );
     virtual CSCUBACalculator *calculator() final { return fCalculator; }
 
     virtual void setUpdateFromSide( EVariableLoc updateFromSide ) final;
