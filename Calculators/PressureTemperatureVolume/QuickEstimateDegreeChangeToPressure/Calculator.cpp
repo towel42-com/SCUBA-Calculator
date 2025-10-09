@@ -26,7 +26,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Quick Estimates for Temperature and Pressure";
+    return "Quick Estimates for Pressure when Temperature Changes";
 }
 
 QStringList CCalculator::calculatorPath() const

@@ -1,5 +1,6 @@
 add_subdirectory( IdealGasLaw )
 add_subdirectory( CombinedGasLaw )
 add_subdirectory( PressureChangeInTemp )
-add_subdirectory( QuickEstimates )
+add_subdirectory( QuickEstimateDegreesToPressureChange )
+add_subdirectory( QuickEstimatePressureChangeToDegrees )
 add_subdirectory( VolumeChangeInTemp )

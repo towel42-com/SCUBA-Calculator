@@ -77,7 +77,8 @@ DeployQt( ${PROJECT_NAME} .
         CombinedGasLaw
         IdealGasLaw
         PressureChangeInTemp
-        QuickEstimates
+        QuickEstimateDegreesToPressureChange
+        QuickEstimatePressureChangeToDegrees
         VolumeChangeInTemp
         DepthToGasConsumptionTime
         GasConsumptionTimeToDepth
