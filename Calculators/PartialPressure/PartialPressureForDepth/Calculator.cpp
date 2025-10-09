@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,12 +8,18 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual bool usesSaltwater() const override { return true; }
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual bool isWaterTypeBased() const override { return true; }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -22,54 +29,74 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Partial Pressure for Given Depth";
+    return tr( "Calculating Partial Pressure for Given Depth" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Partial Pressure Calculations" };
+    return { tr( "Partial Pressure Calculations" ) };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    auto retVal = TVariableInfoList(   //
+        {
+            std::make_shared< SVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eHidden, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+        } );
+
+    ( *std::prev( std::prev( retVal.end() ) ) )
+        ->setValues(   //
+            TOptionalNamedValueItemList( {
+                //
+                std::make_pair( tr( "Oxygen" ), NUtilities::NConstants::percentO2AtSurface() ),   //
+                std::make_pair( tr( "Nitrogen" ), NUtilities::NConstants::percentN2AtSurface() ),   //
+                std::make_pair( tr( "Other" ), TOptionalDouble() )   //
+            } ) );   //
+    return retVal;
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    bool depthForPressureOK = ( values[ 0 ].has_value() && ( values[ 1 ].has_value() || values[ 2 ].has_value() ) );
-    bool po2OK = ( values[ 3 ].has_value() && values[ 4 ].has_value() );
+    auto formula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
+    formula += R"__( \newline\newline )__";
+    formula += R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__";
+    return formula;
+}
 
-    if ( !valuesValid( values ) && !po2OK && !depthForPressureOK )
-        return {};
+QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
+{
+    auto ata = getVariable( "ata" );
+    auto partialPressureAtDepth = getVariable( "partialPressureAtDepth" );
+    auto depth = getVariable( "depth" );
+    auto partialPressureAtSurface = getVariable( "partialPressureAtSurface" );
 
-    auto saltWater = std::get< bool >( values[ 0 ].value() );
-    auto pressureForDepth = values[ 1 ];
-    auto depthForPressure = values[ 2 ];
-    auto partialPressure = values[ 3 ];
-    auto surfacePressure = values[ 4 ];
-
-    if ( po2OK && ( !pressureForDepth.has_value() && !depthForPressure.has_value() ) )
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        pressureForDepth = std::get< double >( partialPressure.value() ) / std::get< double >( surfacePressure.value() );
-        depthForPressureOK = true;
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !partialPressureAtDepth->has_value() )
+    {
+        ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
+        formula = getDefaultFormula();
+    }
+    else if ( !depth->has_value() )
+    {
+        depth->setValue( NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
+    }
+    else if ( !partialPressureAtSurface->has_value() )
+    {
+        ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
 
-    if ( depthForPressureOK && ( !pressureForDepth.has_value() || !depthForPressure.has_value() ) )
-    {
-        calculateDepthToFromPressure( saltWater, pressureForDepth, depthForPressure );
-    }
-
-    if ( valuesValid( { pressureForDepth, partialPressure, surfacePressure } ) )
-    {
-        if ( !partialPressure.has_value() )
-        {
-            partialPressure = std::get< double >( pressureForDepth.value() ) * std::get< double >( surfacePressure.value() );
-        }
-        else if ( !surfacePressure.has_value() )
-        {
-            surfacePressure = std::get< double >( partialPressure.value() ) / std::get< double >( partialPressure.value() );
-        }
-    }
-    return TOptionalVariantVector( { pressureForDepth, depthForPressure, partialPressure, surfacePressure } );
+    return formula;
 }

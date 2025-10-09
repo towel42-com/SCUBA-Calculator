@@ -1,9 +1,17 @@
 #include "SCUBACalculator.h"
-#include "SCUBACalculator.h"
-#include "SABUtils/WidgetChanged.h"
-#include <QLineEdit>
+#include "SCUBACalculatorPage.h"
+#include "VariableInfo.h"
+#include <QFrame>
+#include <QSvgWidget>
 
-CSCUBACalculator::CSCUBACalculator()
+#include <iterator>
+#include <tuple>
+#include <list>
+#include <memory>
+#include <unordered_set>
+
+CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
+    QObject( parent )
 {
 }
 
@@ -11,11 +19,26 @@ CSCUBACalculator::~CSCUBACalculator()
 {
 }
 
-CSCUBACalculatorPage *CSCUBACalculator::getPage( QWidget *parent ) const
+CSCUBACalculatorPage *CSCUBACalculator::getPage() const
+{
+    Q_ASSERT( fPage );
+    return fPage;
+}
+
+CSCUBACalculatorPage *CSCUBACalculator::getPage( QWidget *parent )
 {
     if ( !fPage )
-        fPage = constructPage( parent );
+    {
+        std::tie( fPage, fSvgFrame, fSvgWidget, fNumVariables ) = CSCUBACalculatorPage::constructPage( this, parent );
+    }
     return fPage;
+}
+
+void CSCUBACalculator::init( bool imperial, bool seaWater )
+{
+    setObjectName( calculatorName() );
+    if ( fPage )
+        fPage->init( imperial, seaWater );
 }
 
 void CSCUBACalculator::setImperial( bool imperial )
@@ -24,10 +47,15 @@ void CSCUBACalculator::setImperial( bool imperial )
         fPage->setImperial( imperial );
 }
 
-void CSCUBACalculator::setMetric( bool metric )
+void CSCUBACalculator::setSeaWater( bool seaWater )
 {
     if ( fPage )
-        fPage->setMetric( metric );
+        fPage->setSeaWater( seaWater );
+}
+
+void CSCUBACalculator::setUpdateFormulaFunc( const TUpdateFormulaFunc &func )
+{
+    fUpdateFormulaFunc = func;
 }
 
 bool CSCUBACalculator::imperial() const
@@ -37,316 +65,265 @@ bool CSCUBACalculator::imperial() const
     return false;
 }
 
-bool CSCUBACalculator::metric() const
+bool CSCUBACalculator::seaWater() const
 {
     if ( fPage )
-        return fPage->metric();
+        return fPage->seaWater();
     return false;
 }
 
-double CSCUBACalculator::weightOfWater( bool saltWater ) const
+void CSCUBACalculator::notifyOfNewFormula( const QString &eq, bool baseFormula ) const
 {
-    auto retVal = imperial() ? ( saltWater ? 64.0 : 62.4 ) : ( saltWater ? 1.0 : 1.03 );
+    if ( fUpdateFormulaFunc )
+        fUpdateFormulaFunc( getPage(), eq, baseFormula );
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables() const
+{
+    return fVariables;
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fGlobalVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariables() const
+{
+    return fGlobalVariables;
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fRHSVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables() const
+{
+    return fRHSVariables;
+}
+
+std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables()
+{
+    if ( fVariables.empty() )
+    {
+        initVariables();
+    }
+    return fLHSVariables;
+}
+
+const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables() const
+{
+    return fLHSVariables;
+}
+
+void CSCUBACalculator::initVariables()
+{
+    fLHSVariables.clear();
+    fRHSVariables.clear();
+    fGlobalVariables.clear();
+    fVariableMap.clear();
+
+    fVariables = getMyVariables();
+    for ( auto &&curr : fVariables )
+    {
+        fVariableMap[ curr->name() ] = curr;
+        if ( curr->variableLoc() == EVariableLoc::eLHS )
+            fLHSVariables.push_back( curr );
+        else if ( curr->variableLoc() == EVariableLoc::eRHS )
+            fRHSVariables.push_back( curr );
+    }
+
+    Q_ASSERT( ( fLHSVariables.empty() && fRHSVariables.empty() ) || ( !fLHSVariables.empty() && !fRHSVariables.empty() ) );
+}
+
+void CSCUBACalculator::resetVariables()
+{
+    for ( auto &&ii = fVariables.begin(); ii != fVariables.end(); ++ii )
+    {
+        ( *ii )->resetValue( true, false );
+    }
+
+    auto formula = finalizeFormula( getDefaultFormula(), true );
+    updateFields( nullptr );
+    notifyOfNewFormula( formula, false );
+}
+
+std::size_t CSCUBACalculator::numUnsetVariables() const
+{
+    std::size_t retVal = 0;
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+        if ( !ii->has_value() )
+            retVal++;
+    }
     return retVal;
 }
 
-double CSCUBACalculator::depthToSingleAtmosphere( bool saltWater ) const
+std::shared_ptr< SVariableInfo > CSCUBACalculator::getVariable( const QString &varName ) const
 {
-    auto retVal = imperial() ? ( saltWater ? 33.0 : 34.0 ) : ( saltWater ? 10.0 : 10.3 );
-    return retVal;
+    auto pos = fVariableMap.find( varName );
+    if ( pos == fVariableMap.end() )
+        return {};
+    return ( *pos ).second;
 }
 
-double CSCUBACalculator::absZero() const
+void CSCUBACalculator::renderDefaultFormulas() const
 {
-    return imperial() ? 460.0 : 273.0;
-}
+    auto baseFormula = getDefaultFormula();
+    std::unordered_set< QString > defaultFormulas;
 
-double CSCUBACalculator::pressureOffset() const
-{
-    return imperial() ? 14.7 : 1.0;
-}
-
-bool CSCUBACalculator::valuesValid( const TOptionalVariantVector &values, bool checkNumEmpty ) const
-{
-    if ( values.empty() )
-        return false;
-
-    if ( checkNumEmpty && numEmpty( values ) != 1 )
-        return false;
-    
-    std::size_t start = 0;
-    if( usesSaltwater() )
+    for ( auto imperial : { true, false } )
     {
-        if ( values.front().has_value() || !std::holds_alternative< bool >( values.front().value() ) )
-            return false;
-        start = 1;
-    }
-    for(auto ii = start; ii < values.size(); ++ii)
-    {
-        if ( values.front().has_value() && !std::holds_alternative< double >( values.front().value() ) )
-            return false;
-    }
-    return true;
-}
-
-void CSCUBACalculator::calculateDepthToFromPressure( bool saltWater, TOptionalVariant &pressure, TOptionalVariant &depth ) const
-{
-    if ( !pressure.has_value() && !depth.has_value() )
-        return;
-
-    auto depthOfATM = depthToSingleAtmosphere( saltWater );
-    if ( !depth.has_value() && std::holds_alternative< double >( pressure.value() ) )
-    {
-        depth = ( std::get< double >( pressure.value() ) - 1 ) * depthOfATM;
-    }
-    else if ( !pressure.has_value() && std::holds_alternative< double >( depth.value() ) )
-    {
-        pressure = ( std::get< double >( depth.value() ) / depthOfATM ) + 1;
-    }
-}
-
-std::size_t CSCUBACalculator::numEmpty( const TOptionalVariantVector &values ) const
-{
-    std::size_t numEmpty = 0;
-
-    for ( auto &&value : values )
-    {
-        numEmpty += value.has_value() ? 0 : 1;
-    }
-    return numEmpty;
-}
-
-double CSCUBACalculator::absZeroBasedTemp( double temp ) const
-{
-    return temp + absZero();
-}
-
-double CSCUBACalculator::fromAbsZeroBasedTemp( double temp ) const
-{
-    return temp - absZero();
-}
-
-double CSCUBACalculator::idealGasConstant() const
-{
-    if ( imperial() )
-    {
-        return 10.731577089016;
-    }
-    else
-    {
-        return 0.08206;
-    }
-}
-
-double CSCUBACalculator::pressurePerTemp() const
-{
-    return imperial() ? 5 : 0.6;
-}
-
-double CSCUBACalculator::percentN2AtSurface() const
-{
-    return 0.79;
-}
-
-double CSCUBACalculator::percentO2AtSurface() const
-{
-    return 0.21;
-}
-
-CSCUBACalculatorPage::CSCUBACalculatorPage( const CSCUBACalculator *calculator, QWidget *parent ) :
-    QWidget( parent ),
-    fCalculator( calculator )
-{
-    connect( this, &CSCUBACalculatorPage::sigUnitsChanged, [ = ]() { updateValues( nullptr ); } );
-}
-
-CSCUBACalculatorPage::~CSCUBACalculatorPage()
-{
-}
-
-void CSCUBACalculatorPage::setImperial( bool imperial )
-{
-    fImperial = imperial;
-    emit sigUnitsChanged();
-}
-
-void CSCUBACalculatorPage::setMetric( bool metric )
-{
-    fImperial = !metric;
-    emit sigUnitsChanged();
-}
-
-void CSCUBACalculatorPage::addWidgets( bool rhs, const std::list< QWidget * > &widgets )
-{
-    for ( auto &&ii : widgets )
-    {
-        addWidget( rhs, ii );
-    }
-}
-
-void CSCUBACalculatorPage::addWidget( bool rhs, QWidget *widget )
-{
-    fWidgets[ widget ] = rhs;
-
-    NSABUtils::setupWidgetChanged(
-        widget,
-        [ = ]( QObject * )
+        for ( auto seaWater : { true, false } )
         {
-            auto pos = fWidgets.find( widget );
-            if ( pos == fWidgets.end() )
-                return;
-            setUpdateFromRHS( ( *pos ).second );
-            updateValues( widget );
-        } );
+            auto formula = finalizeFormula( imperial, seaWater, baseFormula, true );
+            defaultFormulas.insert( formula );
+        }
+    }
+    Q_ASSERT( defaultFormulas.size() <= 4 );
+    for ( auto &&formula : defaultFormulas )
+    {
+        notifyOfNewFormula( formula, true );
+    }
 }
 
-TOptionalVariant CSCUBACalculatorPage::getValue( const QString &text ) const
+TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
 {
-    if ( text.trimmed().isEmpty() )
-        return {};
-    bool aOK = false;
-    auto retVal = text.trimmed().toDouble( &aOK );
-    if ( !aOK )
-        return {};
-    return retVal;
+    return {};
 }
 
-QString CSCUBACalculatorPage::doubleToString( const TOptionalVariant &value, int numDecimal ) const
+void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
-    QString retVal;
-    if ( value.has_value() && std::holds_alternative< double >( value.value() ) )
-        retVal = QString( "%1" ).arg( std::get< double >( value.value() ), 0, 'f', numDecimal );
-    return retVal;
-}
-
-void CSCUBACalculatorPage::setValue( QLineEdit *le, const TOptionalVariant &origValue, const TOptionalVariant &newValue, int numDecimal /*= 1 */ )
-{
-    if ( !le || !newValue.has_value() || !std::holds_alternative< double >( newValue.value() ) )
+    if ( numUnsetVariables() != 0 )
         return;
 
-    auto newValueString = doubleToString( newValue, numDecimal );
-    if ( doubleToString( origValue, numDecimal ) == newValueString )
+    if ( fLHSVariables.empty() || fRHSVariables.empty() )
         return;
 
-    le->blockSignals( true );
-    le->setText( newValueString );
-    le->blockSignals( false );
-}
+    auto varToReset = determineVariableToUnset( updateFromSide, triggerWidget, true );
+    if ( !varToReset && ( updateFromSide == EVariableLoc::eRHS ) )
+    {
+        if ( ( fLHSVariables.size() == 1 ) || ( fRHSVariables.size() == 1 ) )
+        {
+            varToReset = fLHSVariables.front();
+        }
+        else if ( fRHSVariables.size() == 2 )
+        {
+            Q_ASSERT( !triggerWidget || ( fRHSVariables.front()->isWidget( triggerWidget ) ) || ( fRHSVariables.back()->isWidget( triggerWidget ) ) );
+            if ( fRHSVariables.front()->isWidget( triggerWidget ) )
+                varToReset = fRHSVariables.back();
+            else if ( !triggerWidget || fRHSVariables.back()->isWidget( triggerWidget ) )
+                varToReset = fRHSVariables.front();
+        }
+    }
+    else if ( !varToReset && ( updateFromSide == EVariableLoc::eLHS ) )
+    {
+        if ( ( fRHSVariables.size() == 1 ) || ( fLHSVariables.size() == 1 ) )
+        {
+            varToReset = fRHSVariables.front();
+        }
+        else if ( fLHSVariables.size() == 2 )
+        {
+            Q_ASSERT( !triggerWidget || ( fLHSVariables.front()->isWidget( triggerWidget ) ) || ( fLHSVariables.back()->isWidget( triggerWidget ) ) );
+            if ( fLHSVariables.front()->isWidget( triggerWidget ) )
+                varToReset = fLHSVariables.back();
+            else if ( !triggerWidget || fLHSVariables.back()->isWidget( triggerWidget ) )
+                varToReset = fLHSVariables.front();
+        }
+    }
 
-QString CSCUBACalculatorPage::lengthUnit( bool singular ) const
-{
-    QString retVal;
-    if ( imperial() )
-    {
-        if ( singular )
-            return tr( "ft" );
-        else
-            return tr( "feet" );
-    }
-    else
-    {
-        if ( singular )
-            return tr( "meter" );
-        else
-            return tr( "meters" );
-    }
-}
+    if ( !varToReset )
+        varToReset = determineVariableToUnset( updateFromSide, triggerWidget, false );
 
-QString CSCUBACalculatorPage::volumeUnit( bool singular ) const
-{
-    QString retVal;
-    if ( imperial() )
+    if ( varToReset )
     {
-        return tr( "cu ft" );
-    }
-    else
-    {
-        if ( singular )
-            return tr( "liter" );
-        else
-            return tr( "liters" );
-    }
-}
-
-QString CSCUBACalculatorPage::weightUnit( bool singular ) const
-{
-    QString retVal;
-    if ( imperial() )
-    {
-        if ( singular )
-            return tr( "lb" );
-        else
-            return tr( "lbs" );
-    }
-    else
-    {
-        if ( singular )
-            return tr( "kg" );
-        else
-            return tr( "kgs" );
+        varToReset->resetValue( false, false );
+        return;
     }
 }
 
-QString CSCUBACalculatorPage::pressureUnit() const
+void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
-    return imperial() ? tr( "ATM" ) : tr( "BAR" );
+    auto &&variables = getVariables();
+    for ( auto &&curr : variables )
+    {
+        curr->updateLabels( imperial(), seaWater() );
+        curr->updateValueFromField();
+    }
+
+    determineVariableToUnset( updateFromSide, triggerWidget );
+
+    bool isBaseFormula = false;
+    auto formula = computeAndGenerateFormula( isBaseFormula );
+
+    formula = finalizeFormula( formula, isBaseFormula );
+    updateFields( triggerWidget );
+    notifyOfNewFormula( formula, isBaseFormula );
+
+    formula = finalizeFormula( getDefaultFormula(), true );
+    notifyOfNewFormula( formula, true );
 }
 
-QString CSCUBACalculatorPage::pressurePerTemp() const
+void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
 {
-    return tr( "%1 (%2/%3)" ).arg( calculator()->pressurePerTemp() ).arg( pressureUnit() ).arg( tempUnit( false ) );
+    auto &&variables = getVariables();
+
+    for ( auto &&curr : variables )
+    {
+        if ( !curr->isWidget( triggerWidget ) || !curr->currFieldValue().has_value() )
+            curr->updateFieldFromValue();
+    }
 }
 
-QString CSCUBACalculatorPage::tempUnit( bool absZero ) const
+QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const QString &formula, bool isBaseFormula ) const
 {
-    QString retVal = "\u00B0";
-    if ( imperial() )
+    auto &&variables = getVariables();
+
+    QString retVal = formula;
+    for ( auto &&curr : variables )
     {
-        if ( absZero )
-            retVal += tr( "R" );
-        else
-            retVal += tr( "F" );
+        curr->updateFormula( imperial, seaWater, retVal, isBaseFormula );
     }
-    else
-    {
-        if ( absZero )
-            retVal += tr( "K" );
-        else
-            retVal += tr( "C" );
-    }
+
+    retVal = retVal.replace( " ", R"__(\ )__" );
     return retVal;
 }
 
-QString CSCUBACalculatorPage::weightOfWater( bool saltWater ) const
+QString CSCUBACalculator::finalizeFormula( const QString &formula, bool isBaseFormula ) const
 {
-    auto retVal = tr( "(%1 %2/%3 of water)" ).arg( doubleToString( calculator()->weightOfWater( saltWater ), 1 ) ).arg( weightUnit( false ) ).arg( volumeUnit( true ) );
-    return retVal;
+    return finalizeFormula( imperial(), seaWater(), formula, isBaseFormula );
 }
 
-QString CSCUBACalculatorPage::idealGasConstant() const
+extern "C" CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit )
 {
-    return QString( "%1 (%2)x(%3)/(mol)x(%4)" ).arg( calculator()->idealGasConstant() ).arg( volumeUnit( true ) ).arg( pressureUnit() ).arg( tempUnit( true ) );
-}
-
-void CSCUBACalculatorPage::setUpdateFromRHS( bool updateFromRHS )
-{
-    fUpdateFromRHS = updateFromRHS;
-}
-
-void CSCUBACalculatorPage::slotWidgetChanged( QWidget *widget )
-{
-    auto pos = fWidgets.find( widget );
-    if ( pos == fWidgets.end() )
-        return;
-    setUpdateFromRHS( ( *pos ).second );
-    updateValues( widget );
-}
-
-extern "C" CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget )
-{
+    if ( needsInit )
+        *needsInit = false;
     if ( !calculator )
         return nullptr;
-    return calculator->getPage( parentWidget );
+    auto retVal = calculator->getPage( parentWidget );
+    if ( needsInit )
+        *needsInit = retVal->needsInit();
+    return retVal;
 }
 
 extern "C" void setImperial( CSCUBACalculator *calculator, bool imperial )
@@ -356,9 +333,23 @@ extern "C" void setImperial( CSCUBACalculator *calculator, bool imperial )
     calculator->setImperial( imperial );
 }
 
-extern "C" void setMetric( CSCUBACalculator *calculator, bool metric )
+extern "C" void setSeaWater( CSCUBACalculator *calculator, bool seaWater )
 {
     if ( !calculator )
         return;
-    calculator->setMetric( metric );
+    calculator->setSeaWater( seaWater );
+}
+
+extern "C" CALCULATORS_EXPORT void setUpdateFormulaFunc( CSCUBACalculator *calculator, const TUpdateFormulaFunc &func )
+{
+    if ( !calculator )
+        return;
+    calculator->setUpdateFormulaFunc( func );
+}
+
+extern "C" CALCULATORS_EXPORT void initCalculatorPage( CSCUBACalculator *calculator, bool imperial, bool seaWater )
+{
+    if ( !calculator )
+        return;
+    calculator->init( imperial, seaWater );
 }

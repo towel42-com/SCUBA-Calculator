@@ -1,5 +1,5 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,11 +7,16 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -21,39 +26,59 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Relative Change in Ambient Pressure";
+    return tr( "Calculating Relative Change in Ambient Pressure" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Volume Conversions" };
+    return { tr( "Pressure and Volume Conversions" ) };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    return   //
+        {
+            std::make_shared< SVariableInfo >( "relChange", tr( "Relative Change in Ambient Pressure" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+        };
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
-
-    auto relChange = values[ 0 ];
-    auto p1 = values[ 1 ];
-    auto p2 = values[ 2 ];
-
-    if ( !relChange.has_value() )
-    {
-        relChange = std::get< double >( p2.value() ) / std::get< double >( p1.value() );
-    }
-    else if ( !p2.has_value() )
-    {
-        p2 = std::get< double >( relChange.value() ) * std::get< double >( p1.value() );
-    }
-    else if ( !p1.has_value() )
-    {
-        p1 = std::get< double >( p2.value() ) / std::get< double >( relChange.value() );
-    }
-    return TOptionalVariantVector( { relChange, p1, p2 } );
+    return R"__(<relChange> = \frac{<p2>}{<p1>})__";
 }
+
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+{
+    auto relChange = getVariable( "relChange" );
+    auto p1 = getVariable( "p1" );
+    auto p2 = getVariable( "p2" );
+
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
+    {
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !relChange->has_value() )
+    {
+        relChange->setValue( p2->value() / p1->value() );
+        formula = tr( R"__(<relChange> = \frac{<p2>}{<p1>})__" );
+    }
+    else if ( !p1->has_value() )
+    {
+        p1->setValue( p2->value() / relChange->value() );
+        formula = tr( R"__(<p1> = \frac{<p2>}{<relChange>})__" );
+    }
+    else if ( !p2->has_value() )
+    {
+        p2->setValue( relChange->value() * p1->value() );
+        formula = tr( R"__(<p2> = <p2> \times <relChange>)__" );
+    }
+    return formula;
+}
+

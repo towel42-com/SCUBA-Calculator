@@ -26,7 +26,7 @@ get_filename_component( _GROUP_NAME ${_GROUP_NAME} NAME )
 project( ${_PROJECT_NAME} )
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 add_library(${PROJECT_NAME} SHARED
     ${_PROJECT_DEPENDENCIES} 
 )

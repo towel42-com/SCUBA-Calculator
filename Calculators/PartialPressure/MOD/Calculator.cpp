@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,12 +8,20 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
-    virtual bool usesSaltwater() const override { return true; }
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual bool isWaterTypeBased() const override { return true; }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
+
+    virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -22,48 +31,77 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Maximum Operating Depth (MOD)";
+    return tr( "Maximum Operating Depth (MOD)" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Partial Pressure Calculations" };
+    return { tr( "Partial Pressure Calculations" ) };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    auto retVal = TVariableInfoList(   //
+        {
+            std::make_shared< SVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+        } );
+    ( *std::next( retVal.begin() ) )->setRange( SRange( { 0.21, 2.0, 1.4, 0.1 } ) );
+    return retVal;
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
 {
-    if ( !valuesValid( values, false ) || ( numEmpty( values ) == 0 ) )
-        return {};
-
-    auto saltWater = std::get< bool >( values[ 0 ].value() );
-    auto maxPO2 = std::get< double >( values[ 1 ].value() );
-    auto ambientPressure = values[ 2 ];
-    auto po2 = values[ 3 ];
-    auto mod = values[ 4 ];
-
-    bool pressurePO2OK = ambientPressure.has_value() || po2.has_value();
-    if ( po2.has_value() && !ambientPressure.has_value() )
+    TVariableInfo retVal;
+    if ( preDefaultBehavior )
     {
-        ambientPressure = maxPO2 / std::get< double >( po2.value() );
+        if ( getVariable( "mod" )->isWidget( triggerWidget ) )
+        {
+            retVal = getVariable( "fo2" );
+        }
     }
-    if ( numEmpty( { mod, ambientPressure } ) == 1 )
-    {
-        calculateDepthToFromPressure( saltWater, ambientPressure, mod );
-    }
+    else
+        retVal = CSCUBACalculator::determineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+    return retVal;
+}
 
-    if ( !po2.has_value() && ambientPressure.has_value() )
-    {
-        po2 = maxPO2 / std::get< double >( ambientPressure.value() );
-    }
+QString CCalculator::getDefaultFormula() const
+{
+    return R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__";
+}
 
-    if ( !mod.has_value() && ambientPressure.has_value() )
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+{
+    auto mod = getVariable( "mod" );
+    auto maxPO2 = getVariable( "maxPO2" );
+    auto fo2 = getVariable( "fo2" );
+
+    QString formula;
+    bool aOK = ( numUnsetVariables() == 1 ) && ( fo2->value() != 0.0 );
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        calculateDepthToFromPressure( saltWater, ambientPressure, mod );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
     }
-    return TOptionalVariantVector( { ambientPressure, po2, mod } );
+    else if ( !mod->has_value() )
+    {
+        mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        formula = getDefaultFormula();
+    }
+    else if ( !maxPO2->has_value() )
+    {
+        maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
+        formula = tr( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__" );
+    }
+    else if ( !fo2->has_value() )
+    {
+        if ( mod->value() != 0.0 )
+            fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
+
+        formula = tr( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<depthToSingleAtmosphere>})+1})__" );
+    }
+    return formula;
 }

@@ -23,7 +23,7 @@
 project( SCUBACalculators )
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 add_library(${PROJECT_NAME} STATIC
     ${_PROJECT_DEPENDENCIES} 
@@ -41,6 +41,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
 set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators )
 
 add_subdirectory( Buoyancy )
+add_subdirectory( Estimates )
 add_subdirectory( PartialPressure )
 add_subdirectory( PressureDepth )
 add_subdirectory( PressureVolume )

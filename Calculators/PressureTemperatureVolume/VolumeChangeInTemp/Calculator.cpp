@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,11 +8,17 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
+    virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -21,44 +28,96 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Calculating Volume Following a Change in Temperature";
+    return tr( "Calculating Volume Following a Change in Temperature" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    return   //
+        {
+            std::make_shared< SVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "absOffset", tr( "Absolute Temperature Offset" ), EVariableType::eAbsZeroOffsetConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+        };
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
 {
-    if ( !valuesValid( values ) )
-        return {};
+    TVariableInfo retVal;
 
-    auto t1 = values[ 0 ];
-    auto t2 = values[ 1 ];
-    auto v1 = values[ 2 ];
-    auto v2 = values[ 3 ];
+    if ( updateFromSide == EVariableLoc::eLHS )
+    {
+        if ( getVariable( "t1" )->isWidget( triggerWidget ) )
+            retVal = getVariable( "t2" );
+        else if ( getVariable( "v1" )->isWidget( triggerWidget ) )
+            retVal = getVariable( "v2" );
+    }
+    else if ( updateFromSide == EVariableLoc::eRHS )
+    {
+        if ( getVariable( "t2" )->isWidget( triggerWidget ) )
+            retVal = getVariable( "t1" );
+        else if ( getVariable( "v2" )->isWidget( triggerWidget ) )
+            retVal = getVariable( "v1" );
+    }
+    else
+        retVal = CSCUBACalculator::determineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+    return retVal;
+}
 
-    if ( !v2.has_value() )
+QString CCalculator::getDefaultFormula() const
+{
+    QString formula;
+    formula = tr( R"__(\frac{<v1>}{<t1>} = \frac{<v2>}{<t2>})__" );
+    return formula;
+}
+
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+{
+    auto v1 = getVariable( "v1" );
+    auto t1 = getVariable( "t1" );
+
+    auto v2 = getVariable( "v2" );
+    auto t2 = getVariable( "t2" );
+
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        v2 = absZeroBasedTemp( std::get< double >( t2.value() ) ) * ( std::get< double >( v1.value() ) / absZeroBasedTemp( std::get< double >( t1.value() ) ) );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
     }
-    else if ( !v1.has_value() )
+    else if ( !v1->has_value() )
     {
-        v1 = absZeroBasedTemp( std::get< double >( t1.value() ) ) * ( std::get< double >( v2.value() ) / absZeroBasedTemp( std::get< double >( t2.value() ) ) );
+        // V1 = V2 * ( t1/t2 );
+        v1->setValue( NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) );
+        formula = tr( R"__(<v1> = <v2> \times \frac{<t1> + <absOffset>}{<t2> + <absOffset>})__" );
     }
-    else if ( !t1.has_value() )
+    else if ( !v2->has_value() )
     {
-        t1 = ( absZeroBasedTemp( std::get< double >( t2.value() ) ) * ( std::get< double >( v1.value() ) / std::get< double >( v2.value() ) ) ) - absZero();
+        // V2 = V1 * ( t2/t1 );
+        v2->setValue( NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) );
+        formula = tr( R"__(<v2> = <v1> \times \frac{<t2> + <absOffset>}{<t1> + <absOffset>})__" );
     }
-    else if ( !t2.has_value() )
+    else if ( !t1->has_value() )
     {
-        t2 = ( absZeroBasedTemp( std::get< double >( t1.value() ) ) * ( std::get< double >( v2.value() ) / std::get< double >( v1.value() ) ) ) - absZero();
+        // T1 = t2*(V1/v2)
+        t1->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / v2->value() ) ) );
+        formula = tr( R"__(<t1> = [(<t2> + <absOffset>) \times \frac{<v1>}{<v2>}] - <absOffset>)__" );
     }
-    return TOptionalVariantVector( { t1, t2, v1, v2 } );
+    else if ( !t2->has_value() )
+    {
+        // T2 = t1*(V2/v1)
+        t2->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / v1->value() ) ) );
+        formula = tr( R"__(<t2> = [(<t1> + <absOffset>) \times \frac{<v2>}{<v1>}] - <absOffset>)__" );
+    }
+
+    return formula;
 }

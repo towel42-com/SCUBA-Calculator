@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,12 +8,18 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual bool usesSaltwater() const override { return true; }
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual bool isWaterTypeBased() const { return true; }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -22,35 +29,51 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Offsetting Negative Buoyancy";
+    return tr( "Offsetting Negative Buoyancy" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Buoyancy Calculations" };
+    return { tr( "Buoyancy Calculations" ) };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    return   //
+        {
+            std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "weightOfWater", tr( "Weight of Water" ), EVariableType::eWeightOfWaterConstant, EUnit::eWeight, EVariableLoc::eRHS )   //
+        };
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    return R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__";
+}
 
-    auto saltWater = std::get< bool >( values[ 0 ].value() );
-    auto volumeDisplaced = values[ 1 ];
-    auto negativeBuoyancy = values[ 2 ];
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+{
+    auto negativeBuoyancy = getVariable( "negativeBuoyancy" );
+    auto volumeDisplaced = getVariable( "volumeDisplaced" );
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
+    {
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !volumeDisplaced->has_value() )
+    {
+        volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
+        formula = getDefaultFormula();
+    }
+    else if ( !negativeBuoyancy->has_value() )
+    {
+        formula = tr( R"__(<negativeBuoyancy>=<volumeDisplaced> \times <weightOfWater>)__" );
+        negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
+    }
 
-    if ( !volumeDisplaced.has_value() )
-    {
-        volumeDisplaced = std::get< double >( negativeBuoyancy.value() ) / weightOfWater( saltWater );
-    }
-    else if ( !negativeBuoyancy.has_value() )
-    {
-        negativeBuoyancy = std::get< double >( volumeDisplaced.value() ) * weightOfWater( saltWater );
-    }
-    return TOptionalVariantVector( { volumeDisplaced, negativeBuoyancy } );
+    return formula;
 }

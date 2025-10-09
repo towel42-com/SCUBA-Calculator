@@ -24,7 +24,7 @@ cmake_minimum_required(VERSION 3.31)
 
 project(Root-SCUBA-Calculator VERSION 1.0)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/SABUtils/Modules ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/Modules ${CMAKE_MODULE_PATH})
 SET(SAB_ENABLE_TESTING ON)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -33,7 +33,7 @@ cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
 
-find_package(Qt6 COMPONENTS Core Widgets Test Gui REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets Test Gui SvgWidgets WebEngineWidgets REQUIRED)
 find_package(Deploy REQUIRED)
 find_package(AddUnitTest REQUIRED)
 find_package(Qt6SrcMoc REQUIRED)
@@ -43,6 +43,7 @@ include( VersionInfo.cmake )
 
 file( REAL_PATH ~/bin/SCUBA-Calculator CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
+add_subdirectory( T42-Qt6MathJax  )
 add_subdirectory( SABUtils )
 add_subdirectory( MainWindow )
 add_subdirectory( main )

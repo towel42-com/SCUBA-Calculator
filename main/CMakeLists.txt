@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.22)
 project(SCUBA-Calculator) 
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 add_executable( ${PROJECT_NAME} WIN32
                 ${_PROJECT_DEPENDENCIES} 
@@ -57,7 +57,39 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
-DeployQt( ${PROJECT_NAME} . )
+
+DeployQt( ${PROJECT_NAME} . 
+    EXTRA_TARGETS_DIR Calculators
+    EXTRA_TARGETS 
+        BuoyancyOfObject
+        OffsetNegativeBuoyancy
+        EAD
+        MOD
+        PartialPressureForDepth
+        FeetToMeters
+        MetersToFeet
+        DepthFreshwaterToSeawater
+        DepthSeawaterToFreshwater
+        DepthToPressure
+        PressureToDepth
+        PSIToBar
+        BarToPSI
+        CombinedGasLaw
+        IdealGasLaw
+        PressureChangeInTemp
+        QuickEstimateDegreeChangeToPressure
+        QuickEstimatePressureChangeToDegrees
+        VolumeChangeInTemp
+        DepthToGasConsumptionTime
+        GasConsumptionTimeToDepth
+        PressureChangeInVolume
+        VolumeChangeInPressure
+        RelativeChangeInAmbientPressure
+    EXTRA_TARGETS2
+       T42Qt6MathJax 
+       SABUtils
+)
+
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )

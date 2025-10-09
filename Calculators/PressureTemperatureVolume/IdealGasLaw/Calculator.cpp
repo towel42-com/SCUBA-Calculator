@@ -1,5 +1,6 @@
 #include "Calculator.h"
-#include "Page.h"
+#include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -7,11 +8,16 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    QString calculatorName() const override;
-    QStringList calculatorPath() const override;
+    virtual QString calculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
-    virtual CSCUBACalculatorPage *constructPage( QWidget *parent ) const override;
-    virtual std::optional< TOptionalVariantVector > compute( const TOptionalVariantVector &values ) const override;
+    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
+    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
+    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+
+    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual QString getDefaultFormula() const override;
+    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -21,45 +27,71 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Ideal Gas Law";
+    return tr( "Ideal Gas Law" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
-CSCUBACalculatorPage *CCalculator::constructPage( QWidget *parent ) const
+TVariableInfoList CCalculator::getMyVariables() const
 {
-    return new CPage( this, parent );
+    return   //
+        {
+            std::make_shared< SVariableInfo >( "p", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "v", tr( "Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "numMoles", tr( "Number of Moles" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "t", tr( "Temperature" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "idealGasConstant", tr( "Ideal Gas Constant" ), EVariableType::eIdealGasConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "absOffset", tr( "Absolute Temperature Offset" ), EVariableType::eAbsZeroOffsetConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+        };
 }
 
-std::optional< TOptionalVariantVector > CCalculator::compute( const TOptionalVariantVector &values ) const
+QString CCalculator::getDefaultFormula() const
 {
-    if ( !valuesValid( values ) )
-        return {};
+    return R"__(<p> \times <v> = <numMoles> \times <idealGasConstant> \times <t>)__";
+}
 
-    auto p = values[ 0 ];
-    auto v = values[ 1 ];
-    auto numMoles = values[ 2 ];
-    auto t = values[ 3 ];
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+{
+    auto p = getVariable( "p" );
+    auto v = getVariable( "v" );
+    auto numMoles = getVariable( "numMoles" );
+    auto t = getVariable( "t" );
 
-    // p*v = numMoles * R * t
-    if ( !p.has_value() )
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
     {
-        p = std::get< double >( numMoles.value() ) * idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) / std::get< double >( v.value() );
+        formula = getDefaultFormula();
+        isBaseFormula = true;
     }
-    else if ( !v.has_value() )
+    else if ( !p->has_value() )
     {
-        v = std::get< double >( numMoles.value() ) * idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) / std::get< double >( p.value() );
+        // p = nrt/v
+        p->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) / v->value() );
+        formula = tr( R"__(<p> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<v>})__" );
     }
-    else if ( !numMoles.has_value() )
+    else if ( !v->has_value() )
     {
-        numMoles = ( std::get< double >( p.value() ) * std::get< double >( v.value() ) ) / ( idealGasConstant() * absZeroBasedTemp( std::get< double >( t.value() ) ) );
+        // v = nrt/p
+        v->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) / p->value() );
+        formula = tr( R"__(<v> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<p>})__" );
     }
-    else if ( !t.has_value() )
+    else if ( !numMoles->has_value() )
     {
-        t = fromAbsZeroBasedTemp( ( std::get< double >( p.value() ) * std::get< double >( v.value() ) ) / ( idealGasConstant() * std::get< double >( numMoles.value() ) ) );
+        // n = pv/rt
+        numMoles->setValue( ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) ) );
+        formula = tr( R"__(<numMoles> = \frac{<p> \times <v>}{<idealGasConstant> \times (<t> + <absOffset>)})__" );
     }
-    return TOptionalVariantVector( { p, v, numMoles, t } );
+    else if ( !t->has_value() )
+    {
+        // t = pv/nr
+        t->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles->value() ) ) );
+        formula = tr( R"__(<t> = (\frac{<p> \times <v>}{<idealGasConstant> \times <numMoles>}) - <absOffset>)__" );
+    }
+
+    return formula;
 }
