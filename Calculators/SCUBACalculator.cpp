@@ -207,7 +207,7 @@ void CSCUBACalculator::renderDefaultFormulas() const
     }
 }
 
-TVariableInfo CSCUBACalculator::customDetermineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
+TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
 {
     return {};
 }
@@ -253,7 +253,7 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
     }
 
     if ( !varToReset )
-        varToReset = customDetermineVariableToUnset( updateFromSide, triggerWidget, false );
+        varToReset = determineVariableToUnset( updateFromSide, triggerWidget, false );
 
     if ( varToReset )
     {

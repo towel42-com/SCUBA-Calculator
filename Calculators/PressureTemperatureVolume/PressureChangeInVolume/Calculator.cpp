@@ -18,7 +18,7 @@ public:
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
-    virtual TVariableInfo customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
+    virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -47,7 +47,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
+TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
 {
     TVariableInfo retVal;
 
@@ -66,7 +66,7 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
             retVal = getVariable( "v1" );
     }
     else
-        retVal = CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+        retVal = CSCUBACalculator::determineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
     return retVal;
 }
 

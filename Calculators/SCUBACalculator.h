@@ -96,7 +96,7 @@ protected:
 
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
-    virtual TVariableInfo customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
+    virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
     // only necessary if the number of variables on either side is greater than two.
 
 protected:
