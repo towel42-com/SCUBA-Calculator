@@ -61,9 +61,9 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    auto pressureFromDepthFormula = NUtilities::pressureFromDepthFormula( "ata", "depthToSingleAtmosphere", "depth" );
+    auto depthToPressureFormula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
     auto ppatDepth = QString( R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__" );
-    return pressureFromDepthFormula + R"( \newline\newline )" + ppatDepth;
+    return depthToPressureFormula + R"( \newline\newline )" + ppatDepth;
 }
 
 QString CCalculator::computeAndGenerateFormula() const
@@ -79,7 +79,7 @@ QString CCalculator::computeAndGenerateFormula() const
     {
         if ( aOK )
         {
-            ata->setValue( NUtilities::pressureFromDepth( imperial(), seaWater(), depth->value() ) );
+            ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
             partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
         }
         formula = getDefaultFormula();
@@ -90,7 +90,7 @@ QString CCalculator::computeAndGenerateFormula() const
     }
     else if ( !partialPressureAtSurface->has_value() )
     {
-        ata->setValue( NUtilities::pressureFromDepth( imperial(), seaWater(), depth->value() ) );
+        ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
         partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
 
