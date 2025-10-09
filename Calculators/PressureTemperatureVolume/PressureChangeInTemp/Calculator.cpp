@@ -66,9 +66,10 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
         else if ( getVariable( "t2" )->isWidget( triggerWidget ) )
             retVal = getVariable( "t1" );
     }
-    return CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+    else
+        retVal = CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+    return retVal;
 }
-
 
 QString CCalculator::getDefaultFormula() const
 {
