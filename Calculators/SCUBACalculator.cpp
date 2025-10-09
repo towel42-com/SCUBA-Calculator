@@ -10,6 +10,26 @@
 #include <memory>
 #include <unordered_set>
 
+// https://scuba.garykessler.net/EANcalculator/EAN_psi.html
+// mixing O2 + Air for proper Nitrox
+
+//https://allthingsdiving.com/dive-calculators/
+// SAC
+// END
+// tank gas volume
+
+//https://www.divebuddy.com/calculator/
+// altitude
+// calories burned
+// Dive weight calculator
+// tank air volume
+// SAC
+
+//https://www.deepbluescubanm.com/pages/tools.aspx
+// calorie burn estimator
+//
+
+
 CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
     QObject( parent )
 {
