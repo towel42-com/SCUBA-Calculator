@@ -1,4 +1,5 @@
-add_subdirectory( Depth )
+add_subdirectory( FeetToMeters )
+add_subdirectory( MetersToFeet )
 add_subdirectory( DepthFreshwaterToSeawater )
 add_subdirectory( DepthSeawaterToFreshwater )
 add_subdirectory( PressureToDepth )

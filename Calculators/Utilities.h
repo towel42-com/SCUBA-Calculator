@@ -92,6 +92,12 @@ namespace NUtilities
     CALCULATORS_EXPORT QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName );
     CALCULATORS_EXPORT QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName );
 
+    CALCULATORS_EXPORT double feetToMeters( double feet );
+    CALCULATORS_EXPORT double metersToFeet( double meters );
+
+    CALCULATORS_EXPORT QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName );
+    CALCULATORS_EXPORT QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName );
+
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
     CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );

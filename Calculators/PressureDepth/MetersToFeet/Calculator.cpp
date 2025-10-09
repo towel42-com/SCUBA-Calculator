@@ -29,7 +29,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Depth";
+    return "Meters to Feet";
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -53,7 +53,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<feet>=<meters> \times <metersToFeet>)__" );
+    return NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
@@ -66,13 +66,13 @@ QString CCalculator::computeAndGenerateFormula() const
     if ( !aOK || !feet->has_value() )
     {
         if ( aOK )
-            feet->setValue( meters->value() * NUtilities::NConstants::metersToFeet() );
+            feet->setValue( NUtilities::metersToFeet( meters->value() ) );
         formula = getDefaultFormula();
     }
-    else if ( !feet->has_value() )
+    else if ( !meters->has_value() )
     {
-        meters->setValue( feet->value() / NUtilities::NConstants::metersToFeet() );
-        return tr( R"__(<meters>=\frac{<feet>}{<metersToFeet>})__" );
+        meters->setValue( NUtilities::feetToMeters( feet->value() ) );
+        formula = NUtilities::feetToMetersFormula( "feet", "meters", "metersToFeet" );
     }
     return formula;
 }

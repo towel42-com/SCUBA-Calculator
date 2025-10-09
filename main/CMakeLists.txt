@@ -66,7 +66,8 @@ DeployQt( ${PROJECT_NAME} .
         EAD
         MOD
         PartialPressureForDepth
-        Depth
+        FeetToMeters
+        MetersToFeet
         DepthFreshwaterToSeawater
         DepthSeawaterToFreshwater
         DepthToPressure

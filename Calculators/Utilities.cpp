@@ -390,6 +390,26 @@ namespace NUtilities
         return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( freshWaterToSeaWaterFieldName );
     }
 
+    double feetToMeters( double feet )
+    {
+        return feet * NUtilities::NConstants::metersToFeet();
+    }
+
+    QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName )
+    {
+        return QString( R"__(<%2>=\frac{<%1>}{<%3>})__" ).arg( feetFieldName ).arg( metersFieldName ).arg( feetToMetersConstFieldName );
+    }
+
+    double metersToFeet( double meters )
+    {
+        return meters / NUtilities::NConstants::metersToFeet();
+    }
+
+    QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName )
+    {
+        return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( feetFieldName ).arg( metersFieldName ).arg( feetToMetersConstFieldName );
+    }
+
     std::size_t numEmpty( const TOptionalDoubleVector &values )
     {
         std::size_t numEmpty = 0;
