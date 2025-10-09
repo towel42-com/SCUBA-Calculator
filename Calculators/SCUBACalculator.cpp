@@ -236,10 +236,10 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
         }
         else if ( fRHSVariables.size() == 2 )
         {
-            Q_ASSERT( ( fRHSVariables.front()->isWidget( triggerWidget ) ) || ( fRHSVariables.back()->isWidget( triggerWidget ) ) );
+            Q_ASSERT( !triggerWidget || ( fRHSVariables.front()->isWidget( triggerWidget ) ) || ( fRHSVariables.back()->isWidget( triggerWidget ) ) );
             if ( fRHSVariables.front()->isWidget( triggerWidget ) )
                 varToReset = fRHSVariables.back();
-            else if ( fRHSVariables.back()->isWidget( triggerWidget ) )
+            else if ( !triggerWidget || fRHSVariables.back()->isWidget( triggerWidget ) )
                 varToReset = fRHSVariables.front();
         }
     }
@@ -251,10 +251,10 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
         }
         else if ( fLHSVariables.size() == 2 )
         {
-            Q_ASSERT( ( fLHSVariables.front()->isWidget( triggerWidget ) ) || ( fLHSVariables.back()->isWidget( triggerWidget ) ) );
+            Q_ASSERT( !triggerWidget || ( fLHSVariables.front()->isWidget( triggerWidget ) ) || ( fLHSVariables.back()->isWidget( triggerWidget ) ) );
             if ( fLHSVariables.front()->isWidget( triggerWidget ) )
                 varToReset = fLHSVariables.back();
-            else if ( fLHSVariables.back()->isWidget( triggerWidget ) )
+            else if ( !triggerWidget || fLHSVariables.back()->isWidget( triggerWidget ) )
                 varToReset = fLHSVariables.front();
         }
     }
