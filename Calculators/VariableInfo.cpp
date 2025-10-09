@@ -229,18 +229,23 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = "%1";
                 }
                 break;
-            case EVariableType::eFeetToMetersConst:
+            case EVariableType::eMetersToFeetConst:
                 {
-                    value = NUtilities::NUnitStrings::feetToMeters( true, true );
+                    value = NUtilities::NUnitStrings::metersToFeet( true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eFreshWaterToSeaWaterConst:
+            case EVariableType::eSeaWaterToFreshWaterConst:
                 {
                     value = NUtilities::NUnitStrings::freshWaterToSeaWater( imperial, true, true );
                     format = "%1";
                 }
                 break;
+            case EVariableType::ePSIToBarConst:
+                {
+                    value = NUtilities::NUnitStrings::psiToBar( true, true );
+                    format = "%1";
+                }
         };
     }
 

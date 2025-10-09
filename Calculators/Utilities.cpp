@@ -22,6 +22,8 @@ namespace NUtilities
                     return depthUnit( imperial, seaWater, useAbbreviations, tex );
                 case EUnit::ePressure:
                     return pressureUnit( imperial, useAbbreviations, tex );
+                case EUnit::eAtmospheres:
+                    return atmosphereUnit( imperial, useAbbreviations, tex );
                 case EUnit::eTemperature:
                     return tempUnit( imperial, useAbbreviations, tex );
                 case EUnit::eAbsZeroTemperature:
@@ -134,6 +136,11 @@ namespace NUtilities
             return imperial ? QObject::tr( "PSI", "pressureUnit" ) : QObject::tr( "BAR", "pressureUnit" );
         }
 
+        QString atmosphereUnit( bool imperial, bool /*useAbbreviations*/, bool /*tex*/ )
+        {
+            return imperial ? QObject::tr( "ATM", "pressureUnit" ) : QObject::tr( "BAR", "pressureUnit" );
+        }
+
         QString tempUnit( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? R"(^{\circ})" : "\u00B0";
@@ -220,10 +227,10 @@ namespace NUtilities
             return retVal;
         }
 
-        QString feetToMeters( bool useAbbreviations, bool tex )
+        QString metersToFeet( bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
-            retVal = retVal.arg( doubleToString( NConstants::feetToMeters(), 3 ) ).arg( lengthUnit( false, useAbbreviations, true ) ).arg( lengthUnit( true, useAbbreviations, true ) );
+            retVal = retVal.arg( doubleToString( NConstants::metersToFeet(), 3 ) ).arg( lengthUnit( true, useAbbreviations, true ) ).arg( lengthUnit( false, useAbbreviations, true ) );
             return retVal;
         }
 
@@ -231,6 +238,13 @@ namespace NUtilities
         {
             QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
             retVal = retVal.arg( doubleToString( NConstants::freshWaterToSeaWater(), 2 ) ).arg( depthUnit( imperial, false, useAbbreviations, tex ) ).arg( depthUnit( imperial, true, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString psiToBar( bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::barToPSI(), 1 ) ).arg( pressureUnit( true, useAbbreviations, true ) ).arg( pressureUnit( false, useAbbreviations, true ) );
             return retVal;
         }
     }
@@ -281,7 +295,7 @@ namespace NUtilities
             return 1.03;
         }
 
-        double feetToMeters()
+        double metersToFeet()
         {
             return 0.3048;
         }
@@ -295,6 +309,11 @@ namespace NUtilities
         {
             return 0.21;
         }
+
+        double barToPSI()
+        {
+            return 14.7;
+        }
     }
 
     double toAbsZeroBasedTemp( bool imperial, double temp )
@@ -307,44 +326,68 @@ namespace NUtilities
         return temp - NConstants::absZero( imperial );
     }
 
-    QString pressureFromDepthFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName )
+    QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName, const QString &psiToBarConstFieldName )
+    {
+        return QString( R"__(<%2>=<%1> \times <%3>)__" ).arg( barFieldName ).arg( psiFieldName ).arg( psiToBarConstFieldName );
+    }
+
+    double barToPSI( double bar )
+    {
+        auto barToPSI = NConstants::barToPSI();
+        return bar * barToPSI;
+    }
+
+    QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName, const QString &barToSingleATMFieldName )
+    {
+        return QString( R"__(<%1>=\frac{<%2>}{<%3>})__" ).arg( barFieldName ).arg( psiFieldName ).arg( barToSingleATMFieldName );
+    }
+
+    double psiToBar( double psi )
+    {
+        auto barToPSI = NConstants::barToPSI();
+        return psi / barToPSI;
+    }
+
+    QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName, const QString &depthToSingleATMFieldName )
     {
         return QString( R"__(<%1>=\frac{<%2>}{<%3>} + 1)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( depthToSingleATMFieldName );
     }
 
-    double pressureFromDepth( bool imperial, bool seaWater, double depth )
+    double depthToPressure( bool imperial, bool seaWater, double depth )
     {
         auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
         return ( depth / depthOfATM ) + 1;
     }
 
-    QString depthFromPressureFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName )
+    QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName, const QString &depthToSingleATMFieldName )
     {
-        return QString( R"__(<%2>=(<%1>-1)*<%3>)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( depthToSingleATMFieldName );
+        return QString( R"__(<%2>=(<%1>-1) \times <%3>)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( depthToSingleATMFieldName );
     }
 
-    double depthFromPressure( bool imperial, bool seaWater, double pressure )
+    double pressureToDepth( bool imperial, bool seaWater, double pressure )
     {
         auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
         return ( pressure - 1 ) * depthOfATM;
     }
 
-    void calculateDepthToFromPressure( bool imperial, bool seaWater, TOptionalDouble &pressure, TOptionalDouble &depth )
+    double depthFreshwaterToSeawater( double depthFW )
     {
-        if ( !pressure.has_value() && !depth.has_value() )
-            return;
+        return depthFW / NUtilities::NConstants::freshWaterToSeaWater();
+    }
 
-        if ( pressure.has_value() && depth.has_value() )
-            return;
+    QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName )
+    {
+        return QString( R"__(<%2>=\frac{<%1>}{<%3>})__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( freshWaterToSeaWaterFieldName );
+    }
 
-        if ( !depth.has_value() )
-        {
-            depth = depthFromPressure( imperial, seaWater, pressure.value() );
-        }
-        else if ( !pressure.has_value() )
-        {
-            pressure = pressureFromDepth( imperial, seaWater, depth.value() );
-        }
+    double depthSeawaterToFreshwater( double depthSW )
+    {
+        return depthSW * NUtilities::NConstants::freshWaterToSeaWater();
+    }
+
+    QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName )
+    {
+        return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( freshWaterToSeaWaterFieldName );
     }
 
     std::size_t numEmpty( const TOptionalDoubleVector &values )

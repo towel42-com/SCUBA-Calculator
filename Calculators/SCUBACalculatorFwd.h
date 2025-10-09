@@ -70,6 +70,7 @@ enum class EUnit
     eLength,
     eDepth,
     ePressure,
+    eAtmospheres,
     eTemperature,
     eAbsZeroTemperature,
     ePercent
@@ -85,8 +86,9 @@ enum class EVariableType
     eFN2AtSurfaceConst,
     eFO2AtSurfaceConst,
     eDepthToSingleAtmosphereConst,
-    eFeetToMetersConst,
-    eFreshWaterToSeaWaterConst
+    eMetersToFeetConst,
+    eSeaWaterToFreshWaterConst,
+    ePSIToBarConst
 };
 
 enum class EVariableLoc

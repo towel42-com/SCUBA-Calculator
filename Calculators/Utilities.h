@@ -34,6 +34,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString lengthUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString depthUnit( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString pressureUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString atmosphereUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString tempUnit( bool imperial, bool useAbbreviations, bool tex );   // C/F
         CALCULATORS_EXPORT QString absZeroTempUnit( bool imperial, bool useAbbreviations, bool tex );   //K/R
         CALCULATORS_EXPORT QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex );
@@ -46,8 +47,9 @@ namespace NUtilities
         CALCULATORS_EXPORT QString percentO2AtSurface( bool tex );
 
         CALCULATORS_EXPORT QString depthToSingleAtmosphere( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
-        CALCULATORS_EXPORT QString feetToMeters( bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString metersToFeet( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString psiToBar( bool useAbbreviations, bool tex );
 
         CALCULATORS_EXPORT QString getUnitLabel( bool imperial, bool seaWater, EUnit unit, bool useAbbreviations, bool tex );
     }
@@ -61,22 +63,34 @@ namespace NUtilities
         CALCULATORS_EXPORT double depthToSingleAtmosphere( bool imperial, bool seaWater );
         CALCULATORS_EXPORT double idealGasConstant( bool imperial );
 
-        CALCULATORS_EXPORT double feetToMeters();
+        CALCULATORS_EXPORT double metersToFeet();
         CALCULATORS_EXPORT double freshWaterToSeaWater();
 
         CALCULATORS_EXPORT double percentN2AtSurface();
         CALCULATORS_EXPORT double percentO2AtSurface();
+        CALCULATORS_EXPORT double barToPSI();
     }
 
     CALCULATORS_EXPORT double toAbsZeroBasedTemp( bool imperial, double temp );
     CALCULATORS_EXPORT double fromAbsZeroBasedTemp( bool imperial, double temp );
 
-    CALCULATORS_EXPORT double pressureFromDepth( bool imperial, bool seaWater, double depth );
-    CALCULATORS_EXPORT double depthFromPressure( bool imperial, bool seaWater, double pressure );
-    CALCULATORS_EXPORT void calculateDepthToFromPressure( bool imperial, bool seaWater, TOptionalDouble &pressure, TOptionalDouble &depth );
+    CALCULATORS_EXPORT double psiToBar( double psi );
+    CALCULATORS_EXPORT double barToPSI( double bar );
 
-    CALCULATORS_EXPORT QString pressureFromDepthFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName );
-    CALCULATORS_EXPORT QString depthFromPressureFormula( const QString ataFieldName, const QString depthToSingleATMFieldName, const QString &depthFieldName );
+    CALCULATORS_EXPORT QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName, const QString &psiToBarConstFieldName );
+    CALCULATORS_EXPORT QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName, const QString &psiToBarConstFieldName );
+
+    CALCULATORS_EXPORT double depthToPressure( bool imperial, bool seaWater, double depth );
+    CALCULATORS_EXPORT double pressureToDepth( bool imperial, bool seaWater, double pressure );
+
+    CALCULATORS_EXPORT QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName, const QString &depthToSingleATMFieldName );
+    CALCULATORS_EXPORT QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName, const QString &depthToSingleATMFieldName );
+
+    CALCULATORS_EXPORT double depthFreshwaterToSeawater( double depthFW );
+    CALCULATORS_EXPORT double depthSeawaterToFreshwater( double depthSW );
+
+    CALCULATORS_EXPORT QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName );
+    CALCULATORS_EXPORT QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName );
 
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
