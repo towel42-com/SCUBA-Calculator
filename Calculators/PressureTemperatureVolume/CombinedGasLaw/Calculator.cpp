@@ -50,11 +50,6 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::getDefaultFormula() const
-{
-    return tr( R"__(\frac{<p1> \times <v1>}{<t1>} = \frac{<p2> \times <v2>}{<t2>})__" );
-}
-
 TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
 {
     TVariableInfo retVal;
@@ -80,7 +75,12 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
     return CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
 }
 
-QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
+QString CCalculator::getDefaultFormula() const
+{
+    return tr( R"__(\frac{<p1> \times <v1>}{<t1>} = \frac{<p2> \times <v2>}{<t2>})__" );
+}
+
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto p1 = getVariable( "p1" );
     auto v1 = getVariable( "v1" );

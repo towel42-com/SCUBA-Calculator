@@ -48,11 +48,6 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::getDefaultFormula() const
-{
-    return tr( R"__(<p2> = [<t2> \times \frac{(<p1> + <pressureOffset>)}{<t1>}] - <pressureOffset>)__" );
-}
-
 TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
 {
     TVariableInfo retVal;
@@ -74,6 +69,14 @@ TVariableInfo CCalculator::customDetermineVariableToUnset( EVariableLoc updateFr
     return CSCUBACalculator::customDetermineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
 }
 
+
+QString CCalculator::getDefaultFormula() const
+{
+    QString formula;
+    formula = tr( R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__" );
+    return formula;
+}
+
 QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
     auto p1 = getVariable( "p1" );
@@ -92,21 +95,25 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     }
     else if ( !p1->has_value() )
     {
+        // p1 = p2 * ( t1/t2 );
         p1->setValue( ( NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( ( p2->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) / NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) ) - NUtilities::NConstants::pressureOffset( imperial() ) );
         formula = tr( R"__(<p1> = [(<t1> + <absOffset>) \times \frac{(<p2> + <pressureOffset>)}{(<t2> + <absOffset>}] - <pressureOffset>)__" );
     }
     else if ( !p2->has_value() )
     {
+        // p2 = p1 * ( t2/t1 );
         p2->setValue( ( NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( ( p1->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) / NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) ) - NUtilities::NConstants::pressureOffset( imperial() ) );
         formula = tr( R"__(<p2> = [(<t2> + <absOffset>) \times \frac{(<p1> + <pressureOffset>)}{(<t1> + <absOffset>}] - <pressureOffset>)__" );
     }
     else if ( !t1->has_value() )
     {
+        // T1 = t2*(t1/t2)
         formula = tr( R"__(<t1> = [\frac{(<p1> + <pressureOffset>) \times (<t2> + <absOffset>)}{<p2> + <pressureOffset>}] - <absOffset>)__" );
         t1->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( ( p1->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) * NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) / ( p2->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) ) );
     }
     else if ( !t2->has_value() )
     {
+        // T2 = t1*(t2/t1)
         formula = tr( R"__(<t2> = [\frac{(<p2> + <pressureOffset>) \times (<t1> + <absOffset>)}{<p1> + <pressureOffset>}] - <absOffset>)__" );
         t2->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( ( p2->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) * NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) / ( p1->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) ) );
     }
