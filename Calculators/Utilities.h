@@ -38,14 +38,15 @@ namespace NUtilities
         CALCULATORS_EXPORT QString tempUnit( bool imperial, bool useAbbreviations, bool tex );   // C/F
         CALCULATORS_EXPORT QString absZeroTempUnit( bool imperial, bool useAbbreviations, bool tex );   //K/R
         CALCULATORS_EXPORT QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex );
-        CALCULATORS_EXPORT QString percentUnit( bool tex );
+        CALCULATORS_EXPORT QString percentUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstantUnit( bool imperial, bool useAbbreviations, bool tex );
-
+        CALCULATORS_EXPORT QString molesUnit( bool imperial, bool useAbbreviations, bool tex );
+        
         CALCULATORS_EXPORT QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex );
 
-        CALCULATORS_EXPORT QString percentN2AtSurface( bool tex );
-        CALCULATORS_EXPORT QString percentO2AtSurface( bool tex );
+        CALCULATORS_EXPORT QString percentN2AtSurface( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex );
 
         CALCULATORS_EXPORT QString depthToSingleAtmosphere( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString metersToFeet( bool useAbbreviations, bool tex );
@@ -99,6 +100,12 @@ namespace NUtilities
     CALCULATORS_EXPORT QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName );
     CALCULATORS_EXPORT QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName );
 
+    CALCULATORS_EXPORT double quickDegreeChangeToPressure( bool imperial, double temperature );
+    CALCULATORS_EXPORT double quickPressureChangeToDegree( bool imperial, double pressure );
+
+    CALCULATORS_EXPORT QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName );
+    CALCULATORS_EXPORT QString quickPressureChangeToDegreeFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName );
+       
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
     CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );

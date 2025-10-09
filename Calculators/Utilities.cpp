@@ -114,7 +114,7 @@ namespace NUtilities
 
         QString tempUnit( bool imperial, bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"(^{\circ})" : "\u00B0";
+            QString retVal = tex ? R"__(^{\circ})__" : "\u00B0";
             if ( imperial )
             {
                 if ( useAbbreviations )
@@ -136,7 +136,7 @@ namespace NUtilities
         {
             QString retVal;
 
-            retVal += tex ? R"(^{\circ})" : "\u00B0";
+            retVal += tex ? R"__(^{\circ})__" : "\u00B0";
             if ( imperial )
             {
                 if ( useAbbreviations )
@@ -154,22 +154,22 @@ namespace NUtilities
             return retVal;
         }
 
-        QString percentUnit( bool tex )
+        QString percentUnit( bool /*imperial*/, bool /*useAbbreviations*/, bool tex )
         {
-            QString retVal = tex ? R"(\%)" : "%";
+            QString retVal = tex ? R"__(\%)__" : "%";
             return retVal;
         }
 
         QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex )
         {
-            auto retVal = tex ? QObject::tr( "%1 (\frac{%2}{%3}", "pressurePerTemp" ) : QObject::tr( "%1 (%2/%3)", "pressurePerTemp" );
+            auto retVal = QString( tex ? R"__(%1 (\frac{%2}{%3})__" : "%1 (%2/%3)" );
             retVal = retVal.arg( NConstants::pressurePerTemp( imperial ) ).arg( NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
         {
-            auto retVal = tex ? QObject::tr( R"(%1 \frac{%2}{%3})", "weightOfWater" ) : QObject::tr( "%1 %2/%3 of water", "weightOfWater" );
+            auto retVal = QString( tex ? R"__(%1 \frac{%2}{%3})__" : "%1 %2/%3" );
             auto weightOfWater = NUtilities::doubleToString( NConstants::weightOfWater( imperial, seaWater ), 2 );
             retVal = retVal.arg( weightOfWater ).arg( weightUnit( imperial, useAbbreviations, tex ) ).arg( volumeUnit( imperial, useAbbreviations, tex ) );
             return retVal;
@@ -180,13 +180,19 @@ namespace NUtilities
             QString format;
             // r = pv/nt
             if ( tex )
-                format = QObject::tr( R"__(\frac{%2 \times %3}{moles \times %4})__", "idealGasConstant" );
+                format = QString( R"__(\frac{%2 \times %3}{%4 \times %5})__" );
             else
-                format = QObject::tr( R"__((%2)x(%3)/(moles)x(%4))__", "idealGasConstant" );
+                format = QString( R"__((%2)x(%3)/(%4)x(%5))__" );
             return format   //
                 .arg( pressureUnit( imperial, useAbbreviations, tex ) )   //
                 .arg( volumeUnit( imperial, useAbbreviations, tex ) )   //
+                .arg( molesUnit( imperial, useAbbreviations, tex ) )
                 .arg( absZeroTempUnit( imperial, useAbbreviations, tex ) );
+        }
+
+        QString molesUnit( bool /*imperial*/, bool /*useAbbreviations*/, bool /*tex*/ )
+        {
+            return QObject::tr( "moles" );
         }
 
         QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex )
@@ -197,14 +203,14 @@ namespace NUtilities
             return retVal;
         }
 
-        QString percentN2AtSurface( bool tex )
+        QString percentN2AtSurface( bool imperial, bool useAbbreviations, bool tex )
         {
-            return QObject::tr( R"__(%1%2)__", "percentN2AtSurface" ).arg( NConstants::percentN2AtSurface() ).arg( percentUnit( tex ) );
+            return QObject::tr( R"__(%1%2)__", "percentN2AtSurface" ).arg( NConstants::percentN2AtSurface() ).arg( percentUnit( imperial, useAbbreviations, tex ) );
         }
 
-        QString percentO2AtSurface( bool tex )
+        QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex )
         {
-            return QObject::tr( R"__(%1%2)__", "percentO2AtSurface" ).arg( NConstants::percentO2AtSurface() ).arg( percentUnit( tex ) );
+            return QObject::tr( R"__(%1%2)__", "percentO2AtSurface" ).arg( NConstants::percentO2AtSurface() ).arg( percentUnit( imperial, useAbbreviations, tex ) );
         }
 
         QString depthToSingleAtmosphere( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
@@ -241,7 +247,7 @@ namespace NUtilities
             retVal = retVal.arg( doubleToString( NConstants::absZeroOffset( imperial ), 0 ) ).arg( tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
-        
+
         QString pressureOffset( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
@@ -409,6 +415,26 @@ namespace NUtilities
     QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName )
     {
         return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( feetFieldName ).arg( metersFieldName ).arg( feetToMetersConstFieldName );
+    }
+
+    double quickDegreeChangeToPressure( bool imperial, double temperature )
+    {
+        return temperature / NUtilities::NConstants::pressurePerTemp( imperial );
+    }
+
+    double quickPressureChangeToDegree( bool imperial, double pressure )
+    {
+        return pressure * NUtilities::NConstants::pressurePerTemp( imperial );
+    }
+
+    QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName )
+    {
+        return QString( R"__(<%2> = \frac{<%1>}{<%3>})__" ).arg( tempFieldName ).arg( pressureFieldName ).arg( pressurePerDegreeConstFieldName );
+    }
+
+    QString quickPressureChangeToDegreeFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName )
+    {
+        return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( tempFieldName ).arg( pressureFieldName ).arg( pressurePerDegreeConstFieldName );
     }
 
     std::size_t numEmpty( const TOptionalDoubleVector &values )

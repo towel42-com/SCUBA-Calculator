@@ -90,14 +90,14 @@ enum class EVariableType
     eSeaWaterToFreshWaterConstant,
     ePSIToBarConstant,
     eAbsZeroOffsetConstant,
-    ePressureOffsetConstant
+    ePressureOffsetConstant,
+    ePressurePerDegreeConst
 };
 
 enum class EVariableLoc
 {
     eLHS,
-    eRHS,
-    eGlobal
+    eRHS
 };
 
 struct SVariableInfo;

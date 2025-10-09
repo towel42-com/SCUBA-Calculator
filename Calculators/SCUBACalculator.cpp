@@ -145,9 +145,7 @@ void CSCUBACalculator::initVariables()
     for ( auto &&curr : fVariables )
     {
         fVariableMap[ curr->name() ] = curr;
-        if ( !curr->isVariable() || ( curr->variableLoc() == EVariableLoc::eGlobal ) )
-            fGlobalVariables.push_back( curr );
-        else if ( curr->variableLoc() == EVariableLoc::eLHS )
+        if ( curr->variableLoc() == EVariableLoc::eLHS )
             fLHSVariables.push_back( curr );
         else if ( curr->variableLoc() == EVariableLoc::eRHS )
             fRHSVariables.push_back( curr );
@@ -224,7 +222,7 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
 
     auto varToReset = customDetermineVariableToUnset( updateFromSide, triggerWidget, true );
 
-    if ( !varToReset && ( updateFromSide == EVariableLoc::eGlobal ) )
+    if ( !varToReset )
     {
         varToReset = {};
     }
@@ -312,7 +310,7 @@ QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const Q
         curr->updateFormula( imperial, seaWater, retVal, isBaseFormula );
     }
 
-    retVal = retVal.replace( " ", R"(\ )" );
+    retVal = retVal.replace( " ", R"__(\ )__" );
     return retVal;
 }
 
