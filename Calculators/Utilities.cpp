@@ -175,12 +175,26 @@ namespace NUtilities
             return retVal;
         }
 
+        QString idealGasConstantUnit( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString format;
+            // r = pv/nt
+            if ( tex )
+                format = QObject::tr( R"__(\frac{%2 \times %3}{moles \times %4})__", "idealGasConstant" );
+            else
+                format = QObject::tr( R"__((%2)x(%3)/(moles)x(%4))__", "idealGasConstant" );
+            return format   //
+                .arg( pressureUnit( imperial, useAbbreviations, tex ) )   //
+                .arg( volumeUnit( imperial, useAbbreviations, tex ) )   //
+                .arg( absZeroTempUnit( imperial, useAbbreviations, tex ) );
+        }
+
         QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex )
         {
-            if ( tex )
-                return QObject::tr( R"__(p(%1) \times V(%2)=n(moles)\times%3\timesT(%4))__", "idealGasConstant" ).arg( pressureUnit( imperial, useAbbreviations, tex ) ).arg( volumeUnit( imperial, useAbbreviations, tex ) ).arg( NConstants::idealGasConstant( imperial ) ).arg( tempUnit( imperial, useAbbreviations, tex ), "" );
-            else
-                return QObject::tr( "%1 (%2)x(%3)/(n moles)x(%4)", "idealGasConstant" ).arg( NConstants::idealGasConstant( imperial ) ).arg( volumeUnit( imperial, useAbbreviations, tex ) ).arg( pressureUnit( imperial, useAbbreviations, tex ) ).arg( tempUnit( imperial, useAbbreviations, tex ) );
+            // pv = nrt
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( doubleToString( NConstants::idealGasConstant( imperial ), 5 ) ).arg( idealGasConstantUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
         }
 
         QString percentN2AtSurface( bool tex )
