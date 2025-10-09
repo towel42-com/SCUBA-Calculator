@@ -145,12 +145,12 @@ void CSCUBACalculator::initVariables()
     for ( auto &&curr : fVariables )
     {
         fVariableMap[ curr->name() ] = curr;
-        if ( curr->variableLoc() == EVariableLoc::eLHS )
+        if ( !curr->isVariable() || ( curr->variableLoc() == EVariableLoc::eGlobal ) )
+            fGlobalVariables.push_back( curr );
+        else if ( curr->variableLoc() == EVariableLoc::eLHS )
             fLHSVariables.push_back( curr );
         else if ( curr->variableLoc() == EVariableLoc::eRHS )
             fRHSVariables.push_back( curr );
-        else if ( curr->variableLoc() == EVariableLoc::eGlobal )
-            fGlobalVariables.push_back( curr );
     }
 
     Q_ASSERT( ( fLHSVariables.empty() && fRHSVariables.empty() ) || ( !fLHSVariables.empty() && !fRHSVariables.empty() ) );

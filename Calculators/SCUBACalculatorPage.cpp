@@ -145,17 +145,21 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
 
 std::pair< QGroupBox *, std::size_t > CSCUBACalculatorPage::loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page )
 {
-    if ( variables.empty() )
+    std::size_t numVariables = 0;
+    for ( auto &&curr : variables )
+    {
+        if ( curr->isVariable() )
+            numVariables++;
+    }
+    if ( numVariables == 0 )
         return { nullptr, 0 };
 
     auto groupBox = new QGroupBox( tr( "%1 Variables:" ).arg( name ), page );
     auto formLayout = new QFormLayout( groupBox );
 
-    std::size_t numVariables = 0;
     for ( auto &&curr : variables )
     {
-        if ( curr->createWidgets( page, formLayout ) )
-            numVariables++;
+        curr->createWidgets( page, formLayout );
     }
     return { groupBox, numVariables };
 }
