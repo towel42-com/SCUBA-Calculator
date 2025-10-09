@@ -73,7 +73,8 @@ enum class EUnit
     eAtmospheres,
     eTemperature,
     eAbsZeroTemperature,
-    ePercent
+    ePercent,
+    eTime
 };
 
 enum class EVariableType

@@ -39,6 +39,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString absZeroTempUnit( bool imperial, bool useAbbreviations, bool tex );   //K/R
         CALCULATORS_EXPORT QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString percentUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString timeUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstantUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString molesUnit( bool imperial, bool useAbbreviations, bool tex );
         

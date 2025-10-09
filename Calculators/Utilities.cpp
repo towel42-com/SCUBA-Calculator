@@ -160,6 +160,12 @@ namespace NUtilities
             return retVal;
         }
 
+        QString timeUnit( bool /*imperial*/, bool /*useAbbreviations*/, bool /*tex*/ )
+        {
+            QString retVal = QObject::tr( "minutes" );
+            return retVal;
+        }
+
         QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex )
         {
             auto retVal = QString( tex ? R"__(%1 (\frac{%2}{%3})__" : "%1 (%2/%3)" );

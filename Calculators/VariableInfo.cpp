@@ -134,6 +134,8 @@ QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, bool is
             }
         case EUnit::ePercent:
             return NUtilities::NUnitStrings::percentUnit( imperial, true, tex );
+        case EUnit::eTime:
+            return NUtilities::NUnitStrings::timeUnit( imperial, true, tex );
         default:
             return {};
     }
