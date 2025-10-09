@@ -220,13 +220,8 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
     if ( fLHSVariables.empty() || fRHSVariables.empty() )
         return;
 
-    auto varToReset = customDetermineVariableToUnset( updateFromSide, triggerWidget, true );
-
-    if ( !varToReset )
-    {
-        varToReset = {};
-    }
-    else if ( !varToReset && ( updateFromSide == EVariableLoc::eRHS ) )
+    auto varToReset = determineVariableToUnset( updateFromSide, triggerWidget, true );
+    if ( !varToReset && ( updateFromSide == EVariableLoc::eRHS ) )
     {
         if ( ( fLHSVariables.size() == 1 ) || ( fRHSVariables.size() == 1 ) )
         {
