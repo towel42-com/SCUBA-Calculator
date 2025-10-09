@@ -1,5 +1,6 @@
 #include "Calculator.h"
 #include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -26,46 +27,54 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Quick Estimates for Temperature when Pressure Changes";
+    return tr( "Quick Estimate for Temperature when Pressure Changes" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure, Temperature and Volume Calculations" };
+    return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            //std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "pressurePerDegree", tr( "Pressure Change Per Degree" ), EVariableType::ePressurePerDegreeConst, EUnit::eNone, EVariableLoc::eRHS ),   //
         };
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    QString formula;
+    formula = NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
+    return formula;
 }
 
-QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
+QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 {
-    isBaseFormula = true;
-    return {};
-    //if ( !NUtilities::valuesValid( values ) )
-    //    return {};
+    auto p1 = getVariable( "p1" );
+    auto t1 = getVariable( "t1" );
 
-    //auto t = values[ 0 ];
-    //auto p = values[ 1 ];
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    isBaseFormula = false;
+    if ( !aOK )
+    {
+        formula = getDefaultFormula();
+        isBaseFormula = true;
+    }
+    else if ( !p1->has_value() )
+    {
+        p1->setValue( NUtilities::quickDegreeChangeToPressure( imperial(), t1->value() ) );
+        formula = NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
+    }
+    else if ( !t1->has_value() )
+    {
+        t1->setValue( NUtilities::quickPressureChangeToDegree( imperial(), p1->value() ) );
+        formula = NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
+    }
 
-    //// p*v = numMoles * R * t
-    //if ( !t.has_value() )
-    //{
-    //    t = NUtilities::NConstants::pressurePerTemp( imperial() ) * p.value();
-    //}
-    //else if ( !p.has_value() )
-    //{
-    //    p = t.value() / NUtilities::NConstants::pressurePerTemp( imperial() );
-    //}
-    //return TOptionalDoubleVector( { t, p } );
+    return formula;
 }
-

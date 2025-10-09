@@ -133,7 +133,7 @@ QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, bool is
                     return NUtilities::NUnitStrings::tempUnit( imperial, true, false );
             }
         case EUnit::ePercent:
-            return NUtilities::NUnitStrings::percentUnit( tex );
+            return NUtilities::NUnitStrings::percentUnit( imperial, true, tex );
         default:
             return {};
     }
@@ -243,13 +243,13 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                 break;
             case EVariableType::eFN2AtSurfaceConstant:
                 {
-                    value = NUtilities::NUnitStrings::percentN2AtSurface( true );
+                    value = NUtilities::NUnitStrings::percentN2AtSurface( imperial, true, true );
                     format = "%1";
                 }
                 break;
             case EVariableType::eFO2AtSurfaceConstant:
                 {
-                    value = NUtilities::NUnitStrings::percentO2AtSurface( true );
+                    value = NUtilities::NUnitStrings::percentO2AtSurface( imperial, true, true );
                     format = "%1";
                 }
                 break;
@@ -286,6 +286,12 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
             case EVariableType::ePressureOffsetConstant:
                 {
                     value = NUtilities::NUnitStrings::pressureOffset( imperial, true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::ePressurePerDegreeConst:
+                {
+                    value = NUtilities::NUnitStrings::pressurePerTemp( imperial, true, true );
                     format = "%1";
                 }
                 break;
