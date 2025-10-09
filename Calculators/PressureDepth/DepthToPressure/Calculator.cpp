@@ -1,5 +1,6 @@
 #include "Calculator.h"
 #include "VariableInfo.h"
+#include "Utilities.h"
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -28,7 +29,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Depth to-from Pressure";
+    return "Depth to Pressure";
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -40,26 +41,35 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            //std::make_shared< SVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "pressure", tr( "Pressure" ), EVariableType::eVariable, EUnit::eAtmospheres, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "depth", tr( "depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, EVariableLoc::eRHS ),   //
         };
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return {};
+    return NUtilities::depthToPressureFormula( "pressure", "depth", "depthToSingleAtmosphere" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    return {};
-    //if ( !NUtilities::valuesValid( values ) )
-    //    return {};
+    auto pressure = getVariable( "pressure" );
+    auto depth = getVariable( "depth" );
 
-    //auto pressure = values[ 0 ];
-    //auto depth = values[ 1 ];
-
-    //NUtilities::calculateDepthToFromPressure( imperial(), seaWater(), pressure, depth );
-    //return TOptionalDoubleVector( { pressure, depth } );
+    QString formula;
+    bool aOK = numUnsetVariables() == 1;
+    if ( !aOK || !pressure->has_value() )
+    {
+        if ( aOK )
+            pressure->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        formula = getDefaultFormula();
+    }
+    else if ( !depth->has_value() )
+    {
+        pressure->setValue( NUtilities::pressureToDepth( imperial(), seaWater(), pressure->value() ) );
+        formula = NUtilities::pressureToDepthFormula( "pressure", "depth", "depthToSingleAtmosphere" );
+    }
+    return formula;
 }
-
 

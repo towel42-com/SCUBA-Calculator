@@ -15,6 +15,8 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
+    virtual bool isWaterTypeBased() const override { return true; }
+
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula() const override;
@@ -27,7 +29,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Depth Seawater to-from Freshwater";
+    return "Pressure to Depth";
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -37,38 +39,37 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    auto retVal = TVariableInfoList(   //
+    return   //
         {
-            std::make_shared< SVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "freshWaterToSeaWater", tr( "Freshwater to Seawater" ), EVariableType::eFreshWaterToSeaWaterConst, EUnit::eNone, EVariableLoc::eRHS ),   //
-        } );
-
-    return retVal;
+            std::make_shared< SVariableInfo >( "depth", tr( "depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "pressure", tr( "Pressure" ), EVariableType::eVariable, EUnit::eAtmospheres, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConst, EUnit::eLength, EVariableLoc::eRHS ),   //
+        };
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<freshWater>=<seaWater> \times <freshWaterToSeaWater>)__" );
+    return NUtilities::pressureToDepthFormula( "pressure", "depth", "depthToSingleAtmosphere" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    auto freshWater = getVariable( "freshWater" );
-    auto seaWater = getVariable( "seaWater" );
+    auto pressure = getVariable( "pressure" );
+    auto depth = getVariable( "depth" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !freshWater->has_value() )
+    auto depthToSingleATM = NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() );
+    if ( !aOK || !depth->has_value() )
     {
         if ( aOK )
-            freshWater->setValue( seaWater->value() * NUtilities::NConstants::freshWaterToSeaWater() );
+            depth->setValue( NUtilities::pressureToDepth( imperial(), seaWater(), pressure->value() ) );
         formula = getDefaultFormula();
     }
-    else if ( !seaWater->has_value() )
+    else if ( !pressure->has_value() )
     {
-        seaWater->setValue( freshWater->value() / NUtilities::NConstants::freshWaterToSeaWater() );
-        return tr( R"__(<seaWater>=\frac{<freshWater>}{<freshWaterToSeaWater>})__" );
+        pressure->setValue( NUtilities::depthToPressure( imperial(), seaWater(), pressure->value() ) );
+        formula = NUtilities::depthToPressureFormula( "pressure", "depth", "depthToSingleAtmosphere" );
     }
     return formula;
 }

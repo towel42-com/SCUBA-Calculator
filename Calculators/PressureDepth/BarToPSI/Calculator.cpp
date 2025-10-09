@@ -1,7 +1,6 @@
 #include "Calculator.h"
 #include "VariableInfo.h"
 #include "Utilities.h"
-
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
@@ -29,7 +28,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Depth";
+    return "BAR to PSI";
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -39,40 +38,42 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    auto retVal = TVariableInfoList (//
+    auto retVal = TVariableInfoList( //
         {
-            std::make_shared< SVariableInfo >( "feet", tr( "Feet" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "meters", tr( "Meters" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "metersToFeet", tr( "Meters To Feet" ), EVariableType::eMetersToFeetConst, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "psi", tr( "PSI" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "bar", tr( "BAR" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "psiToBar", tr( "PSI to BAR" ), EVariableType::ePSIToBarConst, EUnit::eNone, EVariableLoc::eRHS ),   //
         } );
 
-    retVal.front()->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( true, true, false ) );
-    (*std::next( retVal.begin() ) )->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( false, true, false ) );
+    retVal.front()->setUnitLabel( NUtilities::NUnitStrings::pressureUnit( true, true, false ) );
+    ( *std::next( retVal.begin() ) )->setUnitLabel( NUtilities::NUnitStrings::pressureUnit( false, true, false ) );
+
     return retVal;
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<feet>=<meters> \times <metersToFeet>)__" );
+    return NUtilities::barToPSIFormula( "psi", "bar", "psiToBar" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    auto feet = getVariable( "feet" );
-    auto meters = getVariable( "meters" );
+    auto psi = getVariable( "psi" );
+    auto bar = getVariable( "bar" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !feet->has_value() )
+    if ( !aOK || !psi->has_value() )
     {
         if ( aOK )
-            feet->setValue( meters->value() * NUtilities::NConstants::metersToFeet() );
+            psi->setValue( NUtilities::barToPSI( bar->value() ) );
         formula = getDefaultFormula();
     }
-    else if ( !feet->has_value() )
+    else if ( !bar->has_value() )
     {
-        meters->setValue( feet->value() / NUtilities::NConstants::metersToFeet() );
-        return tr( R"__(<meters>=\frac{<feet>}{<metersToFeet>})__" );
+        bar->setValue( NUtilities::psiToBar( psi->value() ) );
+        formula = NUtilities::psiToBarFormula( "psi", "bar", "psiToBar" );
     }
     return formula;
 }
+

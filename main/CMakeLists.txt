@@ -67,15 +67,19 @@ DeployQt( ${PROJECT_NAME} .
         MOD
         PartialPressureForDepth
         Depth
-        DepthSeawaterToFromFreshwater
-        DepthToFromPressure
-        PSIToFromBar
+        DepthFreshwaterToSeawater
+        DepthSeawaterToFreshwater
+        DepthToPressure
+        PressureToDepth
+        PSIToBar
+        BarToPSI
         CombinedGasLaw
         IdealGasLaw
         PressureChangeInTemp
         QuickEstimates
         VolumeChangeInTemp
-        GasConsumptionTimeToFromDepth
+        DepthToGasConsumptionTime
+        GasConsumptionTimeToDepth
         P1V1EqP2V2
         RelativeChangeInAmbientPressure
     EXTRA_TARGETS2

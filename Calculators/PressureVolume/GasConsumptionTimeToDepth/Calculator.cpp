@@ -17,8 +17,6 @@ public:
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula() const override;
-
-    virtual bool showUnits() const { return false; }
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -28,12 +26,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "PSI to-from BAR";
+    return "Calculating Gas Consumption Time to-from Specific Depth";
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { "Pressure and Depth Conversions" };
+    return { "Pressure and Volume Conversions" };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
@@ -54,18 +52,27 @@ QString CCalculator::computeAndGenerateFormula() const
     return {};
     //if ( !NUtilities::valuesValid( values ) )
     //    return {};
+    //auto p1 = values[ 0 ];
+    //auto t1 = values[ 1 ];
+    //auto p2 = values[ 2 ];
+    //auto t2 = values[ 3 ];
 
-    //auto psi = values[ 0 ];
-    //auto bar = values[ 1 ];
-
-    //if ( !psi.has_value() )
+    //if ( !p1.has_value() )
     //{
-    //    psi = bar.value() * 14.7;
+    //    p1 = ( p2.value() * t2.value() ) / t1.value();
     //}
-    //else if ( !bar.has_value() )
+    //else if ( !t1.has_value() )
     //{
-    //    bar = psi.value() / 14.7;
+    //    t1 = ( p2.value() * t2.value() ) / p1.value();
     //}
-    //return TOptionalDoubleVector( { psi, bar } );
+    //else if ( !p2.has_value() )
+    //{
+    //    p2 = ( p1.value() * t1.value() ) / t2.value();
+    //}
+    //else if ( !t2.has_value() )
+    //{
+    //    t2 = ( p1.value() * t1.value() ) / p2.value();
+    //}
+    //return TOptionalDoubleVector( { p1, t1, p2, t2 } );
 }
 

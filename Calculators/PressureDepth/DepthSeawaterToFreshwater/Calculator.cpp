@@ -18,8 +18,6 @@ public:
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
     virtual QString computeAndGenerateFormula() const override;
-
-    virtual bool showUnits() const { return false; }
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -29,7 +27,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return "Depth";
+    return "Depth Seawater to Freshwater";
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -39,40 +37,39 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    auto retVal = TVariableInfoList (//
+    auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< SVariableInfo >( "feet", tr( "Feet" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "meters", tr( "Meters" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "metersToFeet", tr( "Meters To Feet" ), EVariableType::eMetersToFeetConst, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "freshWaterToSeaWater", tr( "Freshwater to Seawater" ), EVariableType::eSeaWaterToFreshWaterConst, EUnit::eNone, EVariableLoc::eRHS ),   //
         } );
 
-    retVal.front()->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( true, true, false ) );
-    (*std::next( retVal.begin() ) )->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( false, true, false ) );
     return retVal;
 }
 
 QString CCalculator::getDefaultFormula() const
 {
-    return tr( R"__(<feet>=<meters> \times <metersToFeet>)__" );
+    return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
 }
 
 QString CCalculator::computeAndGenerateFormula() const
 {
-    auto feet = getVariable( "feet" );
-    auto meters = getVariable( "meters" );
+    auto freshWater = getVariable( "freshWater" );
+    auto seaWater = getVariable( "seaWater" );
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    if ( !aOK || !feet->has_value() )
+    if ( !aOK || !freshWater->has_value() )
     {
         if ( aOK )
-            feet->setValue( meters->value() * NUtilities::NConstants::metersToFeet() );
+            freshWater->setValue( NUtilities::depthSeawaterToFreshwater( freshWater->value() ) );
         formula = getDefaultFormula();
     }
-    else if ( !feet->has_value() )
+    else if ( !seaWater->has_value() )
     {
-        meters->setValue( feet->value() / NUtilities::NConstants::metersToFeet() );
-        return tr( R"__(<meters>=\frac{<feet>}{<metersToFeet>})__" );
+        seaWater->setValue( NUtilities::depthFreshwaterToSeawater( freshWater->value() ) );
+        formula = NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
     }
     return formula;
 }
+
