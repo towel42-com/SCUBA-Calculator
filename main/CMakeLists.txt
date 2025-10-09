@@ -82,7 +82,8 @@ DeployQt( ${PROJECT_NAME} .
         VolumeChangeInTemp
         DepthToGasConsumptionTime
         GasConsumptionTimeToDepth
-        P1V1EqP2V2
+        PressureChangeInVolume
+        VolumeChangeInPressure
         RelativeChangeInAmbientPressure
     EXTRA_TARGETS2
        T42Qt6MathJax 

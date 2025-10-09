@@ -17,7 +17,7 @@ public:
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
     virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
+    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -27,20 +27,20 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return tr( "Quick Estimate for Temperature when Pressure Changes" );
+    return tr( "Quick Estimate for Pressure when Temperature Changes" );
 }
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { tr( "Pressure, Temperature and Volume Calculations" ) };
+    return { tr( "Quick Estimates" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            std::make_shared< SVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< SVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
             std::make_shared< SVariableInfo >( "pressurePerDegree", tr( "Pressure Change Per Degree" ), EVariableType::ePressurePerDegreeConst, EUnit::eNone, EVariableLoc::eRHS ),   //
         };
 }
@@ -48,7 +48,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 QString CCalculator::getDefaultFormula() const
 {
     QString formula;
-    formula = NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
+    formula = NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
     return formula;
 }
 
@@ -67,7 +67,7 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     }
     else if ( !p1->has_value() )
     {
-        p1->setValue( NUtilities::quickDegreeChangeToPressure( imperial(), t1->value() ) );
+        p1->setValue(  NUtilities::quickDegreeChangeToPressure( imperial(), t1->value() ) );
         formula = NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
     }
     else if ( !t1->has_value() )
