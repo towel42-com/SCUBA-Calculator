@@ -43,8 +43,8 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< SVariableInfo >( "v", tr( "Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
             std::make_shared< SVariableInfo >( "numMoles", tr( "Number of Moles" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
             std::make_shared< SVariableInfo >( "t", tr( "Temperature" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "idealGasConstant", tr( "Ideal Gas Constant" ), EVariableType::eIdealGasConst, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "absOffset", tr( "Absolute Temperature Offset" ), EVariableType::eAbsZeroOffsetConst, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "idealGasConstant", tr( "Ideal Gas Constant" ), EVariableType::eIdealGasConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< SVariableInfo >( "absOffset", tr( "Absolute Temperature Offset" ), EVariableType::eAbsZeroOffsetConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
         };
 }
 

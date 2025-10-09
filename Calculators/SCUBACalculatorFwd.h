@@ -80,16 +80,17 @@ enum class EVariableType
 {
     eHidden,
     eVariable,
-    ePressurePerTempConst,
-    eWeightOfWaterConst,
-    eIdealGasConst,
-    eFN2AtSurfaceConst,
-    eFO2AtSurfaceConst,
-    eDepthToSingleAtmosphereConst,
-    eMetersToFeetConst,
-    eSeaWaterToFreshWaterConst,
-    ePSIToBarConst,
-    eAbsZeroOffsetConst
+    ePressurePerTempConstant,
+    eWeightOfWaterConstant,
+    eIdealGasConstant,
+    eFN2AtSurfaceConstant,
+    eFO2AtSurfaceConstant,
+    eDepthToSingleAtmosphereConstant,
+    eMetersToFeetConstant,
+    eSeaWaterToFreshWaterConstant,
+    ePSIToBarConstant,
+    eAbsZeroOffsetConstant,
+    ePressureOffsetConstant
 };
 
 enum class EVariableLoc

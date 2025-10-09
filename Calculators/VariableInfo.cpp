@@ -223,64 +223,72 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = QString( "%1 (%2)" );
                     break;
                 }
-            case EVariableType::ePressurePerTempConst:
+            case EVariableType::ePressurePerTempConstant:
                 {
                     value = NUtilities::NUnitStrings::pressurePerTemp( imperial, true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eWeightOfWaterConst:
+            case EVariableType::eWeightOfWaterConstant:
                 {
                     value = NUtilities::NUnitStrings::weightOfWater( imperial, seaWater, true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eIdealGasConst:
+            case EVariableType::eIdealGasConstant:
                 {
                     value = NUtilities::NUnitStrings::idealGasConstant( imperial, true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eFN2AtSurfaceConst:
+            case EVariableType::eFN2AtSurfaceConstant:
                 {
                     value = NUtilities::NUnitStrings::percentN2AtSurface( true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eFO2AtSurfaceConst:
+            case EVariableType::eFO2AtSurfaceConstant:
                 {
                     value = NUtilities::NUnitStrings::percentO2AtSurface( true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eDepthToSingleAtmosphereConst:
+            case EVariableType::eDepthToSingleAtmosphereConstant:
                 {
                     value = NUtilities::NUnitStrings::depthToSingleAtmosphere( imperial, seaWater, true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eMetersToFeetConst:
+            case EVariableType::eMetersToFeetConstant:
                 {
                     value = NUtilities::NUnitStrings::metersToFeet( true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eSeaWaterToFreshWaterConst:
+            case EVariableType::eSeaWaterToFreshWaterConstant:
                 {
                     value = NUtilities::NUnitStrings::freshWaterToSeaWater( imperial, true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::ePSIToBarConst:
+            case EVariableType::ePSIToBarConstant:
                 {
                     value = NUtilities::NUnitStrings::psiToBar( true, true );
                     format = "%1";
                 }
-            case EVariableType::eAbsZeroOffsetConst:
+                break;
+            case EVariableType::eAbsZeroOffsetConstant:
                 {
                     value = NUtilities::NUnitStrings::absZeroOffset( imperial, true, true );
                     format = "%1";
                 }
+                break;
+            case EVariableType::ePressureOffsetConstant:
+                {
+                    value = NUtilities::NUnitStrings::pressureOffset( imperial, true, true );
+                    format = "%1";
+                }
+                break;
         };
     }
 

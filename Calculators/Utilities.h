@@ -52,6 +52,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString psiToBar( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString pressureOffset( bool imperial, bool useAbbreviations, bool tex );
     }
 
     namespace NConstants

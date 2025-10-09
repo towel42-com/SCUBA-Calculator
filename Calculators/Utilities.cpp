@@ -241,6 +241,13 @@ namespace NUtilities
             retVal = retVal.arg( doubleToString( NConstants::absZeroOffset( imperial ), 0 ) ).arg( tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
+        
+        QString pressureOffset( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( doubleToString( NConstants::pressureOffset( imperial ), 1 ) ).arg( atmosphereUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
     }
 
     namespace NConstants
