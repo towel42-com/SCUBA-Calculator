@@ -15,12 +15,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -54,35 +54,39 @@ QString CCalculator::getBaseFormula() const
     return R"__(<relChange> = \frac{<p2>}{<p1>})__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "relChange" )
+    {
+        return R"__(<relChange> = \frac{<p2>}{<p1>})__";
+    }
+    else if ( unsetVar->name() == "p1" )
+    {
+        return R"__(<p1> = \frac{<p2>}{<relChange>})__";
+    }
+    else if ( unsetVar->name() == "p2" )
+    {
+        return R"__(<p2> = <p2> \times <relChange>)__";
+    }
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto relChange = getVariable( "relChange" );
     auto p1 = getVariable( "p1" );
     auto p2 = getVariable( "p2" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !relChange->has_value() )
+    if ( unsetVar->name() == "relChange" )
     {
         relChange->setValue( p2->value() / p1->value() );
-        formula = tr( R"__(<relChange> = \frac{<p2>}{<p1>})__" );
     }
-    else if ( !p1->has_value() )
+    else if ( unsetVar->name() == "p1" )
     {
         p1->setValue( p2->value() / relChange->value() );
-        formula = tr( R"__(<p1> = \frac{<p2>}{<relChange>})__" );
     }
-    else if ( !p2->has_value() )
+    else if ( unsetVar->name() == "p2" )
     {
         p2->setValue( relChange->value() * p1->value() );
-        formula = tr( R"__(<p2> = <p2> \times <relChange>)__" );
     }
-    return formula;
 }
-

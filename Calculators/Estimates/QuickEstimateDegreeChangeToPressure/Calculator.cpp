@@ -15,12 +15,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -50,34 +50,34 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::getBaseFormula() const
 {
-    QString formula;
-    formula = NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
-    return formula;
+    return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "p1" )
+    {
+        return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
+    }
+    else if ( unsetVar->name() == "t1" )
+    {
+        return NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
+    }
+
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto p1 = getVariable( "p1" );
     auto t1 = getVariable( "t1" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
+    if ( unsetVar == p1 )
     {
-        formula = getBaseFormula();
-        isBaseFormula = true;
+        p1->setValue( NUtilities::quickDegreeChangeToPressure( imperial(), t1->value() ) );
     }
-    else if ( !p1->has_value() )
-    {
-        p1->setValue(  NUtilities::quickDegreeChangeToPressure( imperial(), t1->value() ) );
-        formula = NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
-    }
-    else if ( !t1->has_value() )
+    else if ( unsetVar == t1 )
     {
         t1->setValue( NUtilities::quickPressureChangeToDegree( imperial(), p1->value() ) );
-        formula = NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
     }
-
-    return formula;
 }

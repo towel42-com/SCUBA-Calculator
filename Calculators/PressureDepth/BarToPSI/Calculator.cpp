@@ -17,12 +17,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -60,28 +60,30 @@ QString CCalculator::getBaseFormula() const
     return NUtilities::barToPSIFormula( "psi", "bar", "psiToBar" );
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "psi" )
+    {
+        return getBaseFormula();
+    }
+    else if ( unsetVar->name() == "bar" )
+    {
+        return NUtilities::psiToBarFormula( "psi", "bar", "psiToBar" );
+    }
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto psi = getVariable( "psi" );
     auto bar = getVariable( "bar" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !psi->has_value() )
+    if ( unsetVar == psi )
     {
         psi->setValue( NUtilities::barToPSI( bar->value() ) );
-        formula = getBaseFormula();
     }
-    else if ( !bar->has_value() )
+    else if ( unsetVar == bar )
     {
         bar->setValue( NUtilities::psiToBar( psi->value() ) );
-        formula = NUtilities::psiToBarFormula( "psi", "bar", "psiToBar" );
     }
-    return formula;
 }

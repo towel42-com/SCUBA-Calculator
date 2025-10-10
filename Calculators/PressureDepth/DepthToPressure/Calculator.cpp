@@ -17,12 +17,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -55,28 +55,30 @@ QString CCalculator::getBaseFormula() const
     return NUtilities::depthToPressureFormula( "pressure", "depth", "depthToSingleAtmosphere" );
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "pressure" )
+    {
+        return getBaseFormula();
+    }
+    else if ( unsetVar->name() == "depth" )
+    {
+        return NUtilities::pressureToDepthFormula( "pressure", "depth", "depthToSingleAtmosphere" );
+    }
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto pressure = getVariable( "pressure" );
     auto depth = getVariable( "depth" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !pressure->has_value() )
+    if ( unsetVar == pressure )
     {
         pressure->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
-        formula = getBaseFormula();
     }
-    else if ( !depth->has_value() )
+    else if ( unsetVar == depth )
     {
         pressure->setValue( NUtilities::pressureToDepth( imperial(), seaWater(), pressure->value() ) );
-        formula = NUtilities::pressureToDepthFormula( "pressure", "depth", "depthToSingleAtmosphere" );
     }
-    return formula;
 }

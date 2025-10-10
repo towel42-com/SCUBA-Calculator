@@ -17,12 +17,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-       
-    virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual TVariableInfoList getMyVariables() const override;
 
-    virtual void computeValues() const override;   // updates all values
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -59,28 +59,30 @@ QString CCalculator::getBaseFormula() const
     return NUtilities::feetToMetersFormula( "feet", "meters", "metersToFeet" );
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "meters" )
+    {
+        return getBaseFormula();
+    }
+    else if ( unsetVar->name() == "feet" )
+    {
+        return NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
+    }
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto feet = getVariable( "feet" );
     auto meters = getVariable( "meters" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !meters->has_value() )
+    if ( unsetVar == meters )
     {
         meters->setValue( NUtilities::feetToMeters( feet->value() ) );
-        formula = getBaseFormula();
     }
-    else if ( !feet->has_value() )
+    else if ( unsetVar == feet )
     {
         feet->setValue( NUtilities::metersToFeet( meters->value() ) );
-        formula = NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
     }
-    return formula;
 }

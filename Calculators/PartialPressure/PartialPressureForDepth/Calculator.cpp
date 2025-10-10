@@ -17,12 +17,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -70,36 +70,47 @@ QString CCalculator::getBaseFormula() const
     return formula;
 }
 
-QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "partialPressureAtDepth" )
+    {
+        return getBaseFormula();
+    }
+    else if ( unsetVar->name() == "depth" )
+    {
+        return R"__(<depth> = <depthToSingleAtmosphere> * (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__";
+    }
+    else if ( unsetVar->name() == "partialPressureAtSurface" )
+    {
+        auto formula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
+        formula += R"__( \newline\newline )__";
+        formula += R"__(<partialPressureAtSurface> = \frac{<partialPressureAtDepth>}{<ata_value>})__";
+        return formula;
+
+    }
+
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto ata = getVariable( "ata" );
     auto partialPressureAtDepth = getVariable( "partialPressureAtDepth" );
     auto depth = getVariable( "depth" );
     auto partialPressureAtSurface = getVariable( "partialPressureAtSurface" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !partialPressureAtDepth->has_value() )
+    if ( unsetVar == partialPressureAtDepth )
     {
         ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
         partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
-        formula = getBaseFormula();
     }
-    else if ( !depth->has_value() )
+    else if ( unsetVar == depth )
     {
         depth->setValue( NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
     }
-    else if ( !partialPressureAtSurface->has_value() )
+    else if ( unsetVar == partialPressureAtSurface )
     {
         ata->setValue( NUtilities::depthToPressure( imperial(), seaWater(), depth->value() ) );
         partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
-
-    return formula;
 }

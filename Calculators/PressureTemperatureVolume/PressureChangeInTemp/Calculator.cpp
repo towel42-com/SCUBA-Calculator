@@ -14,13 +14,13 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -76,12 +76,36 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::getBaseFormula() const
 {
-    QString formula;
-    formula = R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__";
-    return formula;
+    return R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "p1" )
+    {
+        // p1 = p2 * ( t1/t2 );
+        return R"__(<p1> = [(<t1> + <absOffset>) \times \frac{(<p2> + <pressureOffset>)}{(<t2> + <absOffset>}] - <pressureOffset>)__";
+    }
+    else if ( unsetVar->name() == "p2" )
+    {
+        // p2 = p1 * ( t2/t1 );
+        return R"__(<p2> = [(<t2> + <absOffset>) \times \frac{(<p1> + <pressureOffset>)}{(<t1> + <absOffset>}] - <pressureOffset>)__";
+    }
+    else if ( unsetVar->name() == "t1" )
+    {
+        // T1 = t2*(t1/t2)
+        return R"__(<t1> = [\frac{(<p1> + <pressureOffset>) \times (<t2> + <absOffset>)}{<p2> + <pressureOffset>}] - <absOffset>)__";
+    }
+    else if ( unsetVar->name() == "t2" )
+    {
+        // T2 = t1*(t2/t1)
+        return R"__(<t2> = [\frac{(<p2> + <pressureOffset>) \times (<t1> + <absOffset>)}{<p1> + <pressureOffset>}] - <absOffset>)__";
+    }
+
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto p1 = getVariable( "p1" );
     auto t1 = getVariable( "t1" );
@@ -89,38 +113,24 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     auto p2 = getVariable( "p2" );
     auto t2 = getVariable( "t2" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !p1->has_value() )
+    if ( unsetVar == p1 )
     {
         // p1 = p2 * ( t1/t2 );
         p1->setValue( ( NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( ( p2->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) / NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) ) - NUtilities::NConstants::pressureOffset( imperial() ) );
-        formula = tr( R"__(<p1> = [(<t1> + <absOffset>) \times \frac{(<p2> + <pressureOffset>)}{(<t2> + <absOffset>}] - <pressureOffset>)__" );
     }
-    else if ( !p2->has_value() )
+    else if ( unsetVar == p2 )
     {
         // p2 = p1 * ( t2/t1 );
         p2->setValue( ( NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( ( p1->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) / NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) ) - NUtilities::NConstants::pressureOffset( imperial() ) );
-        formula = tr( R"__(<p2> = [(<t2> + <absOffset>) \times \frac{(<p1> + <pressureOffset>)}{(<t1> + <absOffset>}] - <pressureOffset>)__" );
     }
-    else if ( !t1->has_value() )
+    else if ( unsetVar == t1 )
     {
         // T1 = t2*(t1/t2)
-        formula = tr( R"__(<t1> = [\frac{(<p1> + <pressureOffset>) \times (<t2> + <absOffset>)}{<p2> + <pressureOffset>}] - <absOffset>)__" );
         t1->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( ( p1->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) * NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) / ( p2->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) ) );
     }
-    else if ( !t2->has_value() )
+    else if ( unsetVar == t2 )
     {
         // T2 = t1*(t2/t1)
-        formula = tr( R"__(<t2> = [\frac{(<p2> + <pressureOffset>) \times (<t1> + <absOffset>)}{<p1> + <pressureOffset>}] - <absOffset>)__" );
         t2->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( ( p2->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) * NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) / ( p1->value() + NUtilities::NConstants::pressureOffset( imperial() ) ) ) );
     }
-
-    return formula;
 }

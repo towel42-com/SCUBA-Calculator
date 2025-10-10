@@ -82,7 +82,8 @@ public:
 protected:
     void initVariables();
     std::size_t numUnsetVariables() const;
-    TVariableInfo getVariable( const QString &varName ) const;
+    TConstVariableInfo getVariable( const QString &varName ) const;
+    TVariableInfo getVariable( const QString &varName );
 
 
     virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const final;
@@ -98,10 +99,14 @@ protected:
     // only necessary if the number of variables on either side is greater than two.
 
     virtual QString getBaseFormula() const = 0;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const = 0;   // returns the current formula in use
+    virtual std::optional< QString > getCurrentFormula() const final;   // returns the current formula in use
 
-    virtual void computeValues() const = 0;   // updates all values
+    virtual void computeValues() final;   // updates all values
 protected:
+    TVariableInfo getFirstUnsetVariable() const;
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const = 0;   // returns the current formula in use
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) = 0;
+
     CSCUBACalculatorPage *fPage{ nullptr };
     QSvgWidget *fSvgWidget{ nullptr };
     QFrame *fSvgFrame{ nullptr };

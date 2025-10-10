@@ -17,13 +17,13 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -74,36 +74,41 @@ QString CCalculator::getBaseFormula() const
     return R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "mod" )
+    {
+        return getBaseFormula();
+    }
+    else if ( unsetVar->name() == "maxPO2" )
+    {
+        return R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__";
+    }
+    else if ( unsetVar->name() == "fo2" )
+    {
+        return R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<depthToSingleAtmosphere>})+1})__";
+    }
+
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto mod = getVariable( "mod" );
     auto maxPO2 = getVariable( "maxPO2" );
     auto fo2 = getVariable( "fo2" );
 
-    QString formula;
-    bool aOK = ( numUnsetVariables() == 1 ) && ( fo2->value() != 0.0 );
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !mod->has_value() )
+    if ( unsetVar == mod )
     {
         mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
-        formula = getBaseFormula();
     }
-    else if ( !maxPO2->has_value() )
+    else if ( unsetVar == maxPO2 )
     {
         maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
-        formula = tr( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__" );
     }
-    else if ( !fo2->has_value() )
+    else if ( unsetVar == fo2 )
     {
         if ( mod->value() != 0.0 )
             fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
-
-        formula = tr( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<depthToSingleAtmosphere>})+1})__" );
     }
-    return formula;
 }

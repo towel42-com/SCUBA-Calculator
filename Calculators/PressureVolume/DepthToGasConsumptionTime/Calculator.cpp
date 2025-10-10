@@ -14,13 +14,13 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -77,7 +77,28 @@ QString CCalculator::getBaseFormula() const
     return R"__(<p1> \times <m1> = <p2> \times <m2>)__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "p1" )
+    {
+        return R"__(<p1> = <p2> \times \frac{<m2>}{<m1>})__";
+    }
+    else if ( unsetVar->name() == "p2" )
+    {
+        return R"__(<p2> = <p1> \times \frac{<m1>}{<m2>})__";
+    }
+    else if ( unsetVar->name() == "m1" )
+    {
+        return R"__(<m1> = <m2> \times \frac{<p2>}{<p1>})__";
+    }
+    else if ( unsetVar->name() == "m2" )
+    {
+        return R"__(<m2> = <m1> \times \frac{<p1>}{<p2>})__";
+    }
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto p1 = getVariable( "p1" );
     auto m1 = getVariable( "m1" );
@@ -85,34 +106,20 @@ QString CCalculator::computeAndGenerateFormula( bool & isBaseFormula ) const
     auto p2 = getVariable( "p2" );
     auto m2 = getVariable( "m2" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !p1->has_value() )
+    if ( unsetVar == p1 )
     {
         p1->setValue( p2->value() * ( m2->value() / m1->value() ) );
-        formula = tr( R"__(<p1> = <p2> \times \frac{<m2>}{<m1>})__" );
     }
-    else if ( !p2->has_value() )
+    else if ( unsetVar == p2 )
     {
         p2->setValue( p1->value() * ( m1->value() / m2->value() ) );
-        formula = tr( R"__(<p2> = <p1> \times \frac{<m1>}{<m2>})__" );
     }
-    else if ( !m1->has_value() )
+    else if ( unsetVar == m1 )
     {
         m1->setValue( m2->value() * ( p2->value() / p1->value() ) );
-        formula = tr( R"__(<m1> = <m2> \times \frac{<p2>}{<p1>})__" );
     }
-    else if ( !m2->has_value() )
+    else if ( unsetVar == m2 )
     {
         m2->setValue( m1->value() * ( p1->value() / p2->value() ) );
-        formula = tr( R"__(<m2> = <m1> \times \frac{<p1>}{<p2>})__" );
     }
-    return formula;
 }
-

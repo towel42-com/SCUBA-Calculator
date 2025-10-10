@@ -15,13 +15,13 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -76,12 +76,36 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::getBaseFormula() const
 {
-    QString formula;
-    formula = tr( R"__(\frac{<v1>}{<t1>} = \frac{<v2>}{<t2>})__" );
-    return formula;
+    return R"__(\frac{<v1>}{<t1>} = \frac{<v2>}{<t2>})__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "v1" )
+    {
+        // V1 = V2 * ( t1/t2 );
+        return R"__(<v1> = <v2> \times \frac{<t1> + <absOffset>}{<t2> + <absOffset>})__";
+    }
+    else if ( unsetVar->name() == "v2" )
+    {
+        // V2 = V1 * ( t2/t1 );
+        return R"__(<v2> = <v1> \times \frac{<t2> + <absOffset>}{<t1> + <absOffset>})__";
+    }
+    else if ( unsetVar->name() == "t1" )
+    {
+        // T1 = t2*(V1/v2)
+        return R"__(<t1> = [(<t2> + <absOffset>) \times \frac{<v1>}{<v2>}] - <absOffset>)__";
+    }
+    else if ( unsetVar->name() == "t2" )
+    {
+        // T2 = t1*(V2/v1)
+        return R"__(<t2> = [(<t1> + <absOffset>) \times \frac{<v2>}{<v1>}] - <absOffset>)__";
+    }
+
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto v1 = getVariable( "v1" );
     auto t1 = getVariable( "t1" );
@@ -89,38 +113,24 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     auto v2 = getVariable( "v2" );
     auto t2 = getVariable( "t2" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !v1->has_value() )
+    if ( unsetVar == v1 )
     {
         // V1 = V2 * ( t1/t2 );
         v1->setValue( NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) );
-        formula = tr( R"__(<v1> = <v2> \times \frac{<t1> + <absOffset>}{<t2> + <absOffset>})__" );
     }
-    else if ( !v2->has_value() )
+    else if ( unsetVar == v2 )
     {
         // V2 = V1 * ( t2/t1 );
         v2->setValue( NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) );
-        formula = tr( R"__(<v2> = <v1> \times \frac{<t2> + <absOffset>}{<t1> + <absOffset>})__" );
     }
-    else if ( !t1->has_value() )
+    else if ( unsetVar == t1 )
     {
         // T1 = t2*(V1/v2)
         t1->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / v2->value() ) ) );
-        formula = tr( R"__(<t1> = [(<t2> + <absOffset>) \times \frac{<v1>}{<v2>}] - <absOffset>)__" );
     }
-    else if ( !t2->has_value() )
+    else if ( unsetVar == t2 )
     {
         // T2 = t1*(V2/v1)
         t2->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / v1->value() ) ) );
-        formula = tr( R"__(<t2> = [(<t1> + <absOffset>) \times \frac{<v2>}{<v1>}] - <absOffset>)__" );
     }
-
-    return formula;
 }

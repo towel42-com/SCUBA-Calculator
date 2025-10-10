@@ -96,7 +96,7 @@ void CSCUBACalculator::notifyOfNewFormula( const QString &formula, EFormulaType 
         fUpdateFormulaFunc( getPage(), formula, formulaType );
 }
 
-std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
+TVariableInfoList &CSCUBACalculator::getVariables()
 {
     if ( fVariables.empty() )
     {
@@ -105,12 +105,12 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
     return fVariables;
 }
 
-const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables() const
+const TVariableInfoList &CSCUBACalculator::getVariables() const
 {
     return fVariables;
 }
 
-std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariables()
+TVariableInfoList &CSCUBACalculator::getGlobalVariables()
 {
     if ( fVariables.empty() )
     {
@@ -119,12 +119,12 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariab
     return fGlobalVariables;
 }
 
-const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getGlobalVariables() const
+const TVariableInfoList &CSCUBACalculator::getGlobalVariables() const
 {
     return fGlobalVariables;
 }
 
-std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables()
+TVariableInfoList &CSCUBACalculator::getRHSVariables()
 {
     if ( fVariables.empty() )
     {
@@ -133,12 +133,12 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables
     return fRHSVariables;
 }
 
-const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getRHSVariables() const
+const TVariableInfoList &CSCUBACalculator::getRHSVariables() const
 {
     return fRHSVariables;
 }
 
-std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables()
+TVariableInfoList &CSCUBACalculator::getLHSVariables()
 {
     if ( fVariables.empty() )
     {
@@ -147,7 +147,7 @@ std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables
     return fLHSVariables;
 }
 
-const std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getLHSVariables() const
+const TVariableInfoList &CSCUBACalculator::getLHSVariables() const
 {
     return fLHSVariables;
 }
@@ -197,7 +197,15 @@ std::size_t CSCUBACalculator::numUnsetVariables() const
     return retVal;
 }
 
-std::shared_ptr< SVariableInfo > CSCUBACalculator::getVariable( const QString &varName ) const
+TConstVariableInfo CSCUBACalculator::getVariable( const QString &varName ) const
+{
+    auto pos = fVariableMap.find( varName );
+    if ( pos == fVariableMap.end() )
+        return {};
+    return ( *pos ).second;
+}
+
+TVariableInfo CSCUBACalculator::getVariable( const QString &varName )
 {
     auto pos = fVariableMap.find( varName );
     if ( pos == fVariableMap.end() )
@@ -314,6 +322,47 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
     auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
     notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
+}
+
+std::optional< QString > CSCUBACalculator::getCurrentFormula() const
+{
+    auto numUnset = numUnsetVariables();
+    if ( numUnset != 1 )
+        return getBaseFormula();
+
+    auto unsetVar = getFirstUnsetVariable();
+    if ( !unsetVar )
+        return {};
+
+    return getFormulaForVar( unsetVar );
+}
+
+void CSCUBACalculator::computeValues()
+{
+    auto numUnset = numUnsetVariables();
+    if ( numUnset != 1 )
+        return;
+
+    auto unsetVar = getFirstUnsetVariable();
+    if ( !unsetVar )
+        return;
+
+    computeValueForVar( unsetVar );
+}
+
+TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
+{
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+        if ( !ii->has_value() )
+        {
+            return ii;
+            break;
+        }
+    }
+    return {};
 }
 
 void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const

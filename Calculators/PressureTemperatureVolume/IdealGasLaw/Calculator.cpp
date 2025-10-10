@@ -15,12 +15,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -56,45 +56,57 @@ QString CCalculator::getBaseFormula() const
     return R"__(<p> \times <v> = <numMoles> \times <idealGasConstant> \times <t>)__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "p" )
+    {
+        // p = nrt/v
+        return R"__(<p> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<v>})__";
+    }
+    else if ( unsetVar->name() == "v" )
+    {
+        // v = nrt/p
+        return R"__(<v> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<p>})__";
+    }
+    else if ( unsetVar->name() == "numMoles" )
+    {
+        // n = pv/rt
+        return R"__(<numMoles> = \frac{<p> \times <v>}{<idealGasConstant> \times (<t> + <absOffset>)})__";
+    }
+    else if ( unsetVar->name() == "t" )
+    {
+        // t = pv/nr
+        return R"__(<t> = (\frac{<p> \times <v>}{<idealGasConstant> \times <numMoles>}) - <absOffset>)__";
+    }
+
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto p = getVariable( "p" );
     auto v = getVariable( "v" );
     auto numMoles = getVariable( "numMoles" );
     auto t = getVariable( "t" );
 
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !p->has_value() )
+    if ( unsetVar == p )
     {
         // p = nrt/v
         p->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) / v->value() );
-        formula = tr( R"__(<p> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<v>})__" );
     }
-    else if ( !v->has_value() )
+    else if ( unsetVar == v )
     {
         // v = nrt/p
         v->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) / p->value() );
-        formula = tr( R"__(<v> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<p>})__" );
     }
-    else if ( !numMoles->has_value() )
+    else if ( unsetVar == numMoles )
     {
         // n = pv/rt
         numMoles->setValue( ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) ) );
-        formula = tr( R"__(<numMoles> = \frac{<p> \times <v>}{<idealGasConstant> \times (<t> + <absOffset>)})__" );
     }
-    else if ( !t->has_value() )
+    else if ( unsetVar == t )
     {
         // t = pv/nr
         t->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles->value() ) ) );
-        formula = tr( R"__(<t> = (\frac{<p> \times <v>}{<idealGasConstant> \times <numMoles>}) - <absOffset>)__" );
     }
-
-    return formula;
 }

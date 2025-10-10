@@ -111,6 +111,7 @@ enum class EFormulaType
 };
 
 struct SVariableInfo;
+using TConstVariableInfo = std::shared_ptr< const SVariableInfo >;
 using TVariableInfo = std::shared_ptr< SVariableInfo >;
 using TVariableInfoList = std::list< TVariableInfo >;
 

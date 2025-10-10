@@ -17,12 +17,12 @@ public:
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValues() const override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -40,7 +40,7 @@ QStringList CCalculator::calculatorPath() const
     return { tr( "Buoyancy Calculations" ) };
 }
 
-std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
@@ -55,28 +55,29 @@ QString CCalculator::getBaseFormula() const
     return R"__(<volumeDisplaced>=\frac{<negativeBuoyancy>}{<weightOfWater>})__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+{
+    if ( unsetVar->name() == "volumeDisplaced" )
+    {
+        return getBaseFormula();
+    }
+    if ( unsetVar->name() == "negativeBuoyancy" )
+    {
+        return R"__(<negativeBuoyancy>=<volumeDisplaced> \times <weightOfWater>)__";
+    }
+    return {};
+}
+
+void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
 {
     auto negativeBuoyancy = getVariable( "negativeBuoyancy" );
     auto volumeDisplaced = getVariable( "volumeDisplaced" );
-    QString formula;
-    bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
-    if ( !aOK )
-    {
-        formula = getBaseFormula();
-        isBaseFormula = true;
-    }
-    else if ( !volumeDisplaced->has_value() )
+    if ( unsetVar == volumeDisplaced )
     {
         volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
-        formula = getBaseFormula();
     }
-    else if ( !negativeBuoyancy->has_value() )
+    else if ( unsetVar == negativeBuoyancy )
     {
-        formula = tr( R"__(<negativeBuoyancy>=<volumeDisplaced> \times <weightOfWater>)__" );
         negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
     }
-
-    return formula;
 }
