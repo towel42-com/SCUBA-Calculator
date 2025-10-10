@@ -42,12 +42,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            std::make_shared< SVariableInfo >( "p", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "v", tr( "Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "numMoles", tr( "Number of Moles" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "t", tr( "Temperature" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "idealGasConstant", tr( "Ideal Gas Constant" ), EVariableType::eIdealGasConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "absOffset", tr( "Absolute Temperature Offset" ), EVariableType::eAbsZeroOffsetConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "p", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "v", tr( "Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "numMoles", tr( "Number of Moles" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "t", tr( "Temperature" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "idealGasConstant", tr( "Ideal Gas Constant" ), EVariableType::eIdealGasConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "absOffset", tr( "Absolute Temperature Offset" ), EVariableType::eAbsZeroOffsetConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
         };
 }
 

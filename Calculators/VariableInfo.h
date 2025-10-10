@@ -41,9 +41,11 @@ struct SRange
     double fStep{ 0.0 };
 };
 
-struct CALCULATORS_EXPORT SVariableInfo
+class CALCULATORS_EXPORT CVariableInfo
 {
-    SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
+public:
+    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
+    ~CVariableInfo() {}
 
     QString name() const { return fName; }
     EVariableLoc variableLoc() const { return fVariableLocation; }
@@ -80,9 +82,17 @@ public:
     QDoubleSpinBox *doubleSpinBox() const;
     QComboBox *comboBox() const;
 
-private:
-    bool isLineEntry() const;
+    void reverseVariableLoc()
+    {
+        if ( !isVariable() )
+            return;
+        if ( fVariableLocation == EVariableLoc::eLHS )
+            fVariableLocation = EVariableLoc::eRHS;
+        else if ( fVariableLocation == EVariableLoc::eRHS )
+            fVariableLocation = EVariableLoc::eLHS;
+    }
 
+private:
     TOptionalDouble valueForString( const QString &text ) const;
     void updateFieldFromValue( QDoubleSpinBox *spinBox, bool notifyUI );
     void updateFieldFromValue( QComboBox *comboBox, bool notifyUI );

@@ -10,7 +10,7 @@
 #include <QFormLayout>
 #include <QComboBox>
 
-SVariableInfo::SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation ) :
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation ) :
     fName( name ),
     fDescription( desc ),
     fType( type ),
@@ -19,7 +19,7 @@ SVariableInfo::SVariableInfo( const QString &name, const QString &desc, EVariabl
 {
 }
 
-bool SVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout )
+bool CVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout )
 {
     if ( fType != EVariableType::eVariable )
         return false;
@@ -80,7 +80,7 @@ bool SVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *form
     return true;
 }
 
-void SVariableInfo::updateLabels( bool imperial, bool seaWater )
+void CVariableInfo::updateLabels( bool imperial, bool seaWater )
 {
     if ( fType != EVariableType::eVariable )
         return;
@@ -102,7 +102,7 @@ void SVariableInfo::updateLabels( bool imperial, bool seaWater )
         fUnitLabel->setText( unitText );
 }
 
-QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const
+QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const
 {
     if ( fUnitText.has_value() )
         return fUnitText.value();
@@ -141,7 +141,7 @@ QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
     }
 }
 
-void SVariableInfo::resetValue( bool updateUI, bool notifyUI )
+void CVariableInfo::resetValue( bool updateUI, bool notifyUI )
 {
     fValue.reset();
     if ( !updateUI )
@@ -149,7 +149,7 @@ void SVariableInfo::resetValue( bool updateUI, bool notifyUI )
     updateFieldFromValue( notifyUI );
 }
 
-TOptionalDouble SVariableInfo::currFieldValue() const
+TOptionalDouble CVariableInfo::currFieldValue() const
 {
     TOptionalDouble currValue;
     if ( lineEdit() )
@@ -166,22 +166,22 @@ TOptionalDouble SVariableInfo::currFieldValue() const
     return currValue;
 }
 
-QLineEdit *SVariableInfo::lineEdit() const
+QLineEdit *CVariableInfo::lineEdit() const
 {
     return ( dynamic_cast< QLineEdit * >( fField ) );
 }
 
-QDoubleSpinBox *SVariableInfo::doubleSpinBox() const
+QDoubleSpinBox *CVariableInfo::doubleSpinBox() const
 {
     return ( dynamic_cast< QDoubleSpinBox * >( fField ) );
 }
 
-QComboBox *SVariableInfo::comboBox() const
+QComboBox *CVariableInfo::comboBox() const
 {
     return ( dynamic_cast< QComboBox * >( fField ) );
 }
 
-void SVariableInfo::updateValueFromField()
+void CVariableInfo::updateValueFromField()
 {
     if ( fType != EVariableType::eVariable )
         return;
@@ -194,7 +194,7 @@ void SVariableInfo::updateValueFromField()
     fValue = currFieldValue();
 }
 
-TOptionalDouble SVariableInfo::valueForString( const QString &text ) const
+TOptionalDouble CVariableInfo::valueForString( const QString &text ) const
 {
     if ( text.trimmed().isEmpty() )
         return {};
@@ -205,7 +205,7 @@ TOptionalDouble SVariableInfo::valueForString( const QString &text ) const
     return retVal;
 }
 
-void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EFormulaType formulaType ) const
+void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EFormulaType formulaType ) const
 {
     QString value;
     QString format;
@@ -322,7 +322,7 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
     formula = formula.replace( token, newString );
 }
 
-double SVariableInfo::value() const
+double CVariableInfo::value() const
 {
     if ( ( fUnit == EUnit::ePercent ) && ( fValue.value() >= 5 ) )
     {
@@ -331,7 +331,7 @@ double SVariableInfo::value() const
     return fValue.value();
 }
 
-bool SVariableInfo::isWidget( QWidget *widget ) const
+bool CVariableInfo::isWidget( QWidget *widget ) const
 {
     if ( widget == fField )
         return true;
@@ -343,7 +343,7 @@ bool SVariableInfo::isWidget( QWidget *widget ) const
     return false;
 }
 
-double SVariableInfo::formulaValue() const
+double CVariableInfo::formulaValue() const
 {
     if ( !has_value() )
         return 0.0;
@@ -355,7 +355,7 @@ double SVariableInfo::formulaValue() const
     return value();
 }
 
-void SVariableInfo::clearField( bool notifyUI )
+void CVariableInfo::clearField( bool notifyUI )
 {
     if ( !notifyUI )
         fField->blockSignals( true );
@@ -373,7 +373,7 @@ void SVariableInfo::clearField( bool notifyUI )
         fField->blockSignals( false );
 }
 
-void SVariableInfo::updateFieldFromValue( bool notifyUI )
+void CVariableInfo::updateFieldFromValue( bool notifyUI )
 {
     if ( fType != EVariableType::eVariable )
         return;
@@ -396,7 +396,7 @@ void SVariableInfo::updateFieldFromValue( bool notifyUI )
         updateFieldFromValue( comboBox(), notifyUI );
 }
 
-void SVariableInfo::updateFieldFromValue( QDoubleSpinBox *spinBox, bool notifyUI )
+void CVariableInfo::updateFieldFromValue( QDoubleSpinBox *spinBox, bool notifyUI )
 {
     Q_ASSERT( has_value() );
     if ( !has_value() )
@@ -414,7 +414,7 @@ void SVariableInfo::updateFieldFromValue( QDoubleSpinBox *spinBox, bool notifyUI
         spinBox->blockSignals( false );
 }
 
-void SVariableInfo::updateFieldFromValue( QLineEdit *lineEdit, bool notifyUI )
+void CVariableInfo::updateFieldFromValue( QLineEdit *lineEdit, bool notifyUI )
 {
     Q_ASSERT( has_value() );
     if ( !has_value() )
@@ -433,7 +433,7 @@ void SVariableInfo::updateFieldFromValue( QLineEdit *lineEdit, bool notifyUI )
         lineEdit->blockSignals( false );
 }
 
-void SVariableInfo::updateFieldFromValue( QComboBox *comboBox, bool notifyUI )
+void CVariableInfo::updateFieldFromValue( QComboBox *comboBox, bool notifyUI )
 {
     Q_ASSERT( has_value() );
     if ( !has_value() )

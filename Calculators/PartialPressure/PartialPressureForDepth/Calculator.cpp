@@ -44,11 +44,11 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< SVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eHidden, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eHidden, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
         } );
 
     ( *std::prev( std::prev( retVal.end() ) ) )

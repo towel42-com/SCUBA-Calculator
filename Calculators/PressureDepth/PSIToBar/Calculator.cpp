@@ -44,9 +44,9 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< SVariableInfo >( "bar", tr( "BAR" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "psi", tr( "PSI" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "psiToBar", tr( "PSI to BAR" ), EVariableType::ePSIToBarConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "bar", tr( "BAR" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "psi", tr( "PSI" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "psiToBar", tr( "PSI to BAR" ), EVariableType::ePSIToBarConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
         } );
 
     retVal.front()->setUnitLabel( NUtilities::NUnitStrings::pressureUnit( false, true, false ) );

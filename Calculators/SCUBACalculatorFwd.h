@@ -110,9 +110,9 @@ enum class EFormulaType
     eCurrentValueFormula   // the current formula with values filled in
 };
 
-struct SVariableInfo;
-using TConstVariableInfo = std::shared_ptr< const SVariableInfo >;
-using TVariableInfo = std::shared_ptr< SVariableInfo >;
+class CVariableInfo;
+using TConstVariableInfo = std::shared_ptr< const CVariableInfo >;
+using TVariableInfo = std::shared_ptr< CVariableInfo >;
 using TVariableInfoList = std::list< TVariableInfo >;
 
 using TNamedValueItem = std::pair< QString, TOptionalDouble >;
