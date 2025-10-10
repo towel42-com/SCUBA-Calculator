@@ -40,6 +40,7 @@ class CALCULATORS_EXPORT CSCUBACalculator : public QObject
 public:
     Q_PROPERTY( bool showUnits READ showUnits );
     Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
+    Q_PROPERTY( bool isReversable READ isReversable );
 
     CSCUBACalculator( QObject *parent = nullptr );
     virtual void init( bool imperial, bool seaWater ) final;   // initializes the default equations and sets the equations to the current setup
@@ -70,21 +71,23 @@ public:
     virtual QSvgWidget *svgWidget() const { return fSvgWidget; }
 
     virtual TVariableInfoList &getVariables();
-    virtual TVariableInfoList &getGlobalVariables();
     virtual TVariableInfoList &getLHSVariables();
     virtual TVariableInfoList &getRHSVariables();
 
     virtual const TVariableInfoList &getVariables() const;
-    virtual const TVariableInfoList &getGlobalVariables() const;
     virtual const TVariableInfoList &getLHSVariables() const;
     virtual const TVariableInfoList &getRHSVariables() const;
 
+    virtual bool isReversable() const { return false; }
+    virtual void setIsReversed( bool isReversed ) { fReversed = isReversed; }
+    virtual bool isReversed() const { return fReversed; }
+
 protected:
+
     void initVariables();
     std::size_t numUnsetVariables() const;
     TConstVariableInfo getVariable( const QString &varName ) const;
     TVariableInfo getVariable( const QString &varName );
-
 
     virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
@@ -92,7 +95,7 @@ protected:
     virtual QString finalizeFormula( const QString &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
-    
+
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
@@ -104,8 +107,8 @@ protected:
     virtual void computeValues() final;   // updates all values
 protected:
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const = 0;   // returns the current formula in use
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) = 0;
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const = 0;   // returns the current formula in use
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 
     CSCUBACalculatorPage *fPage{ nullptr };
     QSvgWidget *fSvgWidget{ nullptr };
@@ -113,11 +116,11 @@ protected:
     TUpdateFormulaFunc fUpdateFormulaFunc;
     TVariableInfoList fLHSVariables;
     TVariableInfoList fRHSVariables;
-    TVariableInfoList fGlobalVariables;
     TVariableInfoList fVariables;
 
     std::unordered_map< QString, TVariableInfo > fVariableMap;
     std::size_t fNumVariables{ 0 };   // if there are constants in the variable list, this value will not equal fVariables.size();
+    bool fReversed{ false };
 };
 
 extern "C" CALCULATORS_EXPORT CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit );

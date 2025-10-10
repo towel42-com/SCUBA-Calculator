@@ -104,12 +104,7 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
     auto retVal = new CSCUBACalculatorPage( calculator, parent );
     auto formLayout = new QFormLayout( retVal );
 
-    auto &&[ groupBox, currNumVariables ] = loadVariables( tr( "Global" ), calculator->getGlobalVariables(), retVal );
-    numVariables += currNumVariables;
-    if ( groupBox )
-        formLayout->addRow( groupBox );
-
-    std::tie( groupBox, currNumVariables ) = loadVariables( tr( "LHS" ), calculator->getLHSVariables(), retVal );
+    auto &&[ groupBox, currNumVariables ] = loadVariables( tr( "LHS" ), calculator->getLHSVariables(), retVal );
     numVariables += currNumVariables;
     if ( groupBox )
         formLayout->addRow( groupBox );
@@ -118,27 +113,6 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
     numVariables += currNumVariables;
     if ( groupBox )
         formLayout->addRow( groupBox );
-
-    //auto svgFrame = new QFrame( retVal );
-    //QSizePolicy sizePolicy( QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Preferred );
-    //sizePolicy.setHorizontalStretch( 0 );
-    //sizePolicy.setVerticalStretch( 1 );
-    //sizePolicy.setHeightForWidth( svgFrame->sizePolicy().hasHeightForWidth() );
-    //svgFrame->setSizePolicy( sizePolicy );
-
-    //svgFrame->setFrameShape( QFrame::Shape::StyledPanel );
-    //svgFrame->setFrameShadow( QFrame::Shadow::Raised );
-    //auto hBoxLayout = new QHBoxLayout( svgFrame );
-
-    //auto svgWidget = new QSvgWidget( svgFrame );
-    //svgWidget->setMinimumSize( QSize( 0, 10 ) );
-
-    //hBoxLayout->addWidget( svgWidget, 0, Qt::AlignmentFlag::AlignHCenter | Qt::AlignmentFlag::AlignVCenter );
-
-    //formLayout->addRow( svgFrame );
-
-    //auto spacerItem = new QSpacerItem( 20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::MinimumExpanding );
-    //formLayout->addItem( spacerItem );
 
     return { retVal, nullptr, nullptr, numVariables };
 }

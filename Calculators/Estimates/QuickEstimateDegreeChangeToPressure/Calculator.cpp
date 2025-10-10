@@ -8,6 +8,8 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
+    virtual bool isReversable() const override { return true; }
+
     virtual QString calculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
@@ -21,6 +23,7 @@ public:
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,7 +33,10 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::calculatorName() const
 {
-    return tr( "Quick Estimate for Pressure when Temperature Changes" );
+    if ( isReversed() )
+        return tr( "Quick Estimate for Temperature when Pressure Changes" );
+    else
+        return tr( "Quick Estimate for Pressure when Temperature Changes" );
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -42,15 +48,18 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            std::make_shared< SVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< SVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< SVariableInfo >( "pressurePerDegree", tr( "Pressure Change Per Degree" ), EVariableType::ePressurePerDegreeConst, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "p1", tr( "Pressure Change" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "t1", tr( "Temperature Change" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "pressurePerDegree", tr( "Pressure Change Per Degree" ), EVariableType::ePressurePerDegreeConst, EUnit::eNone, EVariableLoc::eRHS ),   //
         };
 }
 
 QString CCalculator::getBaseFormula() const
 {
-    return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
+    if ( isReversed() )
+        return NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
+    else
+        return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const

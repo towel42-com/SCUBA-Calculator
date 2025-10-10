@@ -34,7 +34,7 @@ class QGroupBox;
 
 class CSCUBACalculatorPage : public QWidget
 {
-    friend struct SVariableInfo;
+    friend class CVariableInfo;
 
 public:
     Q_OBJECT;

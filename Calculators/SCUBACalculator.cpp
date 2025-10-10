@@ -110,20 +110,6 @@ const TVariableInfoList &CSCUBACalculator::getVariables() const
     return fVariables;
 }
 
-TVariableInfoList &CSCUBACalculator::getGlobalVariables()
-{
-    if ( fVariables.empty() )
-    {
-        initVariables();
-    }
-    return fGlobalVariables;
-}
-
-const TVariableInfoList &CSCUBACalculator::getGlobalVariables() const
-{
-    return fGlobalVariables;
-}
-
 TVariableInfoList &CSCUBACalculator::getRHSVariables()
 {
     if ( fVariables.empty() )
@@ -156,12 +142,13 @@ void CSCUBACalculator::initVariables()
 {
     fLHSVariables.clear();
     fRHSVariables.clear();
-    fGlobalVariables.clear();
     fVariableMap.clear();
 
     fVariables = getMyVariables();
     for ( auto &&curr : fVariables )
     {
+        if ( isReversed() )
+            curr->reverseVariableLoc();
         fVariableMap[ curr->name() ] = curr;
         if ( curr->variableLoc() == EVariableLoc::eLHS )
             fLHSVariables.push_back( curr );

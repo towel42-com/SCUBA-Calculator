@@ -153,8 +153,15 @@ void CMainWindow::loadCalculators()
         auto setSeaWater = (TSetBoolFunc)GetProcAddress( hLib, kSetSeaWaterFuncName );
         auto setUpdateFormulaFunc = (TSetUpdateFormulaFunc)GetProcAddress( hLib, kSetUpdateFormulaFuncName );
 
-        auto calculator = (CSCUBACalculator *)constructor();
+        auto calculator = constructor();
         addCalculator( calculator, getPageFunc, setImperial, setSeaWater, setUpdateFormulaFunc, initFunc );
+
+        if ( calculator->isReversable() )
+        {
+            auto reversedCalc = constructor();
+            reversedCalc->setIsReversed( true );
+            addCalculator( reversedCalc, getPageFunc, setImperial, setSeaWater, setUpdateFormulaFunc, initFunc );
+        }
     }
     fImpl->whichCalculator->expandAll();
     fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
