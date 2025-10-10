@@ -95,10 +95,10 @@ void CSCUBACalculatorPage::slotWidgetChanged( QWidget *widget )
     updateValues( widget );
 }
 
-std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBACalculatorPage::constructPage( CSCUBACalculator *calculator, QWidget *parent )
+std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::constructPage( CSCUBACalculator *calculator, QWidget *parent )
 {
     if ( !calculator )
-        return { nullptr, nullptr, nullptr, 0 };
+        return { nullptr, 0 };
     std::size_t numVariables = 0;
 
     auto retVal = new CSCUBACalculatorPage( calculator, parent );
@@ -114,7 +114,7 @@ std::tuple< CSCUBACalculatorPage *, QFrame *, QSvgWidget *, std::size_t > CSCUBA
     if ( groupBox )
         formLayout->addRow( groupBox );
 
-    return { retVal, nullptr, nullptr, numVariables };
+    return { retVal, numVariables };
 }
 
 std::pair< QGroupBox *, std::size_t > CSCUBACalculatorPage::loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page )
@@ -138,10 +138,3 @@ std::pair< QGroupBox *, std::size_t > CSCUBACalculatorPage::loadVariables( const
     return { groupBox, numVariables };
 }
 
-//QFrame *line;
-//line = new QFrame( layoutWidget );
-//line->setObjectName( "line" );
-//line->setFrameShape( QFrame::Shape::HLine );
-//line->setFrameShadow( QFrame::Shadow::Sunken );
-//
-//gridLayout->addWidget( line, 2, 0, 1, 1 );

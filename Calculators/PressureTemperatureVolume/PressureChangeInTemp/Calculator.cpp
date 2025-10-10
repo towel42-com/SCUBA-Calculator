@@ -7,17 +7,13 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    virtual QString calculatorName() const override;
+    virtual QString myCalculatorName() const override;
     virtual QStringList calculatorPath() const override;
-
-    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
-    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
-    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual QString myBaseFormula() const override;   // for descriptive purposes
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
@@ -28,7 +24,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::calculatorName() const
+QString CCalculator::myCalculatorName() const
 {
     return tr( "Calculating Pressure Following a Change in Temperature" );
 }
@@ -74,7 +70,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-QString CCalculator::getBaseFormula() const
+QString CCalculator::myBaseFormula() const
 {
     return R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__";
 }

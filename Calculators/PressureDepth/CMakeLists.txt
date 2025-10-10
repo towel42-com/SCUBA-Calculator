@@ -1,8 +1,4 @@
 add_subdirectory( FeetToMeters )
-add_subdirectory( MetersToFeet )
 add_subdirectory( DepthFreshwaterToSeawater )
-add_subdirectory( DepthSeawaterToFreshwater )
 add_subdirectory( PressureToDepth )
-add_subdirectory( DepthToPressure )
 add_subdirectory( PSIToBar )
-add_subdirectory( BARToPSI )

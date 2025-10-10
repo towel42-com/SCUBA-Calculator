@@ -8,21 +8,21 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    virtual QString calculatorName() const override;
+    virtual bool isReversable() const override { return true; }
+    virtual QString myReversedCalculatorName() const override;
+    virtual QString myReversedBaseFormula() const override;
+
+    virtual QString myCalculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
     virtual bool showUnits() const { return false; }
 
-    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
-    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
-    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
-
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -30,9 +30,14 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::calculatorName() const
+QString CCalculator::myCalculatorName() const
 {
     return tr( "Feet to Meters" );
+}
+
+QString CCalculator::myReversedCalculatorName() const
+{
+    return tr( "Meters to Feet" );
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -54,12 +59,17 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::getBaseFormula() const
+QString CCalculator::myBaseFormula() const
 {
     return NUtilities::feetToMetersFormula( "feet", "meters", "metersToFeet" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+QString CCalculator::myReversedBaseFormula() const
+{
+    return NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
+}
+
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "meters" )
     {
@@ -72,7 +82,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto feet = getVariable( "feet" );
     auto meters = getVariable( "meters" );

@@ -1,8 +1,6 @@
-#ifndef XXXXX_H
-#define XXXXX_H
+#ifndef CALCULATOR_H
+#define CALCULATOR_H
 
 #include "SCUBACalculator.h"
-
-extern "C" CALCULATORS_EXPORT CSCUBACalculator *instantiateCalculator();
 
 #endif

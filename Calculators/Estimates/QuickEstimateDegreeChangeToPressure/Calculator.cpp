@@ -9,21 +9,18 @@ public:
     virtual ~CCalculator() override {}
 
     virtual bool isReversable() const override { return true; }
+    virtual QString myReversedCalculatorName() const override;
+    virtual QString myReversedBaseFormula() const override;
 
-    virtual QString calculatorName() const override;
+    virtual QString myCalculatorName() const override;
     virtual QStringList calculatorPath() const override;
-
-    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
-    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
-    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
-
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -31,12 +28,14 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::calculatorName() const
+QString CCalculator::myCalculatorName() const
 {
-    if ( isReversed() )
-        return tr( "Quick Estimate for Temperature when Pressure Changes" );
-    else
-        return tr( "Quick Estimate for Pressure when Temperature Changes" );
+    return tr( "Quick Estimate for Pressure when Temperature Changes" );
+}
+
+QString CCalculator::myReversedCalculatorName() const
+{
+    return tr( "Quick Estimate for Temperature when Pressure Changes" );
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -54,15 +53,17 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::getBaseFormula() const
+QString CCalculator::myBaseFormula() const
 {
-    if ( isReversed() )
-        return NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
-    else
-        return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
+    return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1", "pressurePerDegree" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+QString CCalculator::myReversedBaseFormula() const
+{
+    return NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
+}
+
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "p1" )
     {
@@ -76,7 +77,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto p1 = getVariable( "p1" );
     auto t1 = getVariable( "t1" );

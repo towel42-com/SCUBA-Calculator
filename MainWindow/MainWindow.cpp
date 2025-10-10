@@ -145,22 +145,17 @@ void CMainWindow::loadCalculators()
         }
 
         auto constructor = (TInstantiateCalcFunc)GetProcAddress( hLib, kInstantiateCalcFuncName );
-        auto initFunc = (TInitFunc)GetProcAddress( hLib, kInitFuncName );
-        if ( !constructor || !initFunc )
+        if ( !constructor )
             continue;
-        auto getPageFunc = (TGetPageFunc)GetProcAddress( hLib, kGetPageFuncName );
-        auto setImperial = (TSetBoolFunc)GetProcAddress( hLib, kSetImperialFuncName );
-        auto setSeaWater = (TSetBoolFunc)GetProcAddress( hLib, kSetSeaWaterFuncName );
-        auto setUpdateFormulaFunc = (TSetUpdateFormulaFunc)GetProcAddress( hLib, kSetUpdateFormulaFuncName );
 
         auto calculator = constructor();
-        addCalculator( calculator, getPageFunc, setImperial, setSeaWater, setUpdateFormulaFunc, initFunc );
+        addCalculator( calculator );
 
         if ( calculator->isReversable() )
         {
             auto reversedCalc = constructor();
             reversedCalc->setIsReversed( true );
-            addCalculator( reversedCalc, getPageFunc, setImperial, setSeaWater, setUpdateFormulaFunc, initFunc );
+            addCalculator( reversedCalc );
         }
     }
     fImpl->whichCalculator->expandAll();
@@ -170,7 +165,7 @@ void CMainWindow::loadCalculators()
     fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
 }
 
-void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getPageFunc, TSetBoolFunc setImperialFunc, TSetBoolFunc setSeaWater, TSetUpdateFormulaFunc setUpdateFormulaFunc, TInitFunc initFunc )
+void CMainWindow::addCalculator( CSCUBACalculator *calculator )
 {
     auto path = calculator->calculatorPath();
     if ( path.isEmpty() )
@@ -180,15 +175,9 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getP
 
     path.push_back( calculatorName );
     auto leaf = findItem( fImpl->whichCalculator->invisibleRootItem(), path, true );
-    fCalculators[ leaf ] = { calculator, initFunc, getPageFunc, setImperialFunc, setSeaWater };
+    fCalculators[ leaf ] = calculator;
 
-    if ( !getGetPageFunc( leaf ) )
-    {
-        qDebug() << "No widget for page :" << path;
-        return;
-    }
-
-    auto page = getPageFunc( calculator, nullptr, nullptr );
+    auto page = calculator->getPage( nullptr );
     if ( !page )
     {
         qDebug() << "No widget for page :" << path;
@@ -198,14 +187,10 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator, TGetPageFunc getP
     fImpl->stackedWidget->addWidget( page );
     fPageToItem[ page ] = leaf;
 
-    if ( setUpdateFormulaFunc )
-    {
-        setUpdateFormulaFunc(
-            calculator, [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula, EFormulaType formulaType )   //
-            {   //
-                this->setFormulaForPage( calcPage, formula, formulaType );
-            } );
-    }
+    calculator->setUpdateFormulaFunc( [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula, EFormulaType formulaType )   //
+                                      {   //
+                                          this->setFormulaForPage( calcPage, formula, formulaType );
+                                      } );
 }
 
 QTreeWidgetItem *CMainWindow::findItem( QTreeWidgetItem *parent, const QStringList &path, bool createIfNecessary )
@@ -239,7 +224,7 @@ CSCUBACalculator *CMainWindow::getCalculator( QTreeWidgetItem *leaf ) const
 {
     auto pos = fCalculators.find( leaf );
     if ( pos != fCalculators.end() )
-        return ( *pos ).second.fCalculator;
+        return ( *pos ).second;
     return nullptr;
 }
 
@@ -283,11 +268,8 @@ void CMainWindow::slotUnitsChanged()
     auto calc = getCalculator( item );
     if ( !calc )
         return;
-    auto func = getSetImperialFunc( item );
-    if ( !func )
-        return;
 
-    func( calc, fImpl->imperial->isChecked() );
+    calc->setImperial( fImpl->imperial->isChecked() );
 }
 
 void CMainWindow::slotWaterChanged()
@@ -304,25 +286,16 @@ void CMainWindow::slotWaterChanged()
     auto calc = getCalculator( item );
     if ( !calc )
         return;
-    auto func = getSetSeaWaterFunc( item );
-    if ( !func )
-        return;
-
-    func( calc, fImpl->seaWater->isChecked() );
+    calc->setSeaWater( fImpl->seaWater->isChecked() );
 }
 
 void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
 {
-    auto pageFunc = getGetPageFunc( item );
     auto calculator = getCalculator( item );
-    CSCUBACalculatorPage *page = nullptr;
-    bool needsInit = false;
-    if ( pageFunc && calculator )
-    {
-        page = pageFunc( calculator, nullptr, &needsInit );
-    }
+    auto page = calculator ? calculator->getPage( nullptr ) : nullptr;
+    bool needsInit = page ? page->needsInit() : false;
 
-    if ( calculator && page )
+    if ( page )
     {
         fImpl->pageName->setText( calculator->calculatorName() );
     }
@@ -354,11 +327,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *p
         auto calc = getCalculator( item );
         if ( !calc )
             return;
-        auto initFunc = getInitFunc( item );
-        if ( !initFunc )
-            return;
-
-        initFunc( calc, fImpl->imperial->isChecked(), fImpl->seaWater->isChecked() );
+        calc->init( fImpl->imperial->isChecked(), fImpl->seaWater->isChecked() );
     }
 
     this->showUnits( showUnits );
@@ -379,43 +348,11 @@ void CMainWindow::showWaterType( bool show )
     fImpl->freshWater->setVisible( show );
 }
 
-TInitFunc CMainWindow::getInitFunc( QTreeWidgetItem *leaf ) const
-{
-    auto pos = fCalculators.find( leaf );
-    if ( pos != fCalculators.end() )
-        return ( *pos ).second.fInitFunc;
-    return nullptr;
-}
-
 QTreeWidgetItem *CMainWindow::getItemForPage( QWidget *page ) const
 {
     auto pos = fPageToItem.find( page );
     if ( pos != fPageToItem.end() )
         return ( *pos ).second;
-    return nullptr;
-}
-
-TGetPageFunc CMainWindow::getGetPageFunc( QTreeWidgetItem *leaf ) const
-{
-    auto pos = fCalculators.find( leaf );
-    if ( pos != fCalculators.end() )
-        return ( *pos ).second.fGetPageFunc;
-    return nullptr;
-}
-
-TSetBoolFunc CMainWindow::getSetImperialFunc( QTreeWidgetItem *leaf ) const
-{
-    auto pos = fCalculators.find( leaf );
-    if ( pos != fCalculators.end() )
-        return ( *pos ).second.fSetImperialFunc;
-    return nullptr;
-}
-
-TSetBoolFunc CMainWindow::getSetSeaWaterFunc( QTreeWidgetItem *leaf ) const
-{
-    auto pos = fCalculators.find( leaf );
-    if ( pos != fCalculators.end() )
-        return ( *pos ).second.fSetSeaWaterFunc;
     return nullptr;
 }
 
@@ -567,4 +504,3 @@ void SFormulas::setFormula( const QString &formula, EFormulaType formulaType )
     else if ( formulaType == EFormulaType::eCurrentValueFormula )
         fCurrValueFormula = formula;
 }
-

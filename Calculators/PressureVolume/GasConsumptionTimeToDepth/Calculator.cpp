@@ -7,20 +7,20 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
-    virtual QString calculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual bool isReversable() const override { return true; }
+    virtual QString myReversedCalculatorName() const override;
+    virtual QString myReversedBaseFormula() const override;
 
-    virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
-    virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
-    virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
+    virtual QString myCalculatorName() const override;
+    virtual QStringList calculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual QString getBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -28,9 +28,14 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::calculatorName() const
+QString CCalculator::myCalculatorName() const
 {
     return tr( "Calculating Depth at for given Gas Consumption Time" );
+}
+
+QString CCalculator::myReversedCalculatorName() const
+{
+    return tr( "Calculating Gas Consumption Time for a given Depth" );
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -72,12 +77,17 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-QString CCalculator::getBaseFormula() const
+QString CCalculator::myBaseFormula() const
 {
     return R"__(<p1> \times <m1> = <p2> \times <m2>)__";
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+QString CCalculator::myReversedBaseFormula() const
+{
+    return myBaseFormula();
+}
+
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "p1" )
     {
@@ -98,7 +108,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto p1 = getVariable( "p1" );
     auto m1 = getVariable( "m1" );
@@ -123,4 +133,3 @@ void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
         m2->setValue( m1->value() * ( p1->value() / p2->value() ) );
     }
 }
-

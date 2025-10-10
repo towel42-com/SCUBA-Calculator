@@ -37,6 +37,22 @@ CSCUBACalculator::~CSCUBACalculator()
 {
 }
 
+QString CSCUBACalculator::myReversedCalculatorName() const
+{
+    return {};
+}
+
+QString CSCUBACalculator::myReversedBaseFormula() const
+{
+    return {};
+}
+
+QString CSCUBACalculator::getBaseFormula() const
+{
+    auto retVal = ( isReversed() ) ? myReversedBaseFormula() : myBaseFormula();
+    return retVal;
+}
+
 CSCUBACalculatorPage *CSCUBACalculator::getPage() const
 {
     Q_ASSERT( fPage );
@@ -47,7 +63,7 @@ CSCUBACalculatorPage *CSCUBACalculator::getPage( QWidget *parent )
 {
     if ( !fPage )
     {
-        std::tie( fPage, fSvgFrame, fSvgWidget, fNumVariables ) = CSCUBACalculatorPage::constructPage( this, parent );
+        std::tie( fPage, fNumVariables ) = CSCUBACalculatorPage::constructPage( this, parent );
     }
     return fPage;
 }
@@ -57,6 +73,12 @@ void CSCUBACalculator::init( bool imperial, bool seaWater )
     setObjectName( calculatorName() );
     if ( fPage )
         fPage->init( imperial, seaWater );
+}
+
+QString CSCUBACalculator::calculatorName() const
+{
+    auto retVal = ( isReversed() ) ? myReversedCalculatorName() : myCalculatorName();
+    return retVal;
 }
 
 void CSCUBACalculator::setImperial( bool imperial )
@@ -382,42 +404,3 @@ QString CSCUBACalculator::finalizeFormula( const QString &formula, EFormulaType 
     return finalizeFormula( imperial(), seaWater(), formula, formulaType );
 }
 
-extern "C" CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit )
-{
-    if ( needsInit )
-        *needsInit = false;
-    if ( !calculator )
-        return nullptr;
-    auto retVal = calculator->getPage( parentWidget );
-    if ( needsInit )
-        *needsInit = retVal->needsInit();
-    return retVal;
-}
-
-extern "C" void setImperial( CSCUBACalculator *calculator, bool imperial )
-{
-    if ( !calculator )
-        return;
-    calculator->setImperial( imperial );
-}
-
-extern "C" void setSeaWater( CSCUBACalculator *calculator, bool seaWater )
-{
-    if ( !calculator )
-        return;
-    calculator->setSeaWater( seaWater );
-}
-
-extern "C" CALCULATORS_EXPORT void setUpdateFormulaFunc( CSCUBACalculator *calculator, const TUpdateFormulaFunc &func )
-{
-    if ( !calculator )
-        return;
-    calculator->setUpdateFormulaFunc( func );
-}
-
-extern "C" CALCULATORS_EXPORT void initCalculatorPage( CSCUBACalculator *calculator, bool imperial, bool seaWater )
-{
-    if ( !calculator )
-        return;
-    calculator->init( imperial, seaWater );
-}

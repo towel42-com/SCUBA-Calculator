@@ -46,7 +46,7 @@ public:
     CSCUBACalculatorPage( CSCUBACalculator *calculator, QWidget *parent );
     virtual ~CSCUBACalculatorPage();
 
-    static std::tuple< CSCUBACalculatorPage *, QFrame*, QSvgWidget *, std::size_t > constructPage( CSCUBACalculator *calculator, QWidget *parent );
+    static std::tuple< CSCUBACalculatorPage *, std::size_t > constructPage( CSCUBACalculator *calculator, QWidget *parent );
 
 public:
     virtual void init( bool imperial, bool seaWater ) final;

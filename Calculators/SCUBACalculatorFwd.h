@@ -52,17 +52,8 @@ using TOptionalDoubleVector = std::vector< TOptionalDouble >;
 
 using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, EFormulaType ) >;
 using TInstantiateCalcFunc = CSCUBACalculator *(*)();
-using TGetPageFunc = CSCUBACalculatorPage *(*)( CSCUBACalculator *calculator, QWidget *, bool *needsInit );
-using TSetBoolFunc = void ( * )( CSCUBACalculator *calculator, bool );
-using TInitFunc = void ( * )( CSCUBACalculator *calculator, bool imperial, bool seaWater );
-using TSetUpdateFormulaFunc = void ( * )( CSCUBACalculator *calculator, const TUpdateFormulaFunc & );
 
 constexpr char kInstantiateCalcFuncName[] = "instantiateCalculator";
-constexpr char kGetPageFuncName[] = "getPage";
-constexpr char kSetImperialFuncName[] = "setImperial";
-constexpr char kSetSeaWaterFuncName[] = "setSeaWater";
-constexpr char kSetUpdateFormulaFuncName[] = "setUpdateFormulaFunc";
-constexpr char kInitFuncName[] = "initCalculatorPage";
 
 enum class EUnit
 {
