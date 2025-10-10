@@ -85,20 +85,22 @@ protected:
     TVariableInfo getVariable( const QString &varName ) const;
 
 
-    virtual void notifyOfNewFormula( const QString &eq, bool baseFormula ) const final;
+    virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
-    virtual QString finalizeFormula( bool imperial, bool seaWater, const QString &formula, bool isBaseFormula ) const final;
-    virtual QString finalizeFormula( const QString &formula, bool isBaseFormula ) const final;
+    virtual QString finalizeFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const final;
+    virtual QString finalizeFormula( const QString &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
-    virtual QString getDefaultFormula() const = 0;
-    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const = 0;   // updates values and returns the formula
-
+    
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
     // only necessary if the number of variables on either side is greater than two.
 
+    virtual QString getBaseFormula() const = 0;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const = 0;   // returns the current formula in use
+
+    virtual void computeValues() const = 0;   // updates all values
 protected:
     CSCUBACalculatorPage *fPage{ nullptr };
     QSvgWidget *fSvgWidget{ nullptr };

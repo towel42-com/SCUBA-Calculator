@@ -11,15 +11,18 @@ public:
     virtual QString calculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
+    virtual bool isWaterTypeBased() const override { return true; }
+
     virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual bool isWaterTypeBased() const override { return true; }
-
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-    virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
+
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+
+    virtual void computeValues() const override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -49,7 +52,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::getDefaultFormula() const
+QString CCalculator::getBaseFormula() const
 {
     return R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__";
 }
@@ -65,13 +68,13 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     isBaseFormula = false;
     if ( !aOK )
     {
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
         isBaseFormula = true;
     }
     else if ( !ead->has_value() )
     {
         ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
     }
     else if ( !fn2->has_value() )
     {

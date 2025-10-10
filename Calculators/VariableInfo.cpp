@@ -87,7 +87,7 @@ void SVariableInfo::updateLabels( bool imperial, bool seaWater )
 
     Q_ASSERT( fField && fUnitLabel );
 
-    auto unitText = this->unitText( imperial, seaWater, false, false );
+    auto unitText = this->unitText( imperial, seaWater, false, EFormulaType::eCurrentFormula );
 
     if ( lineEdit() )
     {
@@ -102,7 +102,7 @@ void SVariableInfo::updateLabels( bool imperial, bool seaWater )
         fUnitLabel->setText( unitText );
 }
 
-QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, bool isBaseFormula ) const
+QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const
 {
     if ( fUnitText.has_value() )
         return fUnitText.value();
@@ -127,7 +127,7 @@ QString SVariableInfo::unitText( bool imperial, bool seaWater, bool tex, bool is
             return NUtilities::NUnitStrings::tempUnit( imperial, true, tex );
         case EUnit::eAbsZeroTemperature:
             {
-                if ( tex && isBaseFormula )
+                if ( tex && ( formulaType == EFormulaType::eBaseFormula ) )
                     return NUtilities::NUnitStrings::absZeroTempUnit( imperial, true, true );
                 else
                     return NUtilities::NUnitStrings::tempUnit( imperial, true, false );
@@ -205,11 +205,11 @@ TOptionalDouble SVariableInfo::valueForString( const QString &text ) const
     return retVal;
 }
 
-void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, bool isBaseFormula ) const
+void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EFormulaType formulaType ) const
 {
     QString value;
     QString format;
-    if ( !isBaseFormula && has_value() )
+    if ( ( formulaType == EFormulaType::eCurrentValueFormula ) && has_value() )
     {
         value = NUtilities::doubleToString( formulaValue(), numDecimals() );
         format = QString( "%1%2" );
@@ -303,7 +303,7 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
     auto newString = QString( format ).arg( value );
     if ( ( fType == EVariableType::eVariable ) || ( fType == EVariableType::eHidden ) )
     {
-        auto unit = unitText( imperial, seaWater, true, isBaseFormula );
+        auto unit = unitText( imperial, seaWater, true, formulaType );
         newString = newString.arg( unit );
         newString.replace( " ()", "" );
     }
@@ -312,7 +312,7 @@ void SVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
     if ( fType == EVariableType::eHidden )
     {
         auto labelString = QString( "%1 (%2)" ).arg( fDescription );
-        labelString = labelString.arg( unitText( imperial, seaWater, true, isBaseFormula ) );
+        labelString = labelString.arg( unitText( imperial, seaWater, true, formulaType ) );
         labelString.replace( " ()", "" );
         formula = formula.replace( token, labelString );
 

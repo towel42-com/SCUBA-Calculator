@@ -11,17 +11,19 @@ public:
     virtual QString calculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
+    virtual bool isWaterTypeBased() const override { return true; }
+
     virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual bool isWaterTypeBased() const override { return true; }
-
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-    virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
-
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
+
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+
+    virtual void computeValues() const override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -67,7 +69,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-QString CCalculator::getDefaultFormula() const
+QString CCalculator::getBaseFormula() const
 {
     return R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__";
 }
@@ -83,13 +85,13 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     isBaseFormula = false;
     if ( !aOK )
     {
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
         isBaseFormula = true;
     }
     else if ( !mod->has_value() )
     {
         mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
     }
     else if ( !maxPO2->has_value() )
     {

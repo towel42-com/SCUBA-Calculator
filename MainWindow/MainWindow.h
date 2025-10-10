@@ -15,8 +15,17 @@ namespace Ui
 namespace NTowel42
 {
     class CQt6MathJax;
-
+    class CMathJaxWidget;
 }
+
+struct SFormulas
+{
+    std::optional< QString > formula( EFormulaType formulaType ) const;
+    void setFormula( const QString &formula, EFormulaType formulaType );
+    std::optional< QString > fBaseFormula;
+    std::optional< QString > fCurrFormula;
+    std::optional< QString > fCurrValueFormula;
+};
 
 class CSCUBACalculator;
 class QTreeWidgetItem;
@@ -30,7 +39,7 @@ public:
 
 public:
     void loadCalculators();
-	
+
 private:
     bool eventFilter( QObject *obj, QEvent *event );
 
@@ -40,11 +49,12 @@ public Q_SLOTS:
     void slotSelectCalculator( QTreeWidgetItem *item );
     void slotUnitsChanged();
     void slotWaterChanged();
-    void slotFormulaRendered( const QString &formula, const QByteArray &svg );
     void slotResetCurrentPage();
 
 private:
     CSCUBACalculator *currentCalculator() const;
+    CSCUBACalculatorPage *currentCalculatorPage() const;
+
     void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
     void loadSettings();
     void saveSettings();
@@ -55,14 +65,18 @@ private:
     void loadFormulasForPage( CSCUBACalculatorPage *page );
 
     bool renderSVG( const QString &formula );
-    std::optional< QString > formulaForPage( QWidget *page, bool baseFormula );
+    std::optional< QString > formulaForPage( QWidget *page, EFormulaType formulaType );
 
-    void loadSVG( const QString &formula, const QByteArray &svg );
+private:
+    std::optional< QString > formulaForFormulaType( EFormulaType formulaType ) const;
+    NTowel42::CMathJaxWidget *mathJaxForFormulaType( EFormulaType formulaType ) const;
+    void setMathJaxWidgetsVisible( bool visible );
 
+private:
     void updateSVGSizes();
-    void updateSVGSize( bool defaultFormula );
+    void updateSVGSize( EFormulaType formulaType );
 
-    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool baseFormula );
+    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType );
 
     CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;
     CSCUBACalculator *getCalculator( QWidget *page ) const;
@@ -88,12 +102,9 @@ private:
     };
     std::unordered_map< QTreeWidgetItem *, SPageInfo > fCalculators;
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
-    using TWidgetToFormulaMap = std::unordered_map< QWidget *, QString >;
-    TWidgetToFormulaMap fPageToBaseFormulaMap;   //widget -> base --> will be cached
-    TWidgetToFormulaMap fPageToResultFormulaMap;   //widget -> current result
-    std::unordered_map< QString, QByteArray > fFormulaToSVGMap;
+    std::unordered_map< QWidget *, SFormulas > fPageToFormulasMap;
+
     NTowel42::CQt6MathJax *fRenderingEngine{ nullptr };
-    std::pair< QString, QString > fCurrFormulas;
 };
 
 #endif

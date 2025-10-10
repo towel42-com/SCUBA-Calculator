@@ -11,15 +11,18 @@ public:
     virtual QString calculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
+    virtual bool isWaterTypeBased() const override { return true; }
+
     virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
-    virtual bool isWaterTypeBased() const override { return true; }
-
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-    virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
+
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+
+    virtual void computeValues() const override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -48,12 +51,39 @@ std::list< std::shared_ptr< SVariableInfo > > CCalculator::getMyVariables() cons
         };
 }
 
-QString CCalculator::getDefaultFormula() const
+QString CCalculator::getBaseFormula() const
 {
     return R"__(<buoyancy>=<weightOfObject> - [<volumeDisplaced> \times <weightOfWater>])__";
 }
 
-QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
+std::optional< QString > CCalculator::getCurrentFormula() const
+{
+    auto numUnset = numUnsetVariables();
+    if ( numUnset != 1 )
+        return getBaseFormula();
+    else if ( numUnset != 1 )
+        return {};
+
+    auto buoyancy = getVariable( "buoyancy" );
+    auto weightOfObject = getVariable( "weightOfObject" );
+    auto volumeDisplaced = getVariable( "volumeDisplaced" );
+    if ( !buoyancy->has_value() )
+    {
+        return getBaseFormula();
+    }
+    else if ( !weightOfObject->has_value() )
+    {
+        return R"__(<weightOfObject>=<buoyancy> + <volumeDisplaced> \times <weightOfWater>)__";
+    }
+    else if ( !volumeDisplaced->has_value() )
+    {
+        volumeDisplaced->setValue( ( weightOfObject->value() - buoyancy->value() ) / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
+        return R"__(<volumeDisplaced>=\frac{(<weightOfObject> - <buoyancy>)}{<weightOfWater>})__";
+    }
+    return {};
+}
+
+void CCalculator::computeValues() const
 {
     auto buoyancy = getVariable( "buoyancy" );
     auto weightOfObject = getVariable( "weightOfObject" );
@@ -61,27 +91,15 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
 
     QString formula;
     bool aOK = numUnsetVariables() == 1;
-    isBaseFormula = false;
     if ( !aOK )
     {
-        formula = getDefaultFormula();
-        isBaseFormula = true;
+        return;
     }
-    else if ( !buoyancy->has_value() )
-    {
+    
+    if ( !buoyancy->has_value() )
         buoyancy->setValue( weightOfObject->value() - ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) ) );
-        formula = getDefaultFormula();
-    }
     else if ( !weightOfObject->has_value() )
-    {
         weightOfObject->setValue( buoyancy->value() + ( volumeDisplaced->value() * NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) ) );
-        formula = tr( R"__(<weightOfObject>=<buoyancy> + <volumeDisplaced> \times <weightOfWater>)__" );
-    }
     else if ( !volumeDisplaced->has_value() )
-    {
         volumeDisplaced->setValue( ( weightOfObject->value() - buoyancy->value() ) / NUtilities::NConstants::weightOfWater( imperial(), seaWater() ) );
-        formula = tr( R"__(<volumeDisplaced>=\frac{(<weightOfObject> - <buoyancy>)}{<weightOfWater>})__" );
-    }
-
-    return formula;
 }

@@ -16,8 +16,11 @@ public:
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-    virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
+
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+
+    virtual void computeValues() const override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -47,7 +50,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::getDefaultFormula() const
+QString CCalculator::getBaseFormula() const
 {
     return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
 }
@@ -62,13 +65,13 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     isBaseFormula = false;
     if ( !aOK )
     {
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
         isBaseFormula = true;
     }
     else if ( !seaWater->has_value() )
     {
         seaWater->setValue( NUtilities::depthFreshwaterToSeawater( freshWater->value() ) );
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
     }
     else if ( !freshWater->has_value() )
     {

@@ -16,8 +16,11 @@ public:
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-    virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool & isBaseFormula ) const override;
+
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+
+    virtual void computeValues() const override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -45,7 +48,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::getDefaultFormula() const
+QString CCalculator::getBaseFormula() const
 {
     QString formula;
     formula = NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1", "pressurePerDegree" );
@@ -62,7 +65,7 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     isBaseFormula = false;
     if ( !aOK )
     {
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
         isBaseFormula = true;
     }
     else if ( !p1->has_value() )

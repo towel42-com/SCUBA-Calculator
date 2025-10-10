@@ -1,2 +1,2 @@
 add_subdirectory( BuoyancyOfObject )
-add_subdirectory( OffsetNegativeBuoyancy )
+#add_subdirectory( OffsetNegativeBuoyancy )

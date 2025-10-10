@@ -2,7 +2,6 @@
 #include "SCUBACalculatorPage.h"
 #include "VariableInfo.h"
 #include <QFrame>
-#include <QSvgWidget>
 
 #include <iterator>
 #include <tuple>
@@ -28,7 +27,6 @@
 //https://www.deepbluescubanm.com/pages/tools.aspx
 // calorie burn estimator
 //
-
 
 CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
     QObject( parent )
@@ -92,10 +90,10 @@ bool CSCUBACalculator::seaWater() const
     return false;
 }
 
-void CSCUBACalculator::notifyOfNewFormula( const QString &eq, bool baseFormula ) const
+void CSCUBACalculator::notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const
 {
     if ( fUpdateFormulaFunc )
-        fUpdateFormulaFunc( getPage(), eq, baseFormula );
+        fUpdateFormulaFunc( getPage(), formula, formulaType );
 }
 
 std::list< std::shared_ptr< SVariableInfo > > &CSCUBACalculator::getVariables()
@@ -181,9 +179,9 @@ void CSCUBACalculator::resetVariables()
         ( *ii )->resetValue( true, false );
     }
 
-    auto formula = finalizeFormula( getDefaultFormula(), true );
+    auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
     updateFields( nullptr );
-    notifyOfNewFormula( formula, false );
+    notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
 }
 
 std::size_t CSCUBACalculator::numUnsetVariables() const
@@ -209,21 +207,29 @@ std::shared_ptr< SVariableInfo > CSCUBACalculator::getVariable( const QString &v
 
 void CSCUBACalculator::renderDefaultFormulas() const
 {
-    auto baseFormula = getDefaultFormula();
-    std::unordered_set< QString > defaultFormulas;
+    auto baseFormula = getBaseFormula();
+    std::unordered_set< QString > baseFormulas;
+
+    QString currBase;
 
     for ( auto imperial : { true, false } )
     {
         for ( auto seaWater : { true, false } )
         {
-            auto formula = finalizeFormula( imperial, seaWater, baseFormula, true );
-            defaultFormulas.insert( formula );
+            auto formula = finalizeFormula( imperial, seaWater, baseFormula, EFormulaType::eBaseFormula );
+            if ( ( this->imperial() == imperial ) && ( this->seaWater() == seaWater ) )
+                currBase = formula;
+            else
+                baseFormulas.insert( formula );
         }
     }
-    Q_ASSERT( defaultFormulas.size() <= 4 );
-    for ( auto &&formula : defaultFormulas )
+    Q_ASSERT( baseFormulas.size() <= 4 );
+    Q_ASSERT( !currBase.isEmpty() );
+    if ( !currBase.isEmpty() )
+        notifyOfNewFormula( currBase, EFormulaType::eBaseFormula );
+    for ( auto &&formula : baseFormulas )
     {
-        notifyOfNewFormula( formula, true );
+        notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
     }
 }
 
@@ -293,15 +299,21 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
     determineVariableToUnset( updateFromSide, triggerWidget );
 
-    bool isBaseFormula = false;
-    auto formula = computeAndGenerateFormula( isBaseFormula );
-
-    formula = finalizeFormula( formula, isBaseFormula );
+    computeValues();
     updateFields( triggerWidget );
-    notifyOfNewFormula( formula, isBaseFormula );
 
-    formula = finalizeFormula( getDefaultFormula(), true );
-    notifyOfNewFormula( formula, true );
+    auto currFormula = getCurrentFormula();
+    if ( currFormula.has_value() )
+    {
+        auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentFormula );
+        notifyOfNewFormula( formula, EFormulaType::eCurrentFormula );
+
+        formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentValueFormula );
+        notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula );
+    }
+
+    auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
+    notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
 }
 
 void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
@@ -315,23 +327,23 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
     }
 }
 
-QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const QString &formula, bool isBaseFormula ) const
+QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const
 {
     auto &&variables = getVariables();
 
     QString retVal = formula;
     for ( auto &&curr : variables )
     {
-        curr->updateFormula( imperial, seaWater, retVal, isBaseFormula );
+        curr->updateFormula( imperial, seaWater, retVal, formulaType );
     }
 
     retVal = retVal.replace( " ", R"__(\ )__" );
     return retVal;
 }
 
-QString CSCUBACalculator::finalizeFormula( const QString &formula, bool isBaseFormula ) const
+QString CSCUBACalculator::finalizeFormula( const QString &formula, EFormulaType formulaType ) const
 {
-    return finalizeFormula( imperial(), seaWater(), formula, isBaseFormula );
+    return finalizeFormula( imperial(), seaWater(), formula, formulaType );
 }
 
 extern "C" CSCUBACalculatorPage *getPage( CSCUBACalculator *calculator, QWidget *parentWidget, bool *needsInit )

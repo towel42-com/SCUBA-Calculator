@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>961</width>
-    <height>594</height>
+    <width>955</width>
+    <height>581</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,75 +44,6 @@
       </widget>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QGridLayout" name="gridLayout">
-        <item row="3" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QRadioButton" name="seaWater">
-            <property name="text">
-             <string>Seawater?</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="freshWater">
-            <property name="text">
-             <string>Freshwater?</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item row="5" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <spacer name="horizontalSpacer_7">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="reset">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="4" column="0">
-         <widget class="QStackedWidget" name="stackedWidget">
-          <property name="currentIndex">
-           <number>-1</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="pageName">
-          <property name="text">
-           <string>Page Name</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="0">
          <layout class="QHBoxLayout" name="unitLayout">
           <item>
@@ -145,26 +76,116 @@
          </layout>
         </item>
         <item row="1" column="0">
-         <widget class="QFrame" name="formulaFrame">
-          <property name="frameShape">
-           <enum>QFrame::Shape::StyledPanel</enum>
+         <widget class="NTowel42::CMathJaxWidget" name="baseFormulaWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>10</height>
+           </size>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Raised</enum>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-            <widget class="QSvgWidget" name="formulaWidget" native="true">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>10</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="pageName">
+          <property name="text">
+           <string>Page Name</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QStackedWidget" name="stackedWidget">
+          <property name="currentIndex">
+           <number>-1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="NTowel42::CMathJaxWidget" name="currFormulaWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>10</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <spacer name="horizontalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="reset">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="6" column="0">
+         <widget class="NTowel42::CMathJaxWidget" name="currFormulaValueWidget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>10</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QRadioButton" name="seaWater">
+            <property name="text">
+             <string>Seawater?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="freshWater">
+            <property name="text">
+             <string>Freshwater?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="7" column="0">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>
@@ -177,7 +198,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>961</width>
+     <width>955</width>
      <height>33</height>
     </rect>
    </property>
@@ -205,12 +226,20 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QSvgWidget</class>
+   <class>NTowel42::CMathJaxWidget</class>
    <extends>QWidget</extends>
-   <header location="global">QSvgWidget</header>
+   <header>T42-Qt6MathJax/include/MathJaxWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>whichCalculator</tabstop>
+  <tabstop>imperial</tabstop>
+  <tabstop>metric</tabstop>
+  <tabstop>seaWater</tabstop>
+  <tabstop>freshWater</tabstop>
+  <tabstop>reset</tabstop>
+ </tabstops>
  <resources>
   <include location="application.qrc"/>
  </resources>

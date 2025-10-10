@@ -41,7 +41,7 @@ struct SRange
     double fStep{ 0.0 };
 };
 
-struct SVariableInfo
+struct CALCULATORS_EXPORT SVariableInfo
 {
     SVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
 
@@ -53,13 +53,13 @@ struct SVariableInfo
     void updateLabels( bool imperial, bool seaWater );
 
 public:
-    QString unitText( bool imperial, bool seaWater, bool tex, bool isBaseFormula ) const;
+    QString unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const;
 
     void resetValue( bool updateUI, bool notifyUI );   // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
 
     void updateFieldFromValue( bool notifyUI = false );   // updates fField from fValue
     void updateValueFromField();   // updates fValue from fField
-    void updateFormula( bool imperial, bool seaWater, QString &newFormula, bool isBaseFormula ) const;
+    void updateFormula( bool imperial, bool seaWater, QString &newFormula, EFormulaType formulaType ) const;
 
     int numDecimals() const { return ( fUnit == EUnit::ePercent ) ? 0 : 2; }
     double formulaValue() const;   // user responsible for calling has_value first

@@ -42,7 +42,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString timeUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstantUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString molesUnit( bool imperial, bool useAbbreviations, bool tex );
-        
+
         CALCULATORS_EXPORT QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex );
 
@@ -106,7 +106,7 @@ namespace NUtilities
 
     CALCULATORS_EXPORT QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName );
     CALCULATORS_EXPORT QString quickPressureChangeToDegreeFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName );
-       
+
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
     CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );

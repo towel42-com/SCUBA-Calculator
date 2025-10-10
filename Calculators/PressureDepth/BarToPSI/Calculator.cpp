@@ -1,6 +1,7 @@
 #include "Calculator.h"
 #include "VariableInfo.h"
 #include "Utilities.h"
+
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
@@ -10,15 +11,18 @@ public:
     virtual QString calculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
+    virtual bool showUnits() const { return false; }
+
     virtual void resetVariables() override { CSCUBACalculator::resetVariables(); }
     virtual QFrame *svgFrame() const override { return CSCUBACalculator::svgFrame(); }
     virtual QSvgWidget *svgWidget() const override { return CSCUBACalculator::svgWidget(); }
 
     virtual std::list< std::shared_ptr< SVariableInfo > > getMyVariables() const override;
-    virtual QString getDefaultFormula() const override;
-    virtual QString computeAndGenerateFormula( bool &isBaseFormula ) const override;
 
-    virtual bool showUnits() const { return false; }
+    virtual QString getBaseFormula() const override;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const override;   // returns the current formula in use
+
+    virtual void computeValues() const override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -51,7 +55,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::getDefaultFormula() const
+QString CCalculator::getBaseFormula() const
 {
     return NUtilities::barToPSIFormula( "psi", "bar", "psiToBar" );
 }
@@ -66,13 +70,13 @@ QString CCalculator::computeAndGenerateFormula( bool &isBaseFormula ) const
     isBaseFormula = false;
     if ( !aOK )
     {
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
         isBaseFormula = true;
     }
     else if ( !psi->has_value() )
     {
         psi->setValue( NUtilities::barToPSI( bar->value() ) );
-        formula = getDefaultFormula();
+        formula = getBaseFormula();
     }
     else if ( !bar->has_value() )
     {

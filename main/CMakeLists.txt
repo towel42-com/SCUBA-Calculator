@@ -62,29 +62,28 @@ DeployQt( ${PROJECT_NAME} .
     EXTRA_TARGETS_DIR Calculators
     EXTRA_TARGETS 
         BuoyancyOfObject
-        OffsetNegativeBuoyancy
-        EAD
-        MOD
-        PartialPressureForDepth
-        FeetToMeters
-        MetersToFeet
-        DepthFreshwaterToSeawater
-        DepthSeawaterToFreshwater
-        DepthToPressure
-        PressureToDepth
-        PSIToBar
-        BarToPSI
-        CombinedGasLaw
-        IdealGasLaw
-        PressureChangeInTemp
-        QuickEstimateDegreeChangeToPressure
-        QuickEstimatePressureChangeToDegrees
-        VolumeChangeInTemp
-        DepthToGasConsumptionTime
-        GasConsumptionTimeToDepth
-        PressureChangeInVolume
-        VolumeChangeInPressure
-        RelativeChangeInAmbientPressure
+       # OffsetNegativeBuoyancy
+      #  EAD
+     #   MOD
+    #    PartialPressureForDepth
+   #     FeetToMeters
+  #      MetersToFeet
+ #       DepthFreshwaterToSeawater
+#        DepthSeawaterToFreshwater
+       # DepthToPressure
+      #  PressureToDepth
+     #   PSIToBar
+    #    BarToPSI
+   #     CombinedGasLaw
+  #       PressureChangeInTemp
+#        QuickEstimateDegreeChangeToPressure
+      #  QuickEstimatePressureChangeToDegrees
+     #   VolumeChangeInTemp
+    #    DepthToGasConsumptionTime
+   #     GasConsumptionTimeToDepth
+  #      PressureChangeInVolume
+ #       VolumeChangeInPressure
+#        RelativeChangeInAmbientPressure
     EXTRA_TARGETS2
        T42Qt6MathJax 
        SABUtils

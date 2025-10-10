@@ -45,10 +45,12 @@ class QLabel;
 class QLineEdit;
 class QString;
 
+enum class EFormulaType;
+
 using TOptionalDouble = std::optional< double >;
 using TOptionalDoubleVector = std::vector< TOptionalDouble >;
 
-using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, bool ) >;
+using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, EFormulaType ) >;
 using TInstantiateCalcFunc = CSCUBACalculator *(*)();
 using TGetPageFunc = CSCUBACalculatorPage *(*)( CSCUBACalculator *calculator, QWidget *, bool *needsInit );
 using TSetBoolFunc = void ( * )( CSCUBACalculator *calculator, bool );
@@ -99,6 +101,13 @@ enum class EVariableLoc
 {
     eLHS,
     eRHS
+};
+
+enum class EFormulaType
+{
+    eBaseFormula,   // the formula used as part of the description up top
+    eCurrentFormula,   // the current formula in use (may be the same as base formula) without values
+    eCurrentValueFormula   // the current formula with values filled in
 };
 
 struct SVariableInfo;
