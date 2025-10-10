@@ -120,14 +120,14 @@ namespace NUtilities
                 if ( useAbbreviations )
                     retVal += QObject::tr( "F", "tempUnit" );
                 else
-                    retVal += QObject::tr( "fahrenheit", "tempUnit" );
+                    retVal += QObject::tr( "Fahrenheit", "tempUnit" );
             }
             else
             {
                 if ( useAbbreviations )
                     retVal += QObject::tr( "C", "tempUnit" );
                 else
-                    retVal += QObject::tr( "celsius", "tempUnit" );
+                    retVal += QObject::tr( "Celsius", "tempUnit" );
             }
             return retVal;
         }
@@ -142,14 +142,14 @@ namespace NUtilities
                 if ( useAbbreviations )
                     retVal += QObject::tr( "R", "absZeroTempUnit" );
                 else
-                    retVal += QObject::tr( "rankine", "absZeroTempUnit" );
+                    retVal += QObject::tr( "Rankine", "absZeroTempUnit" );
             }
             else
             {
                 if ( useAbbreviations )
                     retVal += QObject::tr( "K", "absZeroTempUnit" );
                 else
-                    retVal += QObject::tr( "kelvin", "absZeroTempUnit" );
+                    retVal += QObject::tr( "Kelvin", "absZeroTempUnit" );
             }
             return retVal;
         }
