@@ -307,9 +307,6 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
     determineVariableToUnset( updateFromSide, triggerWidget );
 
-    computeValues();
-    updateFields( triggerWidget );
-
     auto currFormula = getCurrentFormula();
     if ( currFormula.has_value() )
     {
@@ -319,6 +316,9 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
         formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentValueFormula );
         notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula );
     }
+
+    computeValues();
+    updateFields( triggerWidget );
 
     auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
     notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
