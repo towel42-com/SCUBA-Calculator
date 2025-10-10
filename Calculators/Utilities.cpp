@@ -168,7 +168,7 @@ namespace NUtilities
 
         QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(%1 (\frac{%2}{%3})__" : "%1 (%2/%3)" );
+            auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
             retVal = retVal.arg( NConstants::pressurePerTemp( imperial ) ).arg( NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
