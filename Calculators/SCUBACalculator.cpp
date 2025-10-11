@@ -28,6 +28,12 @@
 // calorie burn estimator
 //
 
+//https://swimmingcalculators.com/scuba-diving-calculator/
+// Dive weight
+// buoyancy
+// sac
+// calories burned
+
 CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
     QObject( parent )
 {

@@ -20,29 +20,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-project( SCUBACalculators )
-
-include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
-
-add_library(${PROJECT_NAME} STATIC
-    ${_PROJECT_DEPENDENCIES} 
+set(qtproject_SRCS
+    Calculator.cpp
 )
 
-target_link_libraries( ${PROJECT_NAME}
-      PUBLIC
-          ${project_pub_DEPS}
-      PRIVATE
-          ${project_pri_DEPS}
+set(qtproject_H
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
+set(project_H
+    Calculator.h
+)
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators )
+set(qtproject_UIS
+)
 
-add_subdirectory( Buoyancy )
-add_subdirectory( Miscellaneous )
-add_subdirectory( PartialPressure )
-add_subdirectory( PressureDepth )
-add_subdirectory( PressureVolume )
-add_subdirectory( PressureTemperatureVolume )
+set(qtproject_QRC
+)
+
+SET( project_pub_DEPS
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    SCUBACalculators
+    SABUtils
+    ${project_pub_DEPS}
+)

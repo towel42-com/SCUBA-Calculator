@@ -173,10 +173,24 @@ namespace NUtilities
             return retVal;
         }
 
+        QString metUnit( bool imperial, bool useAbbreviations, bool tex )
+        {
+            auto retVal = QString( tex ? R"__(\frac{%1}{(%2 \times %3})__" : "%1/(%2*%3)" );
+            retVal = retVal.arg( energyUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString scubaMET( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( NConstants::baseMETForScuba( imperial ) ).arg( NUnitStrings::metUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
         QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
         {
             auto retVal = QString( tex ? R"__(%1 \frac{%2}{%3})__" : "%1 %2/%3" );
-            auto weightOfWater = NUtilities::doubleToString( NConstants::weightOfWater( imperial, seaWater ), 2 );
+            auto weightOfWater = doubleToString( NConstants::weightOfWater( imperial, seaWater ), 2 );
             retVal = retVal.arg( weightOfWater ).arg( weightUnit( imperial, useAbbreviations, tex ) ).arg( volumeUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
@@ -199,6 +213,26 @@ namespace NUtilities
         QString molesUnit( bool /*imperial*/, bool /*useAbbreviations*/, bool /*tex*/ )
         {
             return QObject::tr( "moles" );
+        }
+
+        QString energyUnit( bool /*imperial*/, bool useAbbreviations, bool /*tex*/ )
+        {
+            QString retVal;
+            //if ( imperial )
+            //{
+            //    if ( useAbbreviations )
+            //        retVal += QObject::tr( "kJ", "caloriesUnit" );
+            //    else
+            //        retVal += QObject::tr( "KiloJoules", "caloriesUnit" );
+            //}
+            //else
+            //{
+            if ( useAbbreviations )
+                retVal += QObject::tr( "kcal", "caloriesUnit" );
+            else
+                retVal += QObject::tr( "Calories", "caloriesUnit" );
+            //}
+            return retVal;
         }
 
         QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex )
@@ -327,6 +361,31 @@ namespace NUtilities
         {
             return 14.7;
         }
+
+        double kjoulesPerKCal()
+        {
+            return 4.1840;
+        }
+
+        double lbsPerKG()
+        {
+            return 2.20462;
+        }
+
+        double baseMETForScuba( bool imperial )
+        {
+            auto retVal = 7.0;
+            if ( imperial )
+            {
+                // 1 MET = 1 kcals
+                //         ____________
+                //         ( kgs * hours );
+                // 1 MET = * ( jouls/kcals )  * ( lbs/kgs );
+                retVal *= NConstants::kjoulesPerKCal() * NConstants::lbsPerKG();
+            }
+            return retVal;
+        }
+
     }
 
     double toAbsZeroBasedTemp( bool imperial, double temp )
@@ -385,7 +444,7 @@ namespace NUtilities
 
     double depthFreshwaterToSeawater( double depthFW )
     {
-        return depthFW / NUtilities::NConstants::freshWaterToSeaWater();
+        return depthFW / NConstants::freshWaterToSeaWater();
     }
 
     QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName )
@@ -395,7 +454,7 @@ namespace NUtilities
 
     double depthSeawaterToFreshwater( double depthSW )
     {
-        return depthSW * NUtilities::NConstants::freshWaterToSeaWater();
+        return depthSW * NConstants::freshWaterToSeaWater();
     }
 
     QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName )
@@ -405,7 +464,7 @@ namespace NUtilities
 
     double feetToMeters( double feet )
     {
-        return feet * NUtilities::NConstants::metersToFeet();
+        return feet * NConstants::metersToFeet();
     }
 
     QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName )
@@ -415,7 +474,7 @@ namespace NUtilities
 
     double metersToFeet( double meters )
     {
-        return meters / NUtilities::NConstants::metersToFeet();
+        return meters / NConstants::metersToFeet();
     }
 
     QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName )
@@ -425,12 +484,12 @@ namespace NUtilities
 
     double quickDegreeChangeToPressure( bool imperial, double temperature )
     {
-        return temperature / NUtilities::NConstants::pressurePerTemp( imperial );
+        return temperature / NConstants::pressurePerTemp( imperial );
     }
 
     double quickPressureChangeToDegree( bool imperial, double pressure )
     {
-        return pressure * NUtilities::NConstants::pressurePerTemp( imperial );
+        return pressure * NConstants::pressurePerTemp( imperial );
     }
 
     QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName )
@@ -470,4 +529,114 @@ namespace NUtilities
             retVal = QString( "%1" ).arg( value.value(), 0, 'f', numDecimal );
         return retVal;
     }
+
+    double lbsToKGs( double lbs )
+    {
+        return lbs / NConstants::lbsPerKG();
+    }
+
+    double kgsToLbs( double kgs )
+    {
+        return kgs * NConstants::lbsPerKG();
+    }
+
+    double kcalsToKJoules( double kcals )   // actually kcal
+    {
+        return kcals * NConstants::kjoulesPerKCal();
+    }
+
+    double kjoulesToKCals( double joules )
+    {
+        return joules / NConstants::kjoulesPerKCal();
+    }
+
+    double farenheightToCelsius( double temp )
+    {
+        return ( temp - 32 ) * 5.0 / 9.0;
+    }
+
+    double celsiusToFarenheight( double temp )
+    {
+        return ( temp * 9 / 5 ) + 32;
+    }
+
+    /*
+// Calculate calories function
+    function calculateCalories() {
+        // Get input values
+        let weight = parseFloat(document.getElementById('weight').value);
+        const duration = parseFloat(document.getElementById('duration').value);
+        let depth = parseFloat(document.getElementById('depth').value);
+        let temperature = parseFloat(document.getElementById('temperature').value);
+        const activityFactor = parseFloat(document.getElementById('activity').value);
+            
+        // Convert units if necessary
+        if (weightUnit === 'lbs') {
+            weight = weight * 0.453592; // Convert lbs to kg
+        }
+            
+        if (depthUnit === 'ft') {
+            depth = depth * 0.3048; // Convert feet to meters
+        }
+            
+        if (tempUnit === 'f') {
+            temperature = (temperature - 32) * 5/9; // Convert F to C
+        }
+            
+        // Base MET value for scuba diving (Metabolic Equivalent of Task)
+        let metValue = 7.0;
+            
+        // Adjust for depth - approximately 2% increase per 10 meters
+        metValue *= (1 + (depth * 0.002));
+            
+        // Adjust for temperature - approximately 1.5% increase per degree below 25°C
+        if (temperature < 25) {
+            metValue *= (1 + ((25 - temperature) * 0.015));
+        }
+            
+        // Apply activity factor
+        metValue *= activityFactor;
+            
+        // Calculate calories burned: MET * weight in kg * time in hours
+        const hours = duration / 60;
+        const calories = metValue * weight * hours;
+            
+        return Math.round(calories);
+    }*/
+
+    double computeCalories( bool imperial, double weight, double depth, double temperature, double activityLevelMultiplier, double duration )
+    {
+        if ( imperial )
+        {
+            weight = NUtilities::lbsToKGs( weight );
+            depth = NUtilities::feetToMeters( depth );
+            temperature = NUtilities::farenheightToCelsius( temperature );
+        }
+
+        auto tempThreshold = 25.0;
+        auto percentPerTemp = 0.015;
+        auto percentPerDepth = 0.02 / 10.0;
+
+        auto metValue = 1.0;
+
+        // Adjust for depth - approximately 2% increase per 10 meters
+        metValue *= ( 1 + ( depth * percentPerDepth ) );
+
+        // Adjust for temperature - approximately 1.5% increase per degree below 25°C
+        if ( temperature < tempThreshold )
+        {
+            metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+        }
+
+        metValue *= activityLevelMultiplier;
+
+        metValue = NUtilities::NConstants::baseMETForScuba( false ) * metValue;
+
+        // Calculate calories burned: MET * weight in kg * time in hours
+        auto hours = duration / 60.0;
+        auto calories = metValue * weight * hours;
+        return calories;
+    }
+
+
 }

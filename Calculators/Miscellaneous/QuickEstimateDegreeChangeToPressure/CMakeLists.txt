@@ -20,14 +20,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-project( SCUBACalculators )
+get_filename_component( _PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+
+get_filename_component( _GROUP_NAME ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY )
+get_filename_component( _GROUP_NAME ${_GROUP_NAME} NAME )
+project( ${_PROJECT_NAME} )
+
 
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
-
-add_library(${PROJECT_NAME} STATIC
+add_library(${PROJECT_NAME} SHARED
     ${_PROJECT_DEPENDENCIES} 
 )
+
+target_include_directories( ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Calculators )
 
 target_link_libraries( ${PROJECT_NAME}
       PUBLIC
@@ -38,11 +44,8 @@ target_link_libraries( ${PROJECT_NAME}
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators )
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators/${_GROUP_NAME} )
+set_target_properties( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX d )
 
-add_subdirectory( Buoyancy )
-add_subdirectory( Miscellaneous )
-add_subdirectory( PartialPressure )
-add_subdirectory( PressureDepth )
-add_subdirectory( PressureVolume )
-add_subdirectory( PressureTemperatureVolume )
+INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION Calculators )
+INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )

@@ -40,7 +40,7 @@ QString CCalculator::myReversedCalculatorName() const
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { tr( "Quick Estimates" ) };
+    return { tr( "Miscellaneous" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const

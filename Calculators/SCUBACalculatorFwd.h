@@ -67,7 +67,8 @@ enum class EUnit
     eTemperature,
     eAbsZeroTemperature,
     ePercent,
-    eTime
+    eTime,
+    eCalories
 };
 
 enum class EVariableType
@@ -85,7 +86,8 @@ enum class EVariableType
     ePSIToBarConstant,
     eAbsZeroOffsetConstant,
     ePressureOffsetConstant,
-    ePressurePerDegreeConst
+    ePressurePerDegreeConst,
+    eBaseMETValueConst
 };
 
 enum class EVariableLoc

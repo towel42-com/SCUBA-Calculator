@@ -113,6 +113,8 @@ QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
             return {};
         case EUnit::eVolume:
             return NUtilities::NUnitStrings::volumeUnit( imperial, true, tex );
+        case EUnit::eCalories:
+            return NUtilities::NUnitStrings::energyUnit( imperial, true, tex );
         case EUnit::eWeight:
             return NUtilities::NUnitStrings::weightUnit( imperial, true, tex );
         case EUnit::eLength:
@@ -294,6 +296,12 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
             case EVariableType::ePressurePerDegreeConst:
                 {
                     value = NUtilities::NUnitStrings::pressurePerTemp( imperial, true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eBaseMETValueConst:
+                {
+                    value = NUtilities::NUnitStrings::scubaMET( imperial, true, true );
                     format = "%1";
                 }
                 break;

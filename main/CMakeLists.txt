@@ -78,6 +78,7 @@ DeployQt( ${PROJECT_NAME} .
         PressureChangeInVolume
         VolumeChangeInPressure
         RelativeChangeInAmbientPressure
+        Calories
     EXTRA_TARGETS2
        T42Qt6MathJax 
        SABUtils

@@ -42,6 +42,9 @@ namespace NUtilities
         CALCULATORS_EXPORT QString timeUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstantUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString molesUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString energyUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString metUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString scubaMET( bool imperial, bool useAbbreviations, bool tex );
 
         CALCULATORS_EXPORT QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex );
@@ -72,6 +75,11 @@ namespace NUtilities
         CALCULATORS_EXPORT double percentN2AtSurface();
         CALCULATORS_EXPORT double percentO2AtSurface();
         CALCULATORS_EXPORT double barToPSI();
+
+        CALCULATORS_EXPORT double kjoulesPerKCal();
+        CALCULATORS_EXPORT double lbsPerKG();
+
+        CALCULATORS_EXPORT double baseMETForScuba( bool imperial );
     }
 
     CALCULATORS_EXPORT double toAbsZeroBasedTemp( bool imperial, double temp );
@@ -111,6 +119,17 @@ namespace NUtilities
 
     CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
     CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
+
+    CALCULATORS_EXPORT double lbsToKGs( double lbs );
+    CALCULATORS_EXPORT double kgsToLbs( double kgs );
+
+    CALCULATORS_EXPORT double kcalsToKJoules( double calories );
+    CALCULATORS_EXPORT double kjoulesToKCals( double joules );
+
+    CALCULATORS_EXPORT double farenheightToCelsius( double temp );
+    CALCULATORS_EXPORT double celsiusToFarenheight( double temp );
+
+    CALCULATORS_EXPORT double computeCalories( bool imperial, double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
 };
 
 #endif
