@@ -73,21 +73,22 @@ enum class EUnit
 
 enum class EVariableType
 {
-    eHidden,
+    eIntermediate,
     eVariable,
-    ePressurePerTempConstant,
-    eWeightOfWaterConstant,
-    eIdealGasConstant,
-    eFN2AtSurfaceConstant,
-    eFO2AtSurfaceConstant,
-    eDepthToSingleAtmosphereConstant,
-    eMetersToFeetConstant,
-    eSeaWaterToFreshWaterConstant,
-    ePSIToBarConstant,
-    eAbsZeroOffsetConstant,
-    ePressureOffsetConstant,
     ePressurePerDegreeConst,
-    eBaseMETValueConst
+    eWeightOfWaterConst,
+    eIdealGasConst,
+    eFN2AtSurfaceConst,
+    eFO2AtSurfaceConst,
+    eDepthToSingleATMConst,
+    eFeetToMetersConst,
+    eMetersToFeetConst,
+    eLbsPerKgsConst,
+    eFreshWaterToSeaWaterConst,
+    ePSIToBarConst,
+    eAbsZeroOffsetConst,
+    ePressureOffsetConst,
+    eBaseMETofSCUBAConst
 };
 
 enum class EVariableLoc

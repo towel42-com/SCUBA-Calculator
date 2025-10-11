@@ -40,11 +40,11 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eHidden, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eIntermediate, EUnit::ePressure, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
 
     ( *std::prev( std::prev( retVal.end() ) ) )
@@ -60,7 +60,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    auto formula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
+    auto formula = NUtilities::depthToPressureFormula( "ata", "depth" );
     formula += R"__( \newline\newline )__";
     formula += R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__";
     return formula;
@@ -74,11 +74,11 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return R"__(<depth> = <depthToSingleAtmosphere> * (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__";
+        return QString( R"__(<depth> = <%1> * (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "partialPressureAtSurface" )
     {
-        auto formula = NUtilities::depthToPressureFormula( "ata", "depth", "depthToSingleAtmosphere" );
+        auto formula = NUtilities::depthToPressureFormula( "ata", "depth" );
         formula += R"__( \newline\newline )__";
         formula += R"__(<partialPressureAtSurface> = \frac{<partialPressureAtDepth>}{<ata_value>})__";
         return formula;

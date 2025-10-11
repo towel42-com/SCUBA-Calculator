@@ -49,7 +49,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "seaWaterToFreshWater", tr( "Seawater to Freshwater" ), EVariableType::eSeaWaterToFreshWaterConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFreshWaterToSeaWaterConst ),   //
         } );
 
     return retVal;
@@ -57,23 +57,23 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
+    return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
+    return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "seaWater" )
     {
-        return getBaseFormula();
+        return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
     }
     else if ( unsetVar->name() == "freshWater" )
     {
-        return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater", "seaWaterToFreshWater" );
+        return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
     }
     return {};
 }

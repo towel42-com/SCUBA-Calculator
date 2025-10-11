@@ -45,6 +45,7 @@ class CALCULATORS_EXPORT CVariableInfo
 {
 public:
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
+    CVariableInfo( EVariableType type );;   // for use with constants
     ~CVariableInfo() {}
 
     QString name() const { return fName; }

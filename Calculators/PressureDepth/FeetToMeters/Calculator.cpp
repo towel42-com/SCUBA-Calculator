@@ -51,7 +51,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "meters", tr( "Meters" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "feet", tr( "Feet" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "metersToFeet", tr( "Meters To Feet" ), EVariableType::eMetersToFeetConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eMetersToFeetConst ),   //
         } );
 
     retVal.front()->setUnitLabel( NUtilities::NUnitStrings::lengthUnit( false, true, false ) );
@@ -61,23 +61,23 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::feetToMetersFormula( "feet", "meters", "metersToFeet" );
+    return NUtilities::feetToMetersFormula( "feet", "meters" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
+    return NUtilities::metersToFeetFormula( "feet", "meters" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "meters" )
     {
-        return getBaseFormula();
+        return NUtilities::feetToMetersFormula( "feet", "meters" );
     }
     else if ( unsetVar->name() == "feet" )
     {
-        return NUtilities::metersToFeetFormula( "feet", "meters", "metersToFeet" );
+        return NUtilities::metersToFeetFormula( "feet", "meters" );
     }
     return {};
 }

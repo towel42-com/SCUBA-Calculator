@@ -43,14 +43,14 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "ead", tr( "Equivalent Air Depth EAD" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "fn2", tr( "FN2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "fn2AtSurface", tr( "FN2 @ Surface" ), EVariableType::eFN2AtSurfaceConstant, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFN2AtSurfaceConst ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         };
 }
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <depthToSingleAtmosphere>)] - <depthToSingleAtmosphere>)__";
+    return QString( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
@@ -61,11 +61,11 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "fn2" )
     {
-        return R"__(<fn2> = \frac{[<fn2AtSurface> \times (<ead>+<depthToSingleAtmosphere>)]}{(<depth>+<depthToSingleAtmosphere>)})__";
+        return QString( R"__(<fn2> = \frac{[<fn2AtSurface> \times (<ead>+<%1>)]}{(<depth>+<%1>)})__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return R"__(<depth> = [\frac{(<ead>+<depthToSingleAtmosphere>)}{\frac{<fn2>}{<fn2AtSurface>}]-<depthToSingleAtmosphere>)__";
+        return QString( R"__(<depth> = [\frac{(<ead>+<%1>)}{\frac{<fn2>}{<fn2AtSurface>}]-<%1>)__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
     }
     return {};
 }

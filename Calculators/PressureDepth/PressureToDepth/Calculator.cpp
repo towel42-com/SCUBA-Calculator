@@ -51,18 +51,18 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "depth", tr( "depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "pressure", tr( "Pressure" ), EVariableType::eVariable, EUnit::eAtmospheres, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         };
 }
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::pressureToDepthFormula( "pressure", "depth", "depthToSingleAtmosphere" );
+    return NUtilities::pressureToDepthFormula( "pressure", "depth" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::depthToPressureFormula( "pressure", "depth", "depthToSingleAtmosphere" );
+    return NUtilities::depthToPressureFormula( "pressure", "depth" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
@@ -73,7 +73,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "pressure" )
     {
-        return NUtilities::depthToPressureFormula( "pressure", "depth", "depthToSingleAtmosphere" );
+        return NUtilities::depthToPressureFormula( "pressure", "depth" );
     }
     return {};
 }

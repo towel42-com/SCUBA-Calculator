@@ -53,7 +53,9 @@ namespace NUtilities
         CALCULATORS_EXPORT QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex );
 
         CALCULATORS_EXPORT QString depthToSingleAtmosphere( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString feetToMeters( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString metersToFeet( bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString lbsPerKgs( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString psiToBar( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex );
@@ -70,50 +72,65 @@ namespace NUtilities
         CALCULATORS_EXPORT double idealGasConstant( bool imperial );
 
         CALCULATORS_EXPORT double metersToFeet();
+        CALCULATORS_EXPORT double feetToMeters();
         CALCULATORS_EXPORT double freshWaterToSeaWater();
 
         CALCULATORS_EXPORT double percentN2AtSurface();
         CALCULATORS_EXPORT double percentO2AtSurface();
         CALCULATORS_EXPORT double barToPSI();
 
-        CALCULATORS_EXPORT double kjoulesPerKCal();
         CALCULATORS_EXPORT double lbsPerKG();
 
-        CALCULATORS_EXPORT double baseMETForScuba( bool imperial );
+        CALCULATORS_EXPORT double baseMETForScuba();
     }
 
+    extern const char *kPressurePerDegreeConstFieldName;
+    extern const char *kWeightOfWaterConstFieldName;
+    extern const char *kIdealGasConstantFieldName;
+    extern const char *kFN2AtSurfaceFieldName;
+    extern const char *kFO2AtSurfaceFieldName;
+    extern const char *kDepthToSingleATMConstFieldName;
+    extern const char *kFeetToMetersConstFieldName;
+    extern const char *kMetersToFeetConstFieldName;
+    extern const char *kLbsPerKgsConstFieldName;
+    extern const char *kFreshWaterToSeaWaterConstFieldName;
+    extern const char *kPSIToBarConstFieldName;
+    extern const char *kAbsZeroOffsetConstFieldName;
+    extern const char *kPressureOffsetConstFieldName;
+    extern const char *kBaseMETofSCUBAConstFieldName;
+    
     CALCULATORS_EXPORT double toAbsZeroBasedTemp( bool imperial, double temp );
     CALCULATORS_EXPORT double fromAbsZeroBasedTemp( bool imperial, double temp );
 
     CALCULATORS_EXPORT double psiToBar( double psi );
     CALCULATORS_EXPORT double barToPSI( double bar );
 
-    CALCULATORS_EXPORT QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName, const QString &psiToBarConstFieldName );
-    CALCULATORS_EXPORT QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName, const QString &psiToBarConstFieldName );
+    CALCULATORS_EXPORT QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName );
+    CALCULATORS_EXPORT QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName );
 
     CALCULATORS_EXPORT double depthToPressure( bool imperial, bool seaWater, double depth );
     CALCULATORS_EXPORT double pressureToDepth( bool imperial, bool seaWater, double pressure );
 
-    CALCULATORS_EXPORT QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName, const QString &depthToSingleATMFieldName );
-    CALCULATORS_EXPORT QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName, const QString &depthToSingleATMFieldName );
+    CALCULATORS_EXPORT QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName );
+    CALCULATORS_EXPORT QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName );
 
     CALCULATORS_EXPORT double depthFreshwaterToSeawater( double depthFW );
     CALCULATORS_EXPORT double depthSeawaterToFreshwater( double depthSW );
 
-    CALCULATORS_EXPORT QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName );
-    CALCULATORS_EXPORT QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName, const QString &freshWaterToSeaWaterFieldName );
+    CALCULATORS_EXPORT QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName );
+    CALCULATORS_EXPORT QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName );
 
     CALCULATORS_EXPORT double feetToMeters( double feet );
     CALCULATORS_EXPORT double metersToFeet( double meters );
 
-    CALCULATORS_EXPORT QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName );
-    CALCULATORS_EXPORT QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName, const QString &feetToMetersConstFieldName );
+    CALCULATORS_EXPORT QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName );
+    CALCULATORS_EXPORT QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName );
 
     CALCULATORS_EXPORT double quickDegreeChangeToPressure( bool imperial, double temperature );
     CALCULATORS_EXPORT double quickPressureChangeToDegree( bool imperial, double pressure );
 
-    CALCULATORS_EXPORT QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName );
-    CALCULATORS_EXPORT QString quickPressureChangeToDegreeFormula( const QString &tempFieldName, const QString &pressureFieldName, const QString &pressurePerDegreeConstFieldName );
+    CALCULATORS_EXPORT QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName );
+    CALCULATORS_EXPORT QString quickPressureChangeToDegreeFormula( const QString &tempFieldName, const QString &pressureFieldName );
 
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
 
@@ -123,13 +140,17 @@ namespace NUtilities
     CALCULATORS_EXPORT double lbsToKGs( double lbs );
     CALCULATORS_EXPORT double kgsToLbs( double kgs );
 
-    CALCULATORS_EXPORT double kcalsToKJoules( double calories );
-    CALCULATORS_EXPORT double kjoulesToKCals( double joules );
+    CALCULATORS_EXPORT QString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName );
+    CALCULATORS_EXPORT QString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName );
 
     CALCULATORS_EXPORT double farenheightToCelsius( double temp );
     CALCULATORS_EXPORT double celsiusToFarenheight( double temp );
 
     CALCULATORS_EXPORT double computeCalories( bool imperial, double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
+    CALCULATORS_EXPORT QString computeCaloriesFormula( bool imperial, const QString &weightFieldName, const QString &depthFieldName, const std::pair< double, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
+
+    CALCULATORS_EXPORT QString descForType( EVariableType type );
+    CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
 };
 
 #endif

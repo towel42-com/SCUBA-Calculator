@@ -44,7 +44,7 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depthToSingleAtmosphere", tr( "Depth to Single Atmosphere" ), EVariableType::eDepthToSingleAtmosphereConstant, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
     ( *std::next( retVal.begin() ) )->setRange( SRange( { 0.21, 2.0, 1.4, 0.1 } ) );
     return retVal;
@@ -67,7 +67,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <depthToSingleAtmosphere>)__";
+    return QString( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
@@ -78,11 +78,11 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "maxPO2" )
     {
-        return R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<depthToSingleAtmosphere>})+1])__";
+        return QString( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "fo2" )
     {
-        return R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<depthToSingleAtmosphere>})+1})__";
+        return QString( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
     }
 
     return {};

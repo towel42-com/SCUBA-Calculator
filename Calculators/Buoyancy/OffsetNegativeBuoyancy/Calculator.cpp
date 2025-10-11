@@ -42,7 +42,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "weightOfWater", tr( "Weight of Water" ), EVariableType::eWeightOfWaterConstant, EUnit::eWeight, EVariableLoc::eRHS )   //
+            std::make_shared< CVariableInfo >( EVariableType::eWeightOfWaterConst )   //
         };
 }
 

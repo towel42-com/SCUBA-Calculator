@@ -45,7 +45,7 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "duration", tr( "Bottom Time" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "temp", tr( "Temperature" ), EVariableType::eVariable, EUnit::eTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "met", tr( "Base Met Value" ), EVariableType::eBaseMETValueConst, EUnit::eTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eBaseMETofSCUBAConst ),   //
             std::make_shared< CVariableInfo >( "activityLevel", tr( "Activity Level" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
         } );
     retVal.back()->setValues(   //

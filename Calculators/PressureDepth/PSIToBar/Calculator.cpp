@@ -51,7 +51,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "bar", tr( "BAR" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "psi", tr( "PSI" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "psiToBar", tr( "PSI to BAR" ), EVariableType::ePSIToBarConstant, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::ePSIToBarConst ),   //
         } );
 
     retVal.front()->setUnitLabel( NUtilities::NUnitStrings::pressureUnit( false, true, false ) );
@@ -61,12 +61,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::psiToBarFormula( "psi", "bar", "psiToBar" );
+    return NUtilities::psiToBarFormula( "psi", "bar" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::barToPSIFormula( "psi", "bar", "psiToBar" );
+    return NUtilities::barToPSIFormula( "psi", "bar" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
@@ -80,7 +80,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "psi" )
     {
-        return NUtilities::barToPSIFormula( "psi", "bar", "psiToBar" );
+        return NUtilities::barToPSIFormula( "psi", "bar" );
     }
     return {};
 }
