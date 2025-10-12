@@ -1,2 +1,2 @@
-add_subdirectory( QuickEstimateDegreeChangeToPressure )
+add_subdirectory( DegreeChangeToPressureChange )
 add_subdirectory( Calories )

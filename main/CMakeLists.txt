@@ -72,7 +72,7 @@ DeployQt( ${PROJECT_NAME} .
         PSIToBar
         CombinedGasLaw
         PressureChangeInTemp
-        QuickEstimateDegreeChangeToPressure
+        DegreeChangeToPressureChange
         VolumeChangeInTemp
         GasConsumptionTimeToDepth
         PressureChangeInVolume

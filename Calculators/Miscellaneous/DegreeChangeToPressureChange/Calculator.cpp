@@ -48,30 +48,30 @@ TVariableInfoList CCalculator::getMyVariables() const
     return   //
         {
             std::make_shared< CVariableInfo >( "p1", tr( "Pressure Change" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "t1", tr( "Temperature Change" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "t1", tr( "Temperature Change" ), EVariableType::eVariable, EUnit::eTemperature, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::ePressurePerDegreeConst ),   //
         };
 }
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1" );
+    return NUtilities::NConversions::pressureChangeForDegreeChangeFormula( "t1", "p1" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1" );
+    return NUtilities::NConversions::degreeChangeForPressureChangeFormula( "t1", "p1" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "p1" )
     {
-        return NUtilities::quickDegreeChangeToPressureFormula( "t1", "p1" );
+        return NUtilities::NConversions::pressureChangeForDegreeChangeFormula( "t1", "p1" );
     }
     else if ( unsetVar->name() == "t1" )
     {
-        return NUtilities::quickPressureChangeToDegreeFormula( "t1", "p1" );
+        return NUtilities::NConversions::degreeChangeForPressureChangeFormula( "t1", "p1" );
     }
 
     return {};
@@ -84,10 +84,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == p1 )
     {
-        p1->setValue( NUtilities::quickDegreeChangeToPressure( imperial(), t1->value() ) );
+        p1->setValue( NUtilities::NConversions::pressureChangeForDegreeChange( imperial(), t1->value() ) );
     }
     else if ( unsetVar == t1 )
     {
-        t1->setValue( NUtilities::quickPressureChangeToDegree( imperial(), p1->value() ) );
+        t1->setValue( NUtilities::NConversions::degreeChangeForPressureChange( imperial(), p1->value() ) );
     }
 }
