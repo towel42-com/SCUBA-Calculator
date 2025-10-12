@@ -10,6 +10,8 @@ public:
     CCalculator() {}
     virtual ~CCalculator() override {}
 
+    virtual bool isWaterTypeBased() const override { return true; }
+
     virtual QString myCalculatorName() const override;
     virtual QStringList calculatorPath() const override;
 
@@ -46,7 +48,11 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "temp", tr( "Temperature" ), EVariableType::eVariable, EUnit::eTemperature, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eBaseMETofSCUBAConst ),   //
-            std::make_shared< CVariableInfo >( "activityLevel", tr( "Activity Level" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFreshWaterToSeaWaterConst ),   //
+            std::make_shared< CVariableInfo >( "weightC", tr( "Weight (%1)" ).arg( NUtilities::NUnitStrings::weightUnit( false, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depthC", tr( "Depth (%1)" ).arg( NUtilities::NUnitStrings::depthUnit( false, true, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "tempC", tr( "Temperature (%1)" ).arg( NUtilities::NUnitStrings::tempUnit( false, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "activityLevel", tr( "Activity Level Adjustment" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
         } );
     retVal.back()->setValues(   //
         TOptionalNamedValueItemList( {
@@ -62,7 +68,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(<calories>)__";
+    return NUtilities::NConversions::computeCaloriesFormula( imperial(), seaWater(), "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
@@ -83,7 +89,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == calories )
     {
-        calories->setValue( NUtilities::computeCalories( imperial(), weight->value(), depth->value(), temp->value(), activityLevel->value(), duration->value() ) );
+        calories->setValue( NUtilities::NConversions::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value(), duration->value() ) );
     }
 }
 
