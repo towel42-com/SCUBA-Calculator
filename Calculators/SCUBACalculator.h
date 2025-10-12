@@ -104,6 +104,7 @@ protected:
     virtual QString finalizeFormula( const QString &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
+    virtual TVariableInfoList getMyVariables( bool *preReversed ) const;
 
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
@@ -117,6 +118,9 @@ protected:
     TVariableInfo getFirstUnsetVariable() const;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const = 0;   // returns the current formula in use
     virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
+
+    TVariableInfo getFirstVariable( EVariableLoc side ) const;
+    TVariableInfo getLastVariable( EVariableLoc side ) const;
 
 protected:
     CSCUBACalculatorPage *fPage{ nullptr };

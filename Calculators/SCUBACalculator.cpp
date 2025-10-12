@@ -172,10 +172,11 @@ void CSCUBACalculator::initVariables()
     fRHSVariables.clear();
     fVariableMap.clear();
 
-    fVariables = getMyVariables();
+    bool preReversed = false;
+    fVariables = getMyVariables( &preReversed );
     for ( auto &&curr : fVariables )
     {
-        if ( isReversed() )
+        if ( !preReversed && isReversed() )
             curr->reverseVariableLoc();
         fVariableMap[ curr->name() ] = curr;
         if ( curr->variableLoc() == EVariableLoc::eLHS )
@@ -256,8 +257,37 @@ void CSCUBACalculator::renderDefaultFormulas() const
     }
 }
 
+TVariableInfoList CSCUBACalculator::getMyVariables( bool *preReversed ) const
+{
+    *preReversed = false;
+    return getMyVariables();
+}
+
 TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
 {
+    return {};
+}
+
+TVariableInfo CSCUBACalculator::getLastVariable( EVariableLoc side ) const
+{
+    auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
+
+    for ( auto &&ii = variables.rbegin(); ii != variables.rend(); ++ii )
+    {
+        if ( ( *ii )->isVariable() )
+            return *ii;
+    }
+    return {};
+}
+
+TVariableInfo CSCUBACalculator::getFirstVariable( EVariableLoc side ) const
+{
+    auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
+    for ( auto &&ii : variables )
+    {
+        if ( ii->isVariable() )
+            return ii;
+    }
     return {};
 }
 
@@ -274,30 +304,30 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
     {
         if ( ( fLHSVariables.size() == 1 ) || ( fRHSVariables.size() == 1 ) )
         {
-            varToReset = fLHSVariables.front();
+            varToReset = getFirstVariable( EVariableLoc::eLHS );
         }
         else if ( fRHSVariables.size() == 2 )
         {
             Q_ASSERT( !triggerWidget || ( fRHSVariables.front()->isWidget( triggerWidget ) ) || ( fRHSVariables.back()->isWidget( triggerWidget ) ) );
             if ( fRHSVariables.front()->isWidget( triggerWidget ) )
-                varToReset = fRHSVariables.back();
+                varToReset = getLastVariable( EVariableLoc::eRHS );
             else if ( !triggerWidget || fRHSVariables.back()->isWidget( triggerWidget ) )
-                varToReset = fRHSVariables.front();
+                varToReset = getFirstVariable( EVariableLoc::eRHS );
         }
     }
     else if ( !varToReset && ( updateFromSide == EVariableLoc::eLHS ) )
     {
         if ( ( fRHSVariables.size() == 1 ) || ( fLHSVariables.size() == 1 ) )
         {
-            varToReset = fRHSVariables.front();
+            varToReset = getFirstVariable( EVariableLoc::eRHS );
         }
         else if ( fLHSVariables.size() == 2 )
         {
             Q_ASSERT( !triggerWidget || ( fLHSVariables.front()->isWidget( triggerWidget ) ) || ( fLHSVariables.back()->isWidget( triggerWidget ) ) );
             if ( fLHSVariables.front()->isWidget( triggerWidget ) )
-                varToReset = fLHSVariables.back();
+                varToReset = getLastVariable( EVariableLoc::eLHS );
             else if ( !triggerWidget || fLHSVariables.back()->isWidget( triggerWidget ) )
-                varToReset = fLHSVariables.front();
+                varToReset = getFirstVariable( EVariableLoc::eLHS );
         }
     }
 
