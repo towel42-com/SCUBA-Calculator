@@ -61,12 +61,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::psiToBarFormula( "psi", "bar" );
+    return NUtilities::NConversions::psiToBarFormula( "psi", "bar" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::barToPSIFormula( "psi", "bar" );
+    return NUtilities::NConversions::barToPSIFormula( "psi", "bar" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
@@ -80,7 +80,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "psi" )
     {
-        return NUtilities::barToPSIFormula( "psi", "bar" );
+        return NUtilities::NConversions::barToPSIFormula( "psi", "bar" );
     }
     return {};
 }
@@ -92,10 +92,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == bar )
     {
-        bar->setValue( NUtilities::psiToBar( psi->value() ) );
+        bar->setValue( NUtilities::NConversions::psiToBar( psi->value() ) );
     }
     else if ( unsetVar == psi )
     {
-        psi->setValue( NUtilities::barToPSI( bar->value() ) );
+        psi->setValue( NUtilities::NConversions::barToPSI( bar->value() ) );
     }
 }

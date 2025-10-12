@@ -67,7 +67,7 @@ public:
     int numDecimals() const { return ( fUnit == EUnit::ePercent ) ? 0 : 2; }
     double formulaValue() const;   // user responsible for calling has_value first
     double value() const;   // user responsible for calling has_value first
-    TOptionalDouble currFieldValue() const;
+    TOptionalDouble optValue() const;
 
     bool has_value() const { return fValue.has_value(); }
     void setValue( TOptionalDouble value ) { fValue = value; }

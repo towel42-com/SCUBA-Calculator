@@ -157,7 +157,7 @@ void CVariableInfo::resetValue( bool updateUI, bool notifyUI )
     updateFieldFromValue( notifyUI );
 }
 
-TOptionalDouble CVariableInfo::currFieldValue() const
+TOptionalDouble CVariableInfo::optValue() const
 {
     TOptionalDouble currValue;
     if ( lineEdit() )
@@ -199,7 +199,7 @@ void CVariableInfo::updateValueFromField()
     if ( !fField )
         return;
 
-    fValue = currFieldValue();
+    fValue = optValue();
 }
 
 TOptionalDouble CVariableInfo::valueForString( const QString &text ) const
@@ -235,7 +235,7 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                 }
             case EVariableType::ePressurePerDegreeConst:
                 {
-                    value = NUtilities::NUnitStrings::pressurePerTemp( imperial, true, true );
+                    value = NUtilities::NUnitStrings::pressureChangePerDegreeChange( imperial, true, true );
                     format = "%1";
                 }
                 break;
@@ -313,7 +313,7 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                 break;
             case EVariableType::eBaseMETofSCUBAConst:
                 {
-                    value = NUtilities::NUnitStrings::scubaMET( imperial, true, true );
+                    value = NUtilities::NUnitStrings::scubaMET( true, true );
                     format = "%1";
                 }
                 break;
@@ -387,7 +387,7 @@ void CVariableInfo::clearField( bool notifyUI )
     else if ( comboBox() )
         comboBox()->setCurrentIndex( 0 );
 
-    fValue = currFieldValue();
+    fValue = optValue();
 
     if ( !notifyUI )
         fField->blockSignals( false );

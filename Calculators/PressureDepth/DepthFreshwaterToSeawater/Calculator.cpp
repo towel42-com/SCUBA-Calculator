@@ -57,23 +57,23 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
+    return NUtilities::NConversions::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
+    return NUtilities::NConversions::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "seaWater" )
     {
-        return NUtilities::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
+        return NUtilities::NConversions::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
     }
     else if ( unsetVar->name() == "freshWater" )
     {
-        return NUtilities::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
+        return NUtilities::NConversions::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
     }
     return {};
 }
@@ -85,10 +85,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == seaWater )
     {
-        seaWater->setValue( NUtilities::depthFreshwaterToSeawater( freshWater->value() ) );
+        seaWater->setValue( NUtilities::NConversions::depthFreshwaterToSeawater( freshWater->value() ) );
     }
     else if ( unsetVar == freshWater )
     {
-        freshWater->setValue( NUtilities::depthSeawaterToFreshwater( freshWater->value() ) );
+        freshWater->setValue( NUtilities::NConversions::depthSeawaterToFreshwater( freshWater->value() ) );
     }
 }

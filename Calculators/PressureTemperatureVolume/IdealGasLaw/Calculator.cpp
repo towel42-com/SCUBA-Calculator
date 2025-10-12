@@ -88,21 +88,21 @@ void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
     if ( unsetVar == p )
     {
         // p = nrt/v
-        p->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) / v->value() );
+        p->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) / v->value() );
     }
     else if ( unsetVar == v )
     {
         // v = nrt/p
-        v->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) / p->value() );
+        v->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) / p->value() );
     }
     else if ( unsetVar == numMoles )
     {
         // n = pv/rt
-        numMoles->setValue( ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::toAbsZeroBasedTemp( imperial(), t->value() ) ) );
+        numMoles->setValue( ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) ) );
     }
     else if ( unsetVar == t )
     {
         // t = pv/nr
-        t->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles->value() ) ) );
+        t->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles->value() ) ) );
     }
 }

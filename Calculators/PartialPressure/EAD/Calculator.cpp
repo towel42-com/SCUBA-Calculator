@@ -50,7 +50,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return QString( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
+    return QString( R"__(<ead> = [(\frac{<fn2>}{<fn2AtSurface>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
@@ -61,11 +61,11 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "fn2" )
     {
-        return QString( R"__(<fn2> = \frac{[<fn2AtSurface> \times (<ead>+<%1>)]}{(<depth>+<%1>)})__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
+        return QString( R"__(<fn2> = \frac{[<fn2AtSurface> \times (<ead>+<%1>)]}{(<depth>+<%1>)})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QString( R"__(<depth> = [\frac{(<ead>+<%1>)}{\frac{<fn2>}{<fn2AtSurface>}]-<%1>)__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
+        return QString( R"__(<depth> = [\frac{(<ead>+<%1>)}{\frac{<fn2>}{<fn2AtSurface>}]-<%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
     }
     return {};
 }

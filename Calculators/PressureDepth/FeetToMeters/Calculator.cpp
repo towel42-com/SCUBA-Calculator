@@ -61,23 +61,23 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::feetToMetersFormula( "feet", "meters" );
+    return NUtilities::NConversions::feetToMetersFormula( "feet", "meters" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::metersToFeetFormula( "feet", "meters" );
+    return NUtilities::NConversions::metersToFeetFormula( "feet", "meters" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
     if ( unsetVar->name() == "meters" )
     {
-        return NUtilities::feetToMetersFormula( "feet", "meters" );
+        return NUtilities::NConversions::feetToMetersFormula( "feet", "meters" );
     }
     else if ( unsetVar->name() == "feet" )
     {
-        return NUtilities::metersToFeetFormula( "feet", "meters" );
+        return NUtilities::NConversions::metersToFeetFormula( "feet", "meters" );
     }
     return {};
 }
@@ -89,10 +89,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == meters )
     {
-        meters->setValue( NUtilities::feetToMeters( feet->value() ) );
+        meters->setValue( NUtilities::NConversions::feetToMeters( feet->value() ) );
     }
     else if ( unsetVar == feet )
     {
-        feet->setValue( NUtilities::metersToFeet( meters->value() ) );
+        feet->setValue( NUtilities::NConversions::metersToFeet( meters->value() ) );
     }
 }

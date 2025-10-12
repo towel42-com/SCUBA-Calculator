@@ -67,7 +67,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::myBaseFormula() const
 {
-    return QString( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
+    return QString( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
@@ -78,11 +78,11 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "maxPO2" )
     {
-        return QString( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
+        return QString( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "fo2" )
     {
-        return QString( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::kDepthToSingleATMConstFieldName );
+        return QString( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
     }
 
     return {};

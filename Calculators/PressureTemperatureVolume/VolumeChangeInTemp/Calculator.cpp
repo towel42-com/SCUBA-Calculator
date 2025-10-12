@@ -112,21 +112,21 @@ void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
     if ( unsetVar == v1 )
     {
         // V1 = V2 * ( t1/t2 );
-        v1->setValue( NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) ) );
+        v1->setValue( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) ) );
     }
     else if ( unsetVar == v2 )
     {
         // V2 = V1 * ( t2/t1 );
-        v2->setValue( NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) ) );
+        v2->setValue( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) ) );
     }
     else if ( unsetVar == t1 )
     {
         // T1 = t2*(V1/v2)
-        t1->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / v2->value() ) ) );
+        t1->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / v2->value() ) ) );
     }
     else if ( unsetVar == t2 )
     {
         // T2 = t1*(V2/v1)
-        t2->setValue( NUtilities::fromAbsZeroBasedTemp( imperial(), NUtilities::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / v1->value() ) ) );
+        t2->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / v1->value() ) ) );
     }
 }
