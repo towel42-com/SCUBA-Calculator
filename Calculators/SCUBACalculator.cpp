@@ -327,13 +327,16 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     {
         auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentFormula );
         notifyOfNewFormula( formula, EFormulaType::eCurrentFormula );
-
-        formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentValueFormula );
-        notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula );
     }
 
     computeValues();
     updateFields( triggerWidget );
+
+    if ( currFormula.has_value() )
+    {
+        auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentValueFormula );
+        notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula );
+    }
 
     auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
     notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
@@ -386,7 +389,7 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
 
     for ( auto &&curr : variables )
     {
-        if ( !curr->isWidget( triggerWidget ) || !curr->currFieldValue().has_value() )
+        if ( !curr->isWidget( triggerWidget ) || !curr->optValue().has_value() )
             curr->updateFieldFromValue();
     }
 }
@@ -409,4 +412,3 @@ QString CSCUBACalculator::finalizeFormula( const QString &formula, EFormulaType 
 {
     return finalizeFormula( imperial(), seaWater(), formula, formulaType );
 }
-
