@@ -166,31 +166,39 @@ namespace NUtilities
             return retVal;
         }
 
-        QString pressurePerTemp( bool imperial, bool useAbbreviations, bool tex )
+        QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex )
         {
             auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
-            retVal = retVal.arg( NConstants::pressurePerTemp( imperial ) ).arg( NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
+            retVal = retVal.arg( NConstants::pressureChangePerDegreeChange( imperial ) ).arg( NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString lbsPerKgs( bool useAbbreviations, bool tex )
         {
             auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
-            retVal = retVal.arg( NConstants::lbsPerKG() ).arg( NUnitStrings::weightUnit( true, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) );
+            retVal = retVal.arg( NConstants::lbsPerKGs() ).arg( NUnitStrings::weightUnit( true, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString metUnit( bool imperial, bool useAbbreviations, bool tex )
+        QString kgsPerLbs( bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(\frac{%1}{(%2 \times %3})__" : "%1/(%2*%3)" );
-            retVal = retVal.arg( energyUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( imperial, useAbbreviations, tex ) );
+            auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
+            retVal = retVal.arg( NConstants::kgsPerLbs() ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( true, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString scubaMET( bool imperial, bool useAbbreviations, bool tex )
+        // kcal/(kg*minute)
+        QString metUnit( bool useAbbreviations, bool tex )
+        {
+            auto retVal = QString( tex ? R"__(\frac{%1}{(%2 \times %3)})__" : "%1/(%2*%3)" );
+            retVal = retVal.arg( energyUnit( false, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( false, true, true ) );
+            return retVal;
+        }
+
+        QString scubaMET( bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( NConstants::baseMETForScuba() ).arg( NUnitStrings::metUnit( imperial, useAbbreviations, tex ) );
+            retVal = retVal.arg( NConstants::baseMETForScuba() ).arg( NUnitStrings::metUnit( useAbbreviations, tex ) );
             return retVal;
         }
 
@@ -269,15 +277,15 @@ namespace NUtilities
 
         QString feetToMeters( bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"__(%1 <%2> \times <%3>)__" : "%1 %2*%3)";
-            retVal = retVal.arg( doubleToString( NConstants::feetToMeters(), 3 ) ).arg( lengthUnit( true, useAbbreviations, true ) ).arg( lengthUnit( false, useAbbreviations, true ) );
+            QString retVal = tex ? R"__(%1 (\frac{%2}{%3}))__" : "%1 (%2/%3))";
+            retVal = retVal.arg( doubleToString( NConstants::feetPerMeters(), 3 ) ).arg( lengthUnit( false, useAbbreviations, true ) ).arg( lengthUnit( true, useAbbreviations, true ) );
             return retVal;
         }
 
         QString metersToFeet( bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"__(%1 <%2> \times <%3>)__" : "%1 %2*%3)";
-            retVal = retVal.arg( doubleToString( NConstants::metersToFeet(), 3 ) ).arg( lengthUnit( true, useAbbreviations, true ) ).arg( lengthUnit( false, useAbbreviations, true ) );
+            QString retVal = tex ? R"__(%1 (\frac{%2}{%3}))__" : "%1 (%2/%3))";
+            retVal = retVal.arg( doubleToString( NConstants::metersPerFeet(), 3 ) ).arg( lengthUnit( true, useAbbreviations, true ) ).arg( lengthUnit( false, useAbbreviations, true ) );
             return retVal;
         }
 
@@ -312,19 +320,35 @@ namespace NUtilities
 
     namespace NConstants
     {
+        const char *kPressurePerDegreeConstFieldName = "pressurePerDegree";
+        const char *kWeightOfWaterConstFieldName = "weightOfWater";
+        const char *kIdealGasConstantFieldName = "idealGasConstant";
+        const char *kFN2AtSurfaceFieldName = "FN2AtSurface";
+        const char *kFO2AtSurfaceFieldName = "FO2AtSurface";
+        const char *kDepthToSingleATMConstFieldName = "depthToSingleAtmosphere";
+        const char *kFeetToMetersConstFieldName = "feetToMeters";
+        const char *kMetersToFeetConstFieldName = "metersToFeet";
+        const char *kLbsPerKgsConstFieldName = "lbsToKgs";
+        const char *kFreshWaterToSeaWaterConstFieldName = "freshWaterToSeaWater";
+        const char *kPSIToBarConstFieldName = "psiToBar";
+        const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
+        const char *kPressureOffsetConstFieldName = "pressureOffset";
+        const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
+
         double absZeroOffset( bool imperial )
         {
             return imperial ? 460.0 : 273.0;
         }
 
-        double pressurePerTemp( bool imperial )
+        double pressureChangePerDegreeChange( bool imperial )
         {
             return imperial ? 5 : 0.6;
         }
 
         double weightOfWater( bool imperial, bool seaWater )
         {
-            auto retVal = imperial ? ( seaWater ? 62.4 : 64.0 ) : ( seaWater ? 1.0 : 1.03 );
+            auto retVal = imperial ? 62.4 : 1.0;
+            retVal *= seaWater ? 1.0 : freshWaterToSeaWater();
             return retVal;
         }
 
@@ -356,14 +380,14 @@ namespace NUtilities
             return 1.03;
         }
 
-        double metersToFeet()
+        double metersPerFeet()
         {
             return 0.3048;
         }
 
-        double feetToMeters()
+        double feetPerMeters()
         {
-            return 1 / metersToFeet();
+            return 1 / metersPerFeet();
         }
 
         double percentN2AtSurface()
@@ -381,325 +405,23 @@ namespace NUtilities
             return 14.7;
         }
 
-        double lbsPerKG()
+        double lbsPerKGs()
         {
             return 2.20462;
         }
 
+        double kgsPerLbs()
+        {
+            return 1 / lbsPerKGs();
+        }
+
+        // the base unit of 7.0 is
+        // kcal/(kg*hour)
+        // we return kcal/(kg*min) by dividing by 60
         double baseMETForScuba()
         {
-            return 7.0;
+            return 7.0 / 60.0;
         }
-
-    }
-
-    const char *kPressurePerDegreeConstFieldName = "pressurePerDegree";
-    const char *kWeightOfWaterConstFieldName = "weightOfWater";
-    const char *kIdealGasConstantFieldName = "idealGasConstant";
-    const char *kFN2AtSurfaceFieldName = "FN2AtSurface";
-    const char *kFO2AtSurfaceFieldName = "FO2AtSurface";
-    const char *kDepthToSingleATMConstFieldName = "depthToSingleAtmosphere";
-    const char *kFeetToMetersConstFieldName = "feetToMeters";
-    const char *kMetersToFeetConstFieldName = "metersToFeet";
-    const char *kLbsPerKgsConstFieldName = "lbsToKgs";
-    const char *kFreshWaterToSeaWaterConstFieldName = "seaWaterToFreshWater";
-    const char *kPSIToBarConstFieldName = "psiToBar";
-    const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
-    const char *kPressureOffsetConstFieldName = "pressureOffset";
-    const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
-    
-    double toAbsZeroBasedTemp( bool imperial, double temp )
-    {
-        return temp + NConstants::absZeroOffset( imperial );
-    }
-
-    double fromAbsZeroBasedTemp( bool imperial, double temp )
-    {
-        return temp - NConstants::absZeroOffset( imperial );
-    }
-
-    QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName )
-    {
-        return QString( R"__(<%2>=<%1> \times <%3>)__" ).arg( barFieldName ).arg( psiFieldName ).arg( kPSIToBarConstFieldName );
-    }
-
-    double barToPSI( double bar )
-    {
-        auto barToPSI = NConstants::barToPSI();
-        return bar * barToPSI;
-    }
-
-    QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName )
-    {
-        return QString( R"__(<%1>=\frac{<%2>}{<%3>})__" ).arg( barFieldName ).arg( psiFieldName ).arg( kPSIToBarConstFieldName );
-    }
-
-    double psiToBar( double psi )
-    {
-        auto barToPSI = NConstants::barToPSI();
-        return psi / barToPSI;
-    }
-
-    QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName )
-    {
-        return QString( R"__(<%1>=\frac{<%2>}{<%3>} + 1)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( kDepthToSingleATMConstFieldName );
-    }
-
-    double depthToPressure( bool imperial, bool seaWater, double depth )
-    {
-        auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
-        return ( depth / depthOfATM ) + 1;
-    }
-
-    QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName )
-    {
-        return QString( R"__(<%2>=(<%1>-1) \times <%3>)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( kDepthToSingleATMConstFieldName );
-    }
-
-    double pressureToDepth( bool imperial, bool seaWater, double pressure )
-    {
-        auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
-        return ( pressure - 1 ) * depthOfATM;
-    }
-
-    double depthFreshwaterToSeawater( double depthFW )
-    {
-        return depthFW / NConstants::freshWaterToSeaWater();
-    }
-
-    QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName )
-    {
-        return QString( R"__(<%2>=\frac{<%1>}{<%3>})__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( kFreshWaterToSeaWaterConstFieldName );
-    }
-
-    double depthSeawaterToFreshwater( double depthSW )
-    {
-        return depthSW * NConstants::freshWaterToSeaWater();
-    }
-
-    QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName )
-    {
-        return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( kFreshWaterToSeaWaterConstFieldName );
-    }
-
-    double feetToMeters( double feet )
-    {
-        return feet * NConstants::feetToMeters();
-    }
-
-    QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName )
-    {
-        return QString( R"__(<%2>=<%1> \times <%3>)__" ).arg( feetFieldName ).arg( metersFieldName ).arg( kFeetToMetersConstFieldName );
-    }
-
-    double metersToFeet( double meters )
-    {
-        return meters * NConstants::metersToFeet();
-    }
-
-    QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName )
-    {
-        return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( feetFieldName ).arg( metersFieldName ).arg( kMetersToFeetConstFieldName );
-    }
-
-    double quickDegreeChangeToPressure( bool imperial, double temperature )
-    {
-        return temperature / NConstants::pressurePerTemp( imperial );
-    }
-
-    double quickPressureChangeToDegree( bool imperial, double pressure )
-    {
-        return pressure * NConstants::pressurePerTemp( imperial );
-    }
-
-    QString quickDegreeChangeToPressureFormula( const QString &tempFieldName, const QString &pressureFieldName )
-    {
-        return QString( R"__(<%2> = \frac{<%1>}{<%3>})__" ).arg( tempFieldName ).arg( pressureFieldName ).arg( kPressurePerDegreeConstFieldName );
-    }
-
-    QString quickPressureChangeToDegreeFormula( const QString &tempFieldName, const QString &pressureFieldName )
-    {
-        return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( tempFieldName ).arg( pressureFieldName ).arg( kPressurePerDegreeConstFieldName );
-    }
-
-    std::size_t numEmpty( const TOptionalDoubleVector &values )
-    {
-        std::size_t numEmpty = 0;
-
-        for ( auto &&value : values )
-        {
-            numEmpty += value.has_value() ? 0 : 1;
-        }
-        return numEmpty;
-    }
-
-    bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty )
-    {
-        if ( values.empty() )
-            return false;
-        if ( checkNumEmpty && numEmpty( values ) != 1 )
-            return false;
-        return true;
-    }
-
-    QString doubleToString( const TOptionalDouble &value, int numDecimal )
-    {
-        QString retVal;
-        if ( value.has_value() )
-            retVal = QString( "%1" ).arg( value.value(), 0, 'f', numDecimal );
-        return retVal;
-    }
-
-    double lbsToKGs( double lbs )
-    {
-        return lbs / NConstants::lbsPerKG();
-    }
-
-    double kgsToLbs( double kgs )
-    {
-        return kgs * NConstants::lbsPerKG();
-    }
-
-    QString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
-    {
-        return QString( R"__(<%1> = \frac{<%2>}{<%3>})__" ).arg( kgsFieldName ).arg( lbsFieldName ).arg( kLbsPerKgsConstFieldName );
-    }
-
-    QString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
-    {
-        return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( lbsFieldName ).arg( kgsFieldName ).arg( kLbsPerKgsConstFieldName );
-    }
-
-    double farenheightToCelsius( double temp )
-    {
-        return ( temp - 32 ) * 5.0 / 9.0;
-    }
-
-    double celsiusToFarenheight( double temp )
-    {
-        return ( temp * 9 / 5 ) + 32;
-    }
-
-    /*
-// Calculate calories function
-    function calculateCalories() {
-        // Get input values
-        let weight = parseFloat(document.getElementById('weight').value);
-        const duration = parseFloat(document.getElementById('duration').value);
-        let depth = parseFloat(document.getElementById('depth').value);
-        let temperature = parseFloat(document.getElementById('temperature').value);
-        const activityFactor = parseFloat(document.getElementById('activity').value);
-            
-        // Convert units if necessary
-        if (weightUnit === 'lbs') {
-            weight = weight * 0.453592; // Convert lbs to kg
-        }
-            
-        if (depthUnit === 'ft') {
-            depth = depth * 0.3048; // Convert feet to meters
-        }
-            
-        if (tempUnit === 'f') {
-            temperature = (temperature - 32) * 5/9; // Convert F to C
-        }
-            
-        // Base MET value for scuba diving (Metabolic Equivalent of Task)
-        let metValue = 7.0;
-            
-        // Adjust for depth - approximately 2% increase per 10 meters
-        metValue *= (1 + (depth * 0.002));
-            
-        // Adjust for temperature - approximately 1.5% increase per degree below 25°C
-        if (temperature < 25) {
-            metValue *= (1 + ((25 - temperature) * 0.015));
-        }
-            
-        // Apply activity factor
-        metValue *= activityFactor;
-            
-        // Calculate calories burned: MET * weight in kg * time in hours
-        const hours = duration / 60;
-        const calories = metValue * weight * hours;
-            
-        return Math.round(calories);
-    }*/
-
-    double computeCalories( bool imperial, double weight, double depth, double temperature, double activityLevelMultiplier, double duration )
-    {
-        if ( imperial )
-        {
-            weight = NUtilities::lbsToKGs( weight );
-            depth = NUtilities::feetToMeters( depth );
-            temperature = NUtilities::farenheightToCelsius( temperature );
-        }
-
-        auto tempThreshold = 25.0;
-        auto percentPerTemp = 0.015;
-        auto percentPerDepth = 0.02 / 10.0;
-
-        auto metValue = 1.0;
-
-        // Adjust for depth - approximately 2% increase per 10 meters
-        metValue *= ( 1 + ( depth * percentPerDepth ) );
-
-        // Adjust for temperature - approximately 1.5% increase per degree below 25°C
-        if ( temperature < tempThreshold )
-        {
-            metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
-        }
-
-        metValue *= activityLevelMultiplier;
-
-        metValue = NUtilities::NConstants::baseMETForScuba() * metValue;
-
-        // Calculate calories burned: MET * weight in kg * time in hours
-        auto hours = duration / 60.0;
-        auto calories = metValue * weight * hours;
-        return calories;
-    }
-
-    QString computeCaloriesFormula( bool imperial, const QString &weightFieldName, const QString &depthFieldName, const std::pair< double, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
-    {
-        (void)imperial;
-        (void)weightFieldName;
-        (void)depthFieldName;
-        (void)tempFieldNameAndValue;
-        (void)activityLevelFieldName;
-        (void)durationFieldName;
-        //auto weightFormula = QString( "<%1>" ).arg( weightFieldName );
-        //auto depthFormula = QString( "<%1>" ).arg( depthFieldName );
-        //auto temperatureFormula = QString( "<%1>" ).arg( tempFieldNameAndValue.second );
-        //if ( imperial )
-        //{
-        //    weightFormula = NUtilities::lbsToKGsFormula( weightFieldName, "kgs",  )
-        //    depth = NUtilities::feetToMeters( depth );
-        //    temperature = NUtilities::farenheightToCelsius( temperature );
-        //}
-
-        //auto tempThreshold = 25.0;
-        //auto percentPerTemp = 0.015;
-        //auto percentPerDepth = 0.02 / 10.0;
-
-        //auto metValue = 1.0;
-
-        //// Adjust for depth - approximately 2% increase per 10 meters
-        //metValue *= ( 1 + ( depth * percentPerDepth ) );
-
-        //// Adjust for temperature - approximately 1.5% increase per degree below 25°C
-        //if ( temperature < tempThreshold )
-        //{
-        //    metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
-        //}
-
-        //metValue *= activityLevelMultiplier;
-
-        //metValue = NUtilities::NConstants::baseMETForScuba( false ) * metValue;
-
-        //// Calculate calories burned: MET * weight in kg * time in hours
-        //auto hours = duration / 60.0;
-        //auto calories = metValue * weight * hours;
-        //return calories;
-        return "";
     }
 
     QString descForType( EVariableType type )
@@ -750,35 +472,356 @@ namespace NUtilities
             case EVariableType::eVariable:
                 return {};
             case EVariableType::ePressurePerDegreeConst:
-                return kPressurePerDegreeConstFieldName;
+                return NConstants::kPressurePerDegreeConstFieldName;
             case EVariableType::eWeightOfWaterConst:
-                return kWeightOfWaterConstFieldName;
+                return NConstants::kWeightOfWaterConstFieldName;
             case EVariableType::eIdealGasConst:
-                return kIdealGasConstantFieldName;
+                return NConstants::kIdealGasConstantFieldName;
             case EVariableType::eFN2AtSurfaceConst:
-                return kFN2AtSurfaceFieldName;
+                return NConstants::kFN2AtSurfaceFieldName;
             case EVariableType::eFO2AtSurfaceConst:
-                return kFO2AtSurfaceFieldName;
+                return NConstants::kFO2AtSurfaceFieldName;
             case EVariableType::eDepthToSingleATMConst:
-                return kDepthToSingleATMConstFieldName;
+                return NConstants::kDepthToSingleATMConstFieldName;
             case EVariableType::eFeetToMetersConst:
-                return kFeetToMetersConstFieldName;
+                return NConstants::kFeetToMetersConstFieldName;
             case EVariableType::eMetersToFeetConst:
-                return kMetersToFeetConstFieldName;
+                return NConstants::kMetersToFeetConstFieldName;
             case EVariableType::eLbsPerKgsConst:
-                return kLbsPerKgsConstFieldName;
+                return NConstants::kLbsPerKgsConstFieldName;
             case EVariableType::eFreshWaterToSeaWaterConst:
-                return kFreshWaterToSeaWaterConstFieldName;
+                return NConstants::kFreshWaterToSeaWaterConstFieldName;
             case EVariableType::ePSIToBarConst:
-                    return kPSIToBarConstFieldName;
+                return NConstants::kPSIToBarConstFieldName;
             case EVariableType::eAbsZeroOffsetConst:
-                return kAbsZeroOffsetConstFieldName;
+                return NConstants::kAbsZeroOffsetConstFieldName;
             case EVariableType::ePressureOffsetConst:
-                return kPressureOffsetConstFieldName;
+                return NConstants::kPressureOffsetConstFieldName;
             case EVariableType::eBaseMETofSCUBAConst:
-                return kBaseMETofSCUBAConstFieldName;
+                return NConstants::kBaseMETofSCUBAConstFieldName;
                 break;
         };
         return {};
     }
+
+    std::size_t numEmpty( const TOptionalDoubleVector &values )
+    {
+        std::size_t numEmpty = 0;
+
+        for ( auto &&value : values )
+        {
+            numEmpty += value.has_value() ? 0 : 1;
+        }
+        return numEmpty;
+    }
+
+    bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty )
+    {
+        if ( values.empty() )
+            return false;
+        if ( checkNumEmpty && numEmpty( values ) != 1 )
+            return false;
+        return true;
+    }
+
+    QString doubleToString( const TOptionalDouble &value, int numDecimal )
+    {
+        QString retVal;
+        if ( value.has_value() )
+            retVal = QString( "%1" ).arg( value.value(), 0, 'f', numDecimal );
+        return retVal;
+    }
+
+    namespace NConversions
+    {
+        double toAbsZeroBasedTemp( bool imperial, double temp )
+        {
+            return temp + NConstants::absZeroOffset( imperial );
+        }
+
+        double fromAbsZeroBasedTemp( bool imperial, double temp )
+        {
+            return temp - NConstants::absZeroOffset( imperial );
+        }
+
+        QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName )
+        {
+            return QString( R"__(<%2>=<%1> \times <%3>)__" ).arg( barFieldName ).arg( psiFieldName ).arg( NConstants::kPSIToBarConstFieldName );
+        }
+
+        double barToPSI( double bar )
+        {
+            auto barToPSI = NConstants::barToPSI();
+            return bar * barToPSI;
+        }
+
+        QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName )
+        {
+            return QString( R"__(<%1>=\frac{<%2>}{<%3>})__" ).arg( barFieldName ).arg( psiFieldName ).arg( NConstants::kPSIToBarConstFieldName );
+        }
+
+        double psiToBar( double psi )
+        {
+            auto barToPSI = NConstants::barToPSI();
+            return psi / barToPSI;
+        }
+
+        QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName )
+        {
+            return QString( R"__(<%1>=\frac{<%2>}{<%3>} + 1)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( NConstants::kDepthToSingleATMConstFieldName );
+        }
+
+        double depthToPressure( bool imperial, bool seaWater, double depth )
+        {
+            auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
+            return ( depth / depthOfATM ) + 1;
+        }
+
+        QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName )
+        {
+            return QString( R"__(<%2>=(<%1>-1) \times <%3>)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( NConstants::kDepthToSingleATMConstFieldName );
+        }
+
+        double pressureToDepth( bool imperial, bool seaWater, double pressure )
+        {
+            auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
+            return ( pressure - 1 ) * depthOfATM;
+        }
+
+        double depthFreshwaterToSeawater( double depthFW )
+        {
+            return depthFW / NConstants::freshWaterToSeaWater();
+        }
+
+        QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName )
+        {
+            return QString( R"__(<%2>=\frac{<%1>}{<%3>})__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( NConstants::kFreshWaterToSeaWaterConstFieldName );
+        }
+
+        double depthSeawaterToFreshwater( double depthSW )
+        {
+            return depthSW * NConstants::freshWaterToSeaWater();
+        }
+
+        QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName )
+        {
+            return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( freshWaterFieldName ).arg( seaWaterFieldName ).arg( NConstants::kFreshWaterToSeaWaterConstFieldName );
+        }
+
+        double feetToMeters( double feet )
+        {
+            return feet * NConstants::feetPerMeters();
+        }
+
+        QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName )
+        {
+            return QString( R"__(<%2>=<%1> \times <%3>)__" ).arg( feetFieldName ).arg( metersFieldName ).arg( NConstants::kFeetToMetersConstFieldName );
+        }
+
+        double metersToFeet( double meters )
+        {
+            return meters * NConstants::metersPerFeet();
+        }
+
+        QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName )
+        {
+            return QString( R"__(<%1>=<%2> \times <%3>)__" ).arg( feetFieldName ).arg( metersFieldName ).arg( NConstants::kMetersToFeetConstFieldName );
+        }
+
+        double pressureChangeForDegreeChange( bool imperial, double temperature )
+        {
+            return temperature * NConstants::pressureChangePerDegreeChange( imperial );
+        }
+
+        double degreeChangeForPressureChange( bool imperial, double pressure )
+        {
+            return pressure / NConstants::pressureChangePerDegreeChange( imperial );
+        }
+
+        QString pressureChangeForDegreeChangeFormula( const QString &tempFieldName, const QString &pressureFieldName )
+        {
+            return QString( R"__(<%2> = <%1> \times <%3>)__" ).arg( tempFieldName ).arg( pressureFieldName ).arg( NConstants::kPressurePerDegreeConstFieldName );
+        }
+
+        QString degreeChangeForPressureChangeFormula( const QString &tempFieldName, const QString &pressureFieldName )
+        {
+            return QString( R"__(<%1> = \frac{<%2>}{<%3>})__" ).arg( tempFieldName ).arg( pressureFieldName ).arg( NConstants::kPressurePerDegreeConstFieldName );
+        }
+
+        double lbsToKGs( double lbs )
+        {
+            return lbs / NConstants::lbsPerKGs();
+        }
+
+        double kgsToLbs( double kgs )
+        {
+            return kgs * NConstants::lbsPerKGs();
+        }
+
+        QString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
+        {
+            return QString( R"__(<%1> = \frac{<%2>}{<%3>})__" ).arg( kgsFieldName ).arg( lbsFieldName ).arg( NConstants::kLbsPerKgsConstFieldName );
+        }
+
+        QString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
+        {
+            return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( lbsFieldName ).arg( kgsFieldName ).arg( NConstants::kLbsPerKgsConstFieldName );
+        }
+
+        double farenheightToCelsius( double temp )
+        {
+            return ( temp - 32 ) * 5.0 / 9.0;
+        }
+
+        QString farenheightToCelsiusFormula( const std::optional< QString > &celsiusFieldName, const QString &farenheightFieldName )
+        {
+            auto retVal = QString( R"__((<%1> - 32 ) \times \frac{5%2}{9%3})__" ).arg( farenheightFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) ).arg( NUnitStrings::tempUnit( true, true, true ) );
+            if ( celsiusFieldName.has_value() )
+            {
+                retVal = QString( "<%1> = %2" ).arg( celsiusFieldName.value() ).arg( retVal );
+            }
+            return retVal;
+        }
+
+        double celsiusToFarenheight( double temp )
+        {
+            return ( temp * 9 / 5 ) + 32;
+        }
+
+        QString celsiusToFarenheightFormula( const QString &celsiusFieldName, const std::optional< QString > &farenheightFieldName )
+        {
+            auto retVal = QString( R"__((<%1> \times \frac{9%2}{5%3}) + 32)__" ).arg( celsiusFieldName ).arg( NUnitStrings::tempUnit( true, true, true ) ).arg( NUnitStrings::tempUnit( false, true, true ) );
+            if ( farenheightFieldName.has_value() )
+            {
+                retVal = QString( "<%1> = %2" ).arg( farenheightFieldName.value() ).arg( retVal );
+            }
+            return retVal;
+        }
+
+        /*
+// Calculate calories function
+    function calculateCalories() {
+        // Get input values
+        let weight = parseFloat(document.getElementById('weight').value);
+        const duration = parseFloat(document.getElementById('duration').value);
+        let depth = parseFloat(document.getElementById('depth').value);
+        let temperature = parseFloat(document.getElementById('temperature').value);
+        const activityFactor = parseFloat(document.getElementById('activity').value);
+            
+        // Convert units if necessary
+        if (weightUnit === 'lbs') {
+            weight = weight * 0.453592; // Convert lbs to kg
+        }
+            
+        if (depthUnit === 'ft') {
+            depth = depth * 0.3048; // Convert feet to meters
+        }
+            
+        if (tempUnit === 'f') {
+            temperature = (temperature - 32) * 5/9; // Convert F to C
+        }
+            
+        // Base MET value for scuba diving (Metabolic Equivalent of Task)
+        let metValue = 7.0;
+            
+        // Adjust for depth - approximately 2% increase per 10 meters
+        metValue *= (1 + (depth * 0.002));
+            
+        // Adjust for temperature - approximately 1.5% increase per degree below 25°C
+        if (temperature < 25) {
+            metValue *= (1 + ((25 - temperature) * 0.015));
+        }
+            
+        // Apply activity factor
+        metValue *= activityFactor;
+            
+        // Calculate calories burned: MET * weight in kg * time in hours
+        const hours = duration / 60;
+        const calories = metValue * weight * hours;
+            
+        return Math.round(calories);
+    }*/
+
+        double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration )
+        {
+            if ( imperial )
+            {
+                weight = lbsToKGs( weight );
+                depth = feetToMeters( depth );
+                temperature = farenheightToCelsius( temperature );
+            }
+
+            if ( !seaWater )
+                depth = depthFreshwaterToSeawater( depth );
+
+            auto tempThreshold = 25.0;
+            auto percentPerTemp = 0.015;
+            auto percentPerDepth = 0.02 / 10.0;
+
+            auto metValue = 1.0;
+
+            // Adjust for depth - approximately 2% increase per 10 meters
+            metValue *= ( 1 + ( depth * percentPerDepth ) );
+
+            // Adjust for temperature - approximately 1.5% increase per degree below 25°C
+            if ( temperature < tempThreshold )
+            {
+                metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+            }
+
+            metValue *= activityLevelMultiplier;
+
+            metValue = NConstants::baseMETForScuba() * metValue;
+
+            // Calculate calories burned: MET * weight in kg * time in minutes
+            auto calories = metValue * weight * duration;
+            return calories;
+        }
+
+        QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
+        {
+            //auto weightFormula = QString( "<%1>" ).arg( weightFieldName );
+            //auto depthFormula = QString( "<%1>" ).arg( depthFieldName );
+            //auto temperatureFormula = QString( "<%1>" ).arg( tempFieldNameAndValue.second );
+            auto actualWeightFieldName = weightFieldName;
+            auto actualDepthFieldName = depthFieldName;
+            auto actualTempFieldName = tempFieldNameAndValue.second;
+            QStringList formulas;
+            if ( imperial )
+            {
+                formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( weightFieldName + "C" ).arg( weightFieldName ).arg( NUnitStrings::kgsPerLbs( true, true ) ) );
+                if ( seaWater )
+                    formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ) );
+                else
+                    formulas.push_back( QString( R"__(<%1> = \frac{<%2> \times %3}{%4} )__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ).arg( NUnitStrings::freshWaterToSeaWater( false, true, true ) ) );
+
+                formulas.push_back( farenheightToCelsiusFormula( tempFieldNameAndValue.second + "C", tempFieldNameAndValue.second ) );
+                actualWeightFieldName += "C";
+                actualDepthFieldName += "C";
+                actualTempFieldName += "C";
+            }
+            else if ( !seaWater )
+            {
+                formulas.push_back( depthFreshwaterToSeawaterFormula( depthFieldName, depthFieldName + "C" ) );
+                actualDepthFieldName += "C";
+            }
+
+            QString retVal = QString( "<%1> = <%2>" ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+            retVal += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
+
+            if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
+            {
+                retVal += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
+            }
+
+            retVal += QString( R"__( \times <%1> \times <%2> \times <%3>)__" )   //
+                          .arg( actualWeightFieldName )
+                          .arg( activityLevelFieldName )
+                          .arg( durationFieldName );
+
+            formulas.push_back( retVal );
+            return formulas.join( R"( \newline\newline )" );
+        }
+    }
+
 }
