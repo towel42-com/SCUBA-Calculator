@@ -15,6 +15,13 @@
 #include <QButtonGroup>
 #include <QResizeEvent>
 #include <QRegularExpression>
+#include <QFileDialog>
+#include <QProgressDialog>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QTimer>
 
 #include <libloaderapi.h>
 
@@ -90,7 +97,9 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     connect( fImpl->seaWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
     connect( fImpl->freshWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
 
+    connect( fImpl->actionGenerateAllFormulas, &QAction::triggered, this, &CMainWindow::slotGenerateAllFormulas );
     slotSelectCalculator( nullptr );
+    QTimer::singleShot( 100, [ = ] { loadCache(); } );
 }
 
 CMainWindow::~CMainWindow()
@@ -482,6 +491,156 @@ void CMainWindow::updateSVGSize( EFormulaType formulaType )
 {
     auto widget = mathJaxForFormulaType( formulaType );
     widget->updateSVGSize();
+}
+
+void CMainWindow::slotGenerateAllFormulas()
+{
+    auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Target Directory:" ) );
+    if ( dir.isEmpty() )
+        return;
+
+    // formula -> formula name, filename
+    std::unordered_map< QString, std::pair< QString, QString > > allFormulas;
+
+    for ( auto &&ii : fCalculators )
+    {
+        // map formula name -> formula
+        auto formulas = ii.second->getAllFormulas();
+        for ( auto &&jj : formulas )
+        {
+            auto formulaName = jj.first;
+            auto tex = jj.second;
+            auto pos = allFormulas.find( tex );
+            if ( pos != allFormulas.end() )
+                continue;
+            allFormulas[ tex ] = { formulaName, QString( "formula-%1.svg" ).arg( (int)allFormulas.size() + 1, 2, 10, QChar( '0' ) ) };
+        }
+    }
+
+    QJsonArray svgArray;
+
+    fRenderingEngine->blockSignals( true );
+    QProgressDialog progress( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)allFormulas.size(), this );
+    progress.setMinimumDuration( 0 );
+    for ( auto &&ii : allFormulas )
+    {
+        progress.setValue( progress.value() + 1 );
+        if ( progress.wasCanceled() )
+            break;
+
+        //if ( progress.value() == 3 )
+        //    break;
+
+        auto tex = ii.first;
+        auto formulaName = ii.second.first;
+        auto fileName = ii.second.second;
+        auto path = QDir( dir ).absoluteFilePath( fileName );
+
+        QJsonObject obj;
+        obj.insert( "name", QJsonValue::fromVariant( formulaName ) );
+        obj.insert( "tex", QJsonValue::fromVariant( tex ) );
+
+        fRenderingEngine->renderSVG(
+            tex,   //
+            [ =, &obj ]( const QString &texCode, const std::optional< QByteArray > &svg )   //
+            {
+                if ( !svg.has_value() )
+                    return;
+
+                if ( tex != texCode )
+                    return;
+
+                obj.insert( "svg", QJsonValue::fromVariant( svg.value().toBase64() ) );
+            },   //
+            [ =, &obj ]( const QString &errorMessage )
+            {
+                qDebug().noquote().nospace() << tr( "Error Generating SVG: %1: %2" ).arg( formulaName ).arg( errorMessage );
+                obj.insert( "error", QJsonValue::fromVariant( "ERROR: " + errorMessage ) );
+                if ( QFileInfo( path ).exists() )
+                    QFile::remove( path );
+            }   //
+        );
+
+        svgArray.append( obj );
+    }
+    progress.setValue( (int)allFormulas.size() );
+
+    auto jsonFileName = QDir( dir ).absoluteFilePath( "formulas.json" );
+    QFile jsonFile( jsonFileName );
+    if ( !jsonFile.open( QFile::WriteOnly | QFile::Text | QFile::Truncate ) )
+    {
+        QMessageBox::critical( this, tr( "Could not open file" ), tr( "Error opening file: %1<br/>%2" ).arg( jsonFileName ).arg( jsonFile.errorString() ) );
+        return;
+    }
+    QJsonDocument doc;
+    doc.setArray( svgArray );
+
+    jsonFile.write( doc.toJson( QJsonDocument::Indented ) );
+    jsonFile.close();
+
+    fRenderingEngine->blockSignals( false );
+}
+
+void CMainWindow::loadCache()
+{
+    QFile fi( ":/resources/formulas.json" );
+    if ( !fi.open( QFile::Text | QFile::ReadOnly ) )
+    {
+        QMessageBox::critical( this, tr( "Could not open cache" ), tr( "Error: Problem opening cache file<br/>%1" ).arg( fi.errorString() ) );
+        return;
+    }
+
+    QJsonParseError parseError;
+    auto doc = QJsonDocument::fromJson( fi.readAll(), &parseError );
+    if ( ( parseError.error != QJsonParseError::NoError ) || doc.isNull() )
+    {
+        QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Error in Cache File @%1:<br/> %2" ).arg( parseError.offset ).arg( parseError.errorString() ) );
+        return;
+    }
+
+    if ( !doc.isArray() )
+    {
+        QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected Array" ) );
+        return;
+    }
+
+    auto svgCacheArray = doc.array();
+
+    for ( auto &&svgItem : svgCacheArray )
+    {
+        if ( !svgItem.isObject() )
+            continue;
+
+        auto svgCacheObject = svgItem.toObject();
+
+        if ( !svgCacheObject.contains( "tex" ) || !svgCacheObject.contains( "name" ) )
+        {
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected tex and name keys" ) );
+            continue;
+        }
+
+        if ( !svgCacheObject.contains( "svg" ) && !svgCacheObject.contains( "error" ) )
+        {
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected svg or error keys" ) );
+            continue;
+        }
+
+        auto name = svgCacheObject[ "name" ].toString();
+        auto tex = svgCacheObject[ "tex" ].toString();
+
+        if ( svgCacheObject.contains( "error" ) )
+        {
+            qDebug().noquote().nospace() << "Skipping cache item: name '" << name << "' tex '" << tex << "'";
+            continue;
+        }
+        if ( auto result = QByteArray::fromBase64Encoding( svgCacheObject[ "svg" ].toString().toUtf8() ) )
+            fRenderingEngine->addToCache( tex, *result );
+        else
+        {
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid SVG base 64" ) );
+            continue;
+        }
+    }
 }
 
 std::optional< QString > SFormulas::formula( EFormulaType formulaType ) const

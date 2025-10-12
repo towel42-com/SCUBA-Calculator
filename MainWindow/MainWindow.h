@@ -50,6 +50,7 @@ public Q_SLOTS:
     void slotUnitsChanged();
     void slotWaterChanged();
     void slotResetCurrentPage();
+    void slotGenerateAllFormulas();
 
 private:
     CSCUBACalculator *currentCalculator() const;
@@ -58,6 +59,9 @@ private:
     void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
     void loadSettings();
     void saveSettings();
+
+    void loadCache();
+
     void showUnits( bool show );
     void showWaterType( bool show );
     void addCalculator( CSCUBACalculator *calculator );

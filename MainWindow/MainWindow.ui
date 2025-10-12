@@ -207,6 +207,8 @@
      <string>File</string>
     </property>
     <addaction name="separator"/>
+    <addaction name="actionGenerateAllFormulas"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -221,6 +223,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+F4</string>
+   </property>
+  </action>
+  <action name="actionGenerateAllFormulas">
+   <property name="text">
+    <string>Generate All Formulas...</string>
    </property>
   </action>
  </widget>
