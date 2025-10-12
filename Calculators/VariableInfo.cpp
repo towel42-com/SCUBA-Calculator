@@ -135,7 +135,7 @@ QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
             return NUtilities::NUnitStrings::tempUnit( imperial, true, tex );
         case EUnit::eAbsZeroTemperature:
             {
-                if ( tex && ( formulaType == EFormulaType::eBaseFormula ) )
+                if ( tex && ( !has_value() || ( formulaType != EFormulaType::eCurrentValueFormula ) ) )
                     return NUtilities::NUnitStrings::absZeroTempUnit( imperial, true, true );
                 else
                     return NUtilities::NUnitStrings::tempUnit( imperial, true, false );
@@ -324,18 +324,30 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
     if ( ( fType == EVariableType::eVariable ) || ( fType == EVariableType::eIntermediate ) )
     {
         auto unit = unitText( imperial, seaWater, true, formulaType );
-        newString = newString.arg( unit );
-        newString.replace( " ()", "" );
+
+        if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eCurrentValueFormula ) )
+        {
+            newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NUnitStrings::absZeroOffset( imperial, true, true ) );
+        }
+        else
+        {
+            newString = newString.arg( unit );
+            newString.replace( " ()", "" );
+        }
     }
 
     auto token = QString( "<%1>" ).arg( name() );
     if ( fType == EVariableType::eIntermediate )
     {
-        auto labelString = QString( "%1 (%2)" ).arg( fDescription );
-        labelString = labelString.arg( unitText( imperial, seaWater, true, formulaType ) );
-        labelString.replace( " ()", "" );
-        formula = formula.replace( token, labelString );
-
+        if ( formulaType != EFormulaType::eCurrentValueFormula )
+        {
+            auto labelString = QString( "%1 (%2)" ).arg( fDescription );
+            labelString = labelString.arg( unitText( imperial, seaWater, true, formulaType ) );
+            labelString.replace( " ()", "" );
+            formula = formula.replace( token, labelString );
+        }
+        else
+            formula = formula.replace( token, newString );
         token = QString( "<%1_value>" ).arg( name() );
     }
 
