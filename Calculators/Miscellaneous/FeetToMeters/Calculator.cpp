@@ -42,15 +42,15 @@ QString CCalculator::myReversedCalculatorName() const
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { tr( "Pressure and Depth Conversions" ) };
+    return { tr( "Miscellaneous" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "meters", tr( "Meters" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "feet", tr( "Feet" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "meters", tr( "Length" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "feet", tr( "Length" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eMetersToFeetConst ),   //
         } );
 

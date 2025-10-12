@@ -39,9 +39,9 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eAbsZeroOffsetConst ),   //
         };
@@ -72,7 +72,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(\frac{<v1>}{<t1>} = \frac{<v2>}{<t2>})__";
+    return QString( R"__(<v2> = <v1> \times \frac{<t2>}{<t1>})__" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
@@ -80,22 +80,22 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     if ( unsetVar->name() == "v1" )
     {
         // V1 = V2 * ( t1/t2 );
-        return R"__(<v1> = <v2> \times \frac{<t1> + <absOffset>}{<t2> + <absOffset>})__";
+        return QString( R"__(<v1> = <v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
     else if ( unsetVar->name() == "v2" )
     {
         // V2 = V1 * ( t2/t1 );
-        return R"__(<v2> = <v1> \times \frac{<t2> + <absOffset>}{<t1> + <absOffset>})__";
+        return QString( R"__(<v2> = <v1> \times \frac{<t2> + <%1>}{<t1> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(V1/v2)
-        return R"__(<t1> = [(<t2> + <absOffset>) \times \frac{<v1>}{<v2>}] - <absOffset>)__";
+        return QString( R"__(<t1> = [(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(V2/v1)
-        return R"__(<t2> = [(<t1> + <absOffset>) \times \frac{<v2>}{<v1>}] - <absOffset>)__";
+        return QString( R"__(<t2> = [(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
 
     return {};

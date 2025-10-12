@@ -47,8 +47,8 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eFreshWaterToSeaWaterConst ),   //
         } );
 
@@ -89,6 +89,6 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     }
     else if ( unsetVar == freshWater )
     {
-        freshWater->setValue( NUtilities::NConversions::depthSeawaterToFreshwater( freshWater->value() ) );
+        freshWater->setValue( NUtilities::NConversions::depthSeawaterToFreshwater( seaWater->value() ) );
     }
 }

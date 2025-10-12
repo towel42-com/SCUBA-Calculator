@@ -74,7 +74,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QString( R"__(<depth> = <%1> * (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
+        return QString( R"__(<depth> = <%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "partialPressureAtSurface" )
     {

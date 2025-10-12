@@ -38,9 +38,9 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eAbsZeroOffsetConst ),   //
             std::make_shared< CVariableInfo >( EVariableType::ePressureOffsetConst ),   //
@@ -72,7 +72,8 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(\frac{<p1>}{<t1>} = \frac{<p2>}{<t2>})__";
+    return QString( R"__(<p2> = [<t2> \times \frac{(<p1> + <%2>)}{(<t1>}] - <%2>)__" ).arg( NUtilities::NConstants::kPressureOffsetConstFieldName );
+    ;
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
@@ -80,22 +81,26 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     if ( unsetVar->name() == "p1" )
     {
         // p1 = p2 * ( t1/t2 );
-        return R"__(<p1> = [(<t1> + <absOffset>) \times \frac{(<p2> + <pressureOffset>)}{(<t2> + <absOffset>}] - <pressureOffset>)__";
+        return QString( R"__(<p1> = [(<t1> + <%1>) \times \frac{(<p2> + <%2>)}{(<t2> + <%1>}] - <%2>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureOffsetConstFieldName );
+        ;
     }
     else if ( unsetVar->name() == "p2" )
     {
         // p2 = p1 * ( t2/t1 );
-        return R"__(<p2> = [(<t2> + <absOffset>) \times \frac{(<p1> + <pressureOffset>)}{(<t1> + <absOffset>}] - <pressureOffset>)__";
+        return QString( R"__(<p2> = [(<t2> + <%1>) \times \frac{(<p1> + <%2>)}{(<t1> + <%1>}] - <%2>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureOffsetConstFieldName );
+        ;
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(t1/t2)
-        return R"__(<t1> = [\frac{(<p1> + <pressureOffset>) \times (<t2> + <absOffset>)}{<p2> + <pressureOffset>}] - <absOffset>)__";
+        return QString( R"__(<t1> = [\frac{(<p1> + <%2>) \times (<t2> + <%1>)}{<p2> + <%2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureOffsetConstFieldName );
+        ;
     }
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(t2/t1)
-        return R"__(<t2> = [\frac{(<p2> + <pressureOffset>) \times (<t1> + <absOffset>)}{<p1> + <pressureOffset>}] - <absOffset>)__";
+        return QString( R"__(<t2> = [\frac{(<p2> + <%2>) \times (<t1> + <%1>)}{<p1> + <%2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureOffsetConstFieldName );
+        ;
     }
 
     return {};

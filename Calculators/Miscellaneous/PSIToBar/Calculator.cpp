@@ -42,15 +42,15 @@ QString CCalculator::myReversedCalculatorName() const
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { tr( "Pressure and Depth Conversions" ) };
+    return { tr( "Miscellaneous" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "bar", tr( "BAR" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "psi", tr( "PSI" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "bar", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "psi", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::ePSIToBarConst ),   //
         } );
 
@@ -76,7 +76,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
 
     if ( unsetVar->name() == "bar" )
     {
-        return getBaseFormula();
+        return NUtilities::NConversions::psiToBarFormula( "psi", "bar" );
     }
     else if ( unsetVar->name() == "psi" )
     {

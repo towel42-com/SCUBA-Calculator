@@ -38,10 +38,10 @@ QStringList CCalculator::calculatorPath() const
 TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
-        { std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-          std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+        { std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+          std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
           std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-          std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ) };
+          std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ) };
 }
 
 TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
@@ -69,7 +69,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(<p1> \times <v1> = <p2> \times <v2>)__";
+    return R"__(<v2> = <v1> \times \frac{<p1>}{<p2>})__";
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const

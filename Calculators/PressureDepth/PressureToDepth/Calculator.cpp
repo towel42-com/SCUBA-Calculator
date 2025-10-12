@@ -89,6 +89,6 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     }
     else if ( unsetVar == pressure )
     {
-        pressure->setValue( NUtilities::NConversions::depthToPressure( imperial(), seaWater(), pressure->value() ) );
+        pressure->setValue( NUtilities::NConversions::depthToPressure( imperial(), seaWater(), depth->value() ) );
     }
 }

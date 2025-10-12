@@ -15,6 +15,7 @@ public:
     virtual QStringList calculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool *preReversed ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual QString myBaseFormula() const override;   // for descriptive purposes
@@ -30,12 +31,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::myCalculatorName() const
 {
-    return tr( "Calculating Depth at for given Gas Consumption Time" );
+    return tr( "Calculating Gas Consumption Time Based on Known Consumption at a Specific Depth" );
 }
 
 QString CCalculator::myReversedCalculatorName() const
 {
-    return tr( "Calculating Gas Consumption Time for a given Depth" );
+    return tr( "Calculating Gas Consumption Used based on Known Consumption at a Specific Depth" );
 }
 
 QStringList CCalculator::calculatorPath() const
@@ -45,13 +46,28 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    return   //
-        {
-            std::make_shared< CVariableInfo >( "p1", tr( "Gas Consumption 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "m1", tr( "Time 1" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ),   //
-        };
+    bool preReversed = true;
+    return getMyVariables( &preReversed );
+}
+
+TVariableInfoList CCalculator::getMyVariables( bool * preReversed ) const
+{
+    *preReversed = true;
+    auto retVal = TVariableInfoList( {
+        std::make_shared< CVariableInfo >( "p1", tr( "Gas Consumption 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "m1", tr( "Time 1" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ),   //
+    } );
+    if ( isReversed() )
+    {
+        retVal.push_back( std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ) );
+        retVal.push_back( std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ) );
+    }
+    else
+    {
+        retVal.push_back( std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eLHS ) );
+        retVal.push_back( std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ) );
+    }
+    return retVal;
 }
 
 TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior )
@@ -79,12 +95,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 QString CCalculator::myBaseFormula() const
 {
-    return R"__(<p1> \times <m1> = <p2> \times <m2>)__";
+    return R"__(<m2> = <m1> \times \frac{<p1>}{<p2>})__";
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return myBaseFormula();
+    return R"__(<p2> = <p1> \times \frac{<m1>}{<m2>})__";
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
