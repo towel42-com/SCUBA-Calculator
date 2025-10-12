@@ -52,6 +52,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fRenderingEngine = new NTowel42::CQt6MathJax( this );
     fImpl->baseFormulaWidget->setEngine( fRenderingEngine );
     fImpl->currFormulaWidget->setEngine( fRenderingEngine );
+    fImpl->currFormulaWidget->setSubordinateTo( fImpl->baseFormulaWidget );
     fImpl->currFormulaValueWidget->setEngine( fRenderingEngine );
     fImpl->currFormulaValueWidget->setSubordinateTo( { fImpl->baseFormulaWidget, fImpl->currFormulaWidget } );
 
