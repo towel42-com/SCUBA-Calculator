@@ -157,8 +157,14 @@ namespace NUtilities
         CALCULATORS_EXPORT QString farenheightToCelsiusFormula( const std::optional< QString > &celsiusFieldName, const QString &farenheightFieldName );
         CALCULATORS_EXPORT QString celsiusToFarenheightFormula( const QString &celsiusFieldName, const std::optional< QString > &farenheightFieldName );
 
-        CALCULATORS_EXPORT double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
-        CALCULATORS_EXPORT QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
+        namespace NCaloriesComputer
+        {
+            CALCULATORS_EXPORT double computeCalories   ( bool imperial, bool seaWater,                  double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
+            CALCULATORS_EXPORT double computeDuration   ( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier );
+
+            CALCULATORS_EXPORT QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
+            CALCULATORS_EXPORT QString computeDurationFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
+        }
     }
 };
 

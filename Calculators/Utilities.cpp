@@ -698,7 +698,9 @@ namespace NUtilities
             return retVal;
         }
 
-        /*
+        namespace NCaloriesComputer
+        {
+            /*
 // Calculate calories function
     function calculateCalories() {
         // Get input values
@@ -742,85 +744,162 @@ namespace NUtilities
         return Math.round(calories);
     }*/
 
-        double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration )
-        {
-            if ( imperial )
+            double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration )
             {
-                weight = lbsToKGs( weight );
-                depth = feetToMeters( depth );
-                temperature = farenheightToCelsius( temperature );
+                if ( imperial )
+                {
+                    weight = lbsToKGs( weight );
+                    depth = feetToMeters( depth );
+                    temperature = farenheightToCelsius( temperature );
+                }
+
+                if ( !seaWater )
+                    depth = depthFreshwaterToSeawater( depth );
+
+                auto tempThreshold = 25.0;
+                auto percentPerTemp = 0.015;
+                auto percentPerDepth = 0.02 / 10.0;
+
+                auto metValue = 1.0;
+
+                // Adjust for depth - approximately 2% increase per 10 meters
+                metValue *= ( 1 + ( depth * percentPerDepth ) );
+
+                // Adjust for temperature - approximately 1.5% increase per degree below 25°C
+                if ( temperature < tempThreshold )
+                {
+                    metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+                }
+
+                metValue *= activityLevelMultiplier;
+
+                metValue = NConstants::baseMETForScuba() * metValue;
+
+                // Calculate calories burned: MET * weight in kg * time in minutes
+                auto calories = metValue * weight * duration;
+                return calories;
             }
 
-            if ( !seaWater )
-                depth = depthFreshwaterToSeawater( depth );
-
-            auto tempThreshold = 25.0;
-            auto percentPerTemp = 0.015;
-            auto percentPerDepth = 0.02 / 10.0;
-
-            auto metValue = 1.0;
-
-            // Adjust for depth - approximately 2% increase per 10 meters
-            metValue *= ( 1 + ( depth * percentPerDepth ) );
-
-            // Adjust for temperature - approximately 1.5% increase per degree below 25°C
-            if ( temperature < tempThreshold )
+            QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
             {
-                metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+                auto actualWeightFieldName = weightFieldName;
+                auto actualDepthFieldName = depthFieldName;
+                auto actualTempFieldName = tempFieldNameAndValue.second;
+                QStringList formulas;
+                if ( imperial )
+                {
+                    formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( weightFieldName + "C" ).arg( weightFieldName ).arg( NUnitStrings::kgsPerLbs( true, true ) ) );
+                    if ( seaWater )
+                        formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ) );
+                    else
+                        formulas.push_back( QString( R"__(<%1> = \frac{<%2> \times %3}{%4} )__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ).arg( NUnitStrings::freshWaterToSeaWater( false, true, true ) ) );
+
+                    formulas.push_back( farenheightToCelsiusFormula( tempFieldNameAndValue.second + "C", tempFieldNameAndValue.second ) );
+                    actualWeightFieldName += "C";
+                    actualDepthFieldName += "C";
+                    actualTempFieldName += "C";
+                }
+                else if ( !seaWater )
+                {
+                    formulas.push_back( depthFreshwaterToSeawaterFormula( depthFieldName, depthFieldName + "C" ) );
+                    actualDepthFieldName += "C";
+                }
+
+                QString retVal = QString( "<%1> = <%2>" ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+                retVal += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
+
+                if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
+                {
+                    retVal += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
+                }
+
+                retVal += QString( R"__( \times <%1> \times <%2> \times <%3>)__" )   //
+                              .arg( actualWeightFieldName )
+                              .arg( activityLevelFieldName )
+                              .arg( durationFieldName );
+
+                formulas.push_back( retVal );
+                return formulas.join( R"( \newline\newline )" );
             }
 
-            metValue *= activityLevelMultiplier;
-
-            metValue = NConstants::baseMETForScuba() * metValue;
-
-            // Calculate calories burned: MET * weight in kg * time in minutes
-            auto calories = metValue * weight * duration;
-            return calories;
-        }
-
-        QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
-        {
-            //auto weightFormula = QString( "<%1>" ).arg( weightFieldName );
-            //auto depthFormula = QString( "<%1>" ).arg( depthFieldName );
-            //auto temperatureFormula = QString( "<%1>" ).arg( tempFieldNameAndValue.second );
-            auto actualWeightFieldName = weightFieldName;
-            auto actualDepthFieldName = depthFieldName;
-            auto actualTempFieldName = tempFieldNameAndValue.second;
-            QStringList formulas;
-            if ( imperial )
+            double computeDuration( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier )
             {
-                formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( weightFieldName + "C" ).arg( weightFieldName ).arg( NUnitStrings::kgsPerLbs( true, true ) ) );
-                if ( seaWater )
-                    formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ) );
-                else
-                    formulas.push_back( QString( R"__(<%1> = \frac{<%2> \times %3}{%4} )__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ).arg( NUnitStrings::freshWaterToSeaWater( false, true, true ) ) );
+                if ( imperial )
+                {
+                    weight = lbsToKGs( weight );
+                    depth = feetToMeters( depth );
+                    temperature = farenheightToCelsius( temperature );
+                }
 
-                formulas.push_back( farenheightToCelsiusFormula( tempFieldNameAndValue.second + "C", tempFieldNameAndValue.second ) );
-                actualWeightFieldName += "C";
-                actualDepthFieldName += "C";
-                actualTempFieldName += "C";
-            }
-            else if ( !seaWater )
-            {
-                formulas.push_back( depthFreshwaterToSeawaterFormula( depthFieldName, depthFieldName + "C" ) );
-                actualDepthFieldName += "C";
-            }
+                if ( !seaWater )
+                    depth = depthFreshwaterToSeawater( depth );
 
-            QString retVal = QString( "<%1> = <%2>" ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
-            retVal += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
+                auto tempThreshold = 25.0;
+                auto percentPerTemp = 0.015;
+                auto percentPerDepth = 0.02 / 10.0;
 
-            if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
-            {
-                retVal += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
+                auto metValue = 1.0;
+
+                // Adjust for depth - approximately 2% increase per 10 meters
+                metValue *= ( 1 + ( depth * percentPerDepth ) );
+
+                // Adjust for temperature - approximately 1.5% increase per degree below 25°C
+                if ( temperature < tempThreshold )
+                {
+                    metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+                }
+
+                metValue *= activityLevelMultiplier;
+
+                metValue = NConstants::baseMETForScuba() * metValue;
+
+                // Calculate calories burned: MET * weight in kg * time in minutes
+                auto duration = calories / ( metValue * weight );
+                return duration;
             }
 
-            retVal += QString( R"__( \times <%1> \times <%2> \times <%3>)__" )   //
-                          .arg( actualWeightFieldName )
-                          .arg( activityLevelFieldName )
-                          .arg( durationFieldName );
+            QString computeDurationFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
+            {
+                //auto weightFormula = QString( "<%1>" ).arg( weightFieldName );
+                //auto depthFormula = QString( "<%1>" ).arg( depthFieldName );
+                //auto temperatureFormula = QString( "<%1>" ).arg( tempFieldNameAndValue.second );
+                auto actualDepthFieldName = depthFieldName;
+                auto actualTempFieldName = tempFieldNameAndValue.second;
+                auto actualWeightFieldName = weightFieldName;
+                QStringList formulas;
+                if ( imperial )
+                {
+                    formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( weightFieldName + "C" ).arg( weightFieldName ).arg( NUnitStrings::kgsPerLbs( true, true ) ) );
+                    if ( seaWater )
+                        formulas.push_back( QString( R"__(<%1> = <%2> \times %3)__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ) );
+                    else
+                        formulas.push_back( QString( R"__(<%1> = \frac{<%2> \times %3}{%4} )__" ).arg( depthFieldName + "C" ).arg( depthFieldName ).arg( NUnitStrings::feetToMeters( true, true ) ).arg( NUnitStrings::freshWaterToSeaWater( false, true, true ) ) );
 
-            formulas.push_back( retVal );
-            return formulas.join( R"( \newline\newline )" );
+                    formulas.push_back( farenheightToCelsiusFormula( tempFieldNameAndValue.second + "C", tempFieldNameAndValue.second ) );
+                    actualDepthFieldName += "C";
+                    actualTempFieldName += "C";
+                }
+                else if ( !seaWater )
+                {
+                    formulas.push_back( depthFreshwaterToSeawaterFormula( depthFieldName, depthFieldName + "C" ) );
+                    actualDepthFieldName += "C";
+                }
+
+                QString retVal = QString( "<%1> = \frac{<%2>}{<%3>" ).arg( durationFieldName ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+                retVal += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
+
+                if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
+                {
+                    retVal += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
+                }
+
+                retVal += QString( R"__( \times <%1> \times <%2> })__" )   //
+                              .arg( activityLevelFieldName )
+                              .arg( actualWeightFieldName );
+
+                formulas.push_back( retVal );
+                return formulas.join( R"( \newline\newline )" );
+            }
         }
     }
 
