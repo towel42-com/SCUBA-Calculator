@@ -1,6 +1,8 @@
 #include "SCUBACalculator.h"
 #include "SCUBACalculatorPage.h"
 #include "VariableInfo.h"
+#include "Utilities.h"
+
 #include <QFrame>
 
 #include <iterator>
@@ -240,25 +242,49 @@ TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateF
     return {};
 }
 
-TNamedFormulaList CSCUBACalculator::myGetAllFormulas() const
+std::pair< TNamedFormulaList, TValesForVariablePairVector > CSCUBACalculator::myGetAllFormulas() const
 {
-    TNamedFormulaList retVal;
-    
+    TNamedFormulaList namedFormulas;
+
     std::unordered_set< QString > allFormulas;
     auto baseFormula = myBaseFormula();
     allFormulas.insert( baseFormula );
-    retVal.emplace_back( this->calculatorName() + "-baseFormula", baseFormula );
+    namedFormulas.emplace_back( this->calculatorName() + "-baseFormula", baseFormula );
 
     auto reverseBase = myReversedBaseFormula();
     if ( !reverseBase.isEmpty() && ( baseFormula != reverseBase ) )
     {
         allFormulas.insert( reverseBase );
-        retVal.emplace_back( this->calculatorName() + "-reverseBaseFormula", reverseBase );
+        namedFormulas.emplace_back( this->calculatorName() + "-reverseBaseFormula", reverseBase );
     }
 
+    TValesForVariablePairVector variablesWithValues;
     for ( auto &&ii : fVariables )
     {
         if ( !ii->isVariable() )
+            continue;
+
+        auto values = ii->validValues();
+        if ( !values.has_value() )
+            continue;
+
+        variablesWithValues.emplace_back( ii, values.value() );
+    }
+    std::sort(
+        variablesWithValues.begin(), variablesWithValues.end(),   //
+        []( const TValuesForVariablePair &lhs, const TValuesForVariablePair &rhs )   //
+        {   //
+            return lhs.first->name() < rhs.first->name();
+        } );
+
+    // first get all the formulas without variables that have "values" without a custom value
+    // custom means we need the formula blank for that variable
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+
+        if ( ii->hasValues() && !ii->hasCustomValue() )
             continue;
 
         auto currFormula = getFormulaForVar( ii );
@@ -269,18 +295,27 @@ TNamedFormulaList CSCUBACalculator::myGetAllFormulas() const
         if ( pos != allFormulas.end() )
             continue;
         allFormulas.insert( currFormula.value() );
-        retVal.emplace_back( calculatorName() + "-" + ii->name(), currFormula.value() );
+        namedFormulas.emplace_back( calculatorName() + "-" + ii->name(), currFormula.value() );
     }
 
-    return retVal;
+    return { namedFormulas, variablesWithValues };
 }
 
 TNamedFormulaList CSCUBACalculator::getAllFormulas() const
 {
-    auto allFormulas = myGetAllFormulas();
+    auto &&[ allFormulas, valuesForVariables ] = myGetAllFormulas();
+
+    Q_ASSERT( valuesForVariables.size() <= 1 );
 
     TNamedFormulaList retVal;
     std::unordered_set< QString > existingFormulas;
+
+    std::unordered_map< TVariableInfo, TOptionalDouble > currValues;
+    for ( auto &&jj : fVariables )
+    {
+        currValues[ jj ] = jj->optValue();
+        jj->resetValue( false, false );
+    }
 
     for ( auto &&currFormula : allFormulas )
     {
@@ -294,21 +329,50 @@ TNamedFormulaList CSCUBACalculator::getAllFormulas() const
                     continue;
 
                 auto formulaName = currFormula.first;
-                formulaName += "_";
                 if ( imperial )
-                    formulaName += "i";
+                    formulaName += "-unit=imperial";
                 else
-                    formulaName += "m";
+                    formulaName += "-unit=metric";
                 if ( seaWater )
-                    formulaName += "s";
+                    formulaName += "-water=sea";
                 else
-                    formulaName += "f";
+                    formulaName += "-water=fresh";
 
                 existingFormulas.insert( formula );
                 retVal.emplace_back( formulaName, formula );
+
+                for ( auto &&ii : valuesForVariables )
+                {
+                    auto var = ii.first;
+                    Q_ASSERT( var );
+                    if ( !var )
+                        continue;
+
+                    for ( auto &&jj : ii.second )
+                    {
+                        if ( !jj.has_value() )
+                            continue;
+
+                        ii.first->setValue( jj );
+
+                        formula = finalizeFormula( imperial, seaWater, currFormula.second, EFormulaType::eCurrentValueFormula );
+                        auto pos = existingFormulas.find( formula );
+                        if ( pos != existingFormulas.end() )
+                            continue;
+                        auto currFormulaName = formulaName + "-" + ii.first->name() + "=" + NUtilities::doubleToString( jj, 2 );
+                        existingFormulas.insert( formula );
+                        retVal.emplace_back( currFormulaName, formula );
+                    }
+                }
             }
         }
     }
+
+    for ( auto &&jj : currValues )
+    {
+        jj.first->setValue( jj.second );
+    }
+
     return retVal;
 }
 

@@ -115,4 +115,7 @@ using TNamedValueItemList = std::list< TNamedValueItem >;
 using TOptionalNamedValueItemList = std::optional< TNamedValueItemList >;
 
 using TNamedFormulaList = std::list< std::pair< QString, QString > >;
+using TStringList = std::list< QString >;
+using TValuesForVariablePair = std::pair< TVariableInfo, TOptionalDoubleVector >;
+using TValesForVariablePairVector = std::vector< TValuesForVariablePair >;
 #endif

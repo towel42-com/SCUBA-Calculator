@@ -52,6 +52,7 @@ public:
     virtual void init( bool imperial, bool seaWater ) /*final*/;   // initializes the default equations and sets the equations to the current setup
 
     virtual bool isReversable() const { return false; }
+    virtual bool isReversed() const { return fReversed; }
     virtual void setIsReversed( bool isReversed ) /*final*/ { fReversed = isReversed; }
 
     virtual QStringList calculatorPath() const = 0;
@@ -87,9 +88,7 @@ protected:
     virtual const TVariableInfoList &getLHSVariables() const final;
     virtual const TVariableInfoList &getRHSVariables() const final;
 
-    virtual std::list< std::pair< QString, QString > > myGetAllFormulas() const;
-
-    virtual bool isReversed() const { return fReversed; }
+    virtual std::pair< TNamedFormulaList, TValesForVariablePairVector > myGetAllFormulas() const;
 
     virtual QString myCalculatorName() const = 0;
     virtual QString myBaseFormula() const = 0;
