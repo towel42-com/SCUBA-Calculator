@@ -166,7 +166,6 @@ namespace NUtilities
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
     CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
     CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
-
 };
 
 #endif

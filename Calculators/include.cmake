@@ -25,6 +25,7 @@ set(qtproject_SRCS
     SCUBACalculatorPage.cpp
     Utilities.cpp
     VariableInfo.cpp
+    Formula.cpp
 )
 
 set(qtproject_H
@@ -36,6 +37,7 @@ set(project_H
     SCUBACalculatorFwd.h
     VariableInfo.h
     Utilities.h
+    Formula.h
 )
 
 set(qtproject_UIS
@@ -50,6 +52,7 @@ SET( project_pub_DEPS
     Qt6::Widgets
     Qt6::SvgWidgets
     SABUtils
+    T42Qt6MathJax
     ${project_pub_DEPS}
 )
 

@@ -1,9 +1,9 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "SCUBACalculator.h"
-#include "SCUBACalculatorPage.h"
-#include "Utilities.h"
+#include "Calculators/SCUBACalculator.h"
+#include "Calculators/SCUBACalculatorPage.h"
+#include "Calculators/Formula.h"
 
 #include "T42-Qt6MathJax/include/Qt6MathJax.h"
 #include "SABUtils/utils.h"
@@ -514,7 +514,7 @@ void CMainWindow::slotGenerateAllFormulas()
 
     // formula -> formula name
     std::unordered_set< QString > allFormulas;
-    std::list< std::shared_ptr< NUtilities::SNamedFormula > > byName;
+    std::list< std::shared_ptr< NUtilities::SFormula > > byName;
 
     auto processFormulas = [ &allFormulas, &byName ]( CSCUBACalculator *calc /*, bool reversedOnly*/ )
     {
@@ -523,7 +523,7 @@ void CMainWindow::slotGenerateAllFormulas()
         auto formulas = calc->getAllFormulas();
         for ( auto &&jj : formulas )
         {
-            auto tex = jj->fFormula;
+            auto tex = jj->formula();
 
             auto pos = allFormulas.find( tex );
             if ( pos != allFormulas.end() )
@@ -540,7 +540,7 @@ void CMainWindow::slotGenerateAllFormulas()
     }
 
     byName.sort(   //
-        []( const std::shared_ptr< NUtilities::SNamedFormula > &lhs, const std::shared_ptr< NUtilities::SNamedFormula > &rhs )   //
+        []( const std::shared_ptr< NUtilities::SFormula > &lhs, const std::shared_ptr< NUtilities::SFormula > &rhs )   //
         {   //
             return lhs->name() < rhs->name();
         } );
@@ -548,7 +548,7 @@ void CMainWindow::slotGenerateAllFormulas()
     int numToBeRendered = 0;
     for ( auto &&curr : byName )
     {
-        if ( !fRenderingEngine->beenCreated( curr->fFormula ) )
+        if ( !fRenderingEngine->beenCreated( curr->formula() ) )
             numToBeRendered++;
     }
 
@@ -559,7 +559,7 @@ void CMainWindow::slotGenerateAllFormulas()
     progress.setMinimumDuration( 1000 );
     for ( auto &&ii : byName )
     {
-        if ( !fRenderingEngine->beenCreated( ii->fFormula ) )
+        if ( !fRenderingEngine->beenCreated( ii->formula() ) )
         {
             progress.setMinimumDuration( 0 );
             progress.setValue( progress.value() + 1 );
@@ -569,22 +569,22 @@ void CMainWindow::slotGenerateAllFormulas()
 
         QJsonObject obj;
         obj.insert( "name", QJsonValue::fromVariant( ii->name() ) );
-        obj.insert( "formula", QJsonValue::fromVariant( ii->fFormula ) );
-        auto cleanedFormula = NTowel42::cleanupFormula( ii->fFormula );
-        if ( cleanedFormula != ii->fFormula )
+        obj.insert( "formula", QJsonValue::fromVariant( ii->formula() ) );
+        auto cleanedFormula = ii->cleanedFormula();
+        if ( cleanedFormula != ii->formula() )
             obj.insert( "cleanedFormula", QJsonValue::fromVariant( cleanedFormula ) );
 
         auto label = QString( "Generating SVG for formula:<br/>%1<br/>%2 of %3 to be Rendered<br/>Total Formulas: %4" ).arg( ii->name() ).arg( progress.value() + 1 ).arg( numToBeRendered ).arg( byName.size() );
         progress.setLabelText( label );
 
         fRenderingEngine->renderSVG(
-            ii->fFormula,   //
+            ii->formula(),   //
             [ =, &obj ]( const QString &texCode, const std::optional< QByteArray > &svg )   //
             {
                 if ( !svg.has_value() )
                     return;
 
-                if ( ii->fFormula != texCode )   // only do it once, ignore the cleanedMessage
+                if ( ii->formula() != texCode )   // only do it once, ignore the cleanedMessage
                     return;
 
                 obj.insert( "svg", QJsonValue::fromVariant( svg.value().toBase64() ) );
