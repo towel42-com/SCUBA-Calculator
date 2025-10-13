@@ -51,6 +51,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "meters", tr( "Length" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "feet", tr( "Length" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFeetToMetersConst ),   //
             std::make_shared< CVariableInfo >( EVariableType::eMetersToFeetConst ),   //
         } );
 
