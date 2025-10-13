@@ -23,6 +23,7 @@
 #include <QJsonParseError>
 #include <QTimer>
 
+#include <map>
 #include <libloaderapi.h>
 
 static QString toString( EFormulaType formulaType )
@@ -512,8 +513,6 @@ void CMainWindow::slotGenerateAllFormulas()
         {
             auto formulaName = jj.first;
             auto tex = jj.second;
-            if ( fRenderingEngine->beenCreated( tex ) )
-                continue;
 
             auto pos = allFormulas.find( tex );
             if ( pos != allFormulas.end() )
@@ -523,26 +522,34 @@ void CMainWindow::slotGenerateAllFormulas()
         }
     }
 
+    std::map< QString, QString > byName;
+    for(auto && curr : allFormulas)
+    {
+        Q_ASSERT( byName.find( curr.second ) == byName.end() );
+        byName[ curr.second ] = curr.first;
+    }
+    Q_ASSERT( byName.size() == allFormulas.size() );
+
     QJsonArray svgArray;
 
     fRenderingEngine->blockSignals( true );
     QProgressDialog progress( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)allFormulas.size(), this );
     progress.setMinimumDuration( 0 );
-    for ( auto &&ii : allFormulas )
+    for ( auto &&ii : byName )
     {
         progress.setValue( progress.value() + 1 );
         if ( progress.wasCanceled() )
             break;
 
-        //if ( progress.value() == 3 )
-        //    break;
-
-        auto tex = ii.first;
-        auto formulaName = ii.second;
+        auto formulaName = ii.first;
+        auto tex = ii.second;
 
         QJsonObject obj;
         obj.insert( "name", QJsonValue::fromVariant( formulaName ) );
         obj.insert( "tex", QJsonValue::fromVariant( tex ) );
+
+        auto label = QString( "Generating SVG for formula:<br/>%1" ).arg( formulaName );
+        progress.setLabelText( label );
 
         fRenderingEngine->renderSVG(
             tex,   //
