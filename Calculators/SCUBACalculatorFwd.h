@@ -37,6 +37,7 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <QString>
 
 class CSCUBACalculatorPage;
 class CSCUBACalculator;
@@ -113,4 +114,5 @@ using TNamedValueItem = std::pair< QString, TOptionalDouble >;
 using TNamedValueItemList = std::list< TNamedValueItem >;
 using TOptionalNamedValueItemList = std::optional< TNamedValueItemList >;
 
+using TNamedFormulaList = std::list< std::pair< QString, QString > >;
 #endif
