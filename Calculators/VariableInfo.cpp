@@ -166,10 +166,11 @@ TOptionalDouble CVariableInfo::optValue() const
         currValue = doubleSpinBox()->value();
     else if ( comboBox() )
     {
+        auto le = fExtraInputWidgets.empty() ? nullptr : ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) );
         if ( !comboBox()->currentData().isNull() )
             currValue = comboBox()->currentData().toDouble();
-        else if ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) )
-            currValue = valueForString( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() )->text() );
+        else if ( le )
+            currValue = valueForString( le->text() );
     }
     return currValue;
 }
@@ -189,6 +190,38 @@ QComboBox *CVariableInfo::comboBox() const
     return ( dynamic_cast< QComboBox * >( fField ) );
 }
 
+void CVariableInfo::reverseVariableLoc()
+{
+    if ( !isVariable() )
+        return;
+    if ( fVariableLocation == EVariableLoc::eLHS )
+        fVariableLocation = EVariableLoc::eRHS;
+    else if ( fVariableLocation == EVariableLoc::eRHS )
+        fVariableLocation = EVariableLoc::eLHS;
+}
+
+bool CVariableInfo::needsFieldUpdate( QWidget *triggerWidget )
+{
+    if ( !isWidget( triggerWidget ) || !optValue().has_value() )
+        return true;
+
+    //if ( comboBox() )
+    //{
+    //    auto comboData = comboBox()->currentData();
+    //    auto le = dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() );
+    //    if ( !le )
+    //        return false;
+
+    //    if ( ( comboData.isNull() && !le->isEnabled() ) || ( !comboData.isNull() && le->isEnabled() ) )
+    //        return true;
+
+    //    auto textData = valueForString( le->text() );
+    //    return !textData.has_value() || ( comboData.toDouble() != textData.value() );
+    //}
+
+    return false;
+}
+
 void CVariableInfo::updateValueFromField()
 {
     if ( fType != EVariableType::eVariable )
@@ -200,6 +233,13 @@ void CVariableInfo::updateValueFromField()
         return;
 
     fValue = optValue();
+
+    if ( comboBox() )
+    {
+        auto le = fExtraInputWidgets.empty() ? nullptr : ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) );
+        if ( le )
+            le->setEnabled( comboBox()->currentData().isNull() );
+    }
 }
 
 TOptionalDouble CVariableInfo::valueForString( const QString &text ) const

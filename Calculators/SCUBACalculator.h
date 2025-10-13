@@ -87,7 +87,7 @@ protected:
     virtual const TVariableInfoList &getLHSVariables() const final;
     virtual const TVariableInfoList &getRHSVariables() const final;
 
-    virtual std::list< std::pair< QString, QString > > myGetAllFormulas() const;;
+    virtual std::list< std::pair< QString, QString > > myGetAllFormulas() const;
 
     virtual bool isReversed() const { return fReversed; }
 

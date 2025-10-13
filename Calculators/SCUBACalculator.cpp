@@ -463,7 +463,7 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
 
     for ( auto &&curr : variables )
     {
-        if ( !curr->isWidget( triggerWidget ) || !curr->optValue().has_value() )
+        if ( curr->needsFieldUpdate( triggerWidget ) )
             curr->updateFieldFromValue();
     }
 }

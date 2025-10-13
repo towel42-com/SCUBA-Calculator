@@ -45,7 +45,7 @@ class CALCULATORS_EXPORT CVariableInfo
 {
 public:
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
-    CVariableInfo( EVariableType type );;   // for use with constants
+    CVariableInfo( EVariableType type );   // for use with constants
     ~CVariableInfo() {}
 
     QString name() const { return fName; }
@@ -83,15 +83,9 @@ public:
     QDoubleSpinBox *doubleSpinBox() const;
     QComboBox *comboBox() const;
 
-    void reverseVariableLoc()
-    {
-        if ( !isVariable() )
-            return;
-        if ( fVariableLocation == EVariableLoc::eLHS )
-            fVariableLocation = EVariableLoc::eRHS;
-        else if ( fVariableLocation == EVariableLoc::eRHS )
-            fVariableLocation = EVariableLoc::eLHS;
-    }
+    void reverseVariableLoc();
+
+    bool needsFieldUpdate( QWidget *triggerWidget );
 
 private:
     TOptionalDouble valueForString( const QString &text ) const;
