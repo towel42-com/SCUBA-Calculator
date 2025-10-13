@@ -28,8 +28,6 @@ void CSCUBACalculatorPage::init( bool imperial, bool seaWater )
     fImperial = imperial;
     fSeaWater = seaWater;
 
-    calculator()->renderDefaultFormulas();
-
     updateValues( nullptr );
 }
 
