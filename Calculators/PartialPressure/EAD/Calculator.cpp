@@ -15,8 +15,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
     
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -48,12 +48,12 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return QString( R"__(<ead> = [(\frac{<fn2>}{<%2>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "ead" )
     {

@@ -10,7 +10,6 @@ public:
 
     virtual bool isReversable() const override { return true; }
     virtual QString myReversedCalculatorName() const override;
-    virtual QString myReversedBaseFormula() const override;
 
     virtual QString myCalculatorName() const override;
     virtual QStringList calculatorPath() const override;
@@ -19,8 +18,9 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual QString myReversedBaseFormula() const override;
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -59,7 +59,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return NUtilities::NConversions::psiToBarFormula( "psi", "bar" );
 }
@@ -69,7 +69,7 @@ QString CCalculator::myReversedBaseFormula() const
     return NUtilities::NConversions::barToPSIFormula( "psi", "bar" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     auto psi = getVariable( "psi" );
     auto bar = getVariable( "bar" );

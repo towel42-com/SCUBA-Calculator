@@ -15,10 +15,10 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -58,7 +58,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     auto formula = NUtilities::NConversions::depthToPressureFormula( "ata", "depth" );
     formula += R"__( \newline\newline )__";
@@ -66,7 +66,7 @@ QString CCalculator::myBaseFormula() const
     return formula;
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "partialPressureAtDepth" )
     {
@@ -82,13 +82,12 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
         formula += R"__( \newline\newline )__";
         formula += R"__(<partialPressureAtSurface> = \frac{<partialPressureAtDepth>}{<ata_value>})__";
         return formula;
-
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto ata = getVariable( "ata" );
     auto partialPressureAtDepth = getVariable( "partialPressureAtDepth" );

@@ -13,8 +13,8 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -70,13 +70,13 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return QString( R"__(<p2> = [<t2> \times \frac{(<p1> + <%2>)}{(<t1>}] - <%2>)__" ).arg( NUtilities::NConstants::kPressureOffsetConstFieldName );
     ;
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "p1" )
     {

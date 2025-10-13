@@ -16,8 +16,8 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -65,12 +65,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return QString( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "mod" )
     {

@@ -15,10 +15,10 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -47,12 +47,12 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return R"__(<buoyancy>=<weightOfObject> - [<volumeDisplaced> \times <weightOfWater>])__";
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo & unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "buoyancy" )
     {
@@ -69,7 +69,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto buoyancy = getVariable( "buoyancy" );
     auto weightOfObject = getVariable( "weightOfObject" );

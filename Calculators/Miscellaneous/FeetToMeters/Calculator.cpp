@@ -19,8 +19,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString myBaseFormula() const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const override;   // returns the current formula in use
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -60,7 +60,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::myBaseFormula() const
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return NUtilities::NConversions::feetToMetersFormula( "feet", "meters" );
 }
@@ -70,7 +70,7 @@ QString CCalculator::myReversedBaseFormula() const
     return NUtilities::NConversions::metersToFeetFormula( "feet", "meters" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "meters" )
     {

@@ -114,8 +114,16 @@ using TNamedValueItem = std::pair< QString, TOptionalDouble >;
 using TNamedValueItemList = std::list< TNamedValueItem >;
 using TOptionalNamedValueItemList = std::optional< TNamedValueItemList >;
 
-using TNamedFormulaList = std::list< std::pair< QString, QString > >;
+namespace NUtilities
+{
+    struct SFormula;
+}
+using TNamedFormulaList = std::list< std::shared_ptr< NUtilities::SFormula > >;
 using TStringList = std::list< QString >;
 using TValuesForVariablePair = std::pair< TVariableInfo, TOptionalDoubleVector >;
 using TValesForVariablePairVector = std::vector< TValuesForVariablePair >;
+
+using TNameValuePair = std::pair< QString, TOptionalDouble >;
+using TOptionalNameValuePair = std::optional< TNameValuePair >;
+
 #endif

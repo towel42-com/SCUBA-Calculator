@@ -91,9 +91,16 @@ protected:
     virtual std::pair< TNamedFormulaList, TValesForVariablePairVector > myGetAllFormulas() const;
 
     virtual QString myCalculatorName() const = 0;
-    virtual QString myBaseFormula() const = 0;
     virtual QString myReversedCalculatorName() const;
+
+    virtual QString getBaseFormula() const final;   // for descriptive purposes
+    virtual std::optional< QString > getCurrentFormula() const final;   // returns the current formula in use
+
+    virtual QString myBaseFormula() const;
+    virtual QString myBaseFormula( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
+
     virtual QString myReversedBaseFormula() const;
+    virtual QString myReversedBaseFormula( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
     std::size_t numUnsetVariables() const;
@@ -113,12 +120,10 @@ protected:
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
     // only necessary if the number of variables on either side is greater than two.
 
-    virtual QString getBaseFormula() const final;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const final;   // returns the current formula in use
-
     virtual void computeValues() final;   // updates all values
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const = 0;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const=0;   // returns the current formula in use
     virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;
