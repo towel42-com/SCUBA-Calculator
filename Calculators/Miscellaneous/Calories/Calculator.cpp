@@ -16,6 +16,7 @@ public:
     virtual QStringList calculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
     virtual QString myBaseFormula() const override;   // for descriptive purposes
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const override;   // returns the current formula in use
@@ -68,13 +69,25 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula() const
 {
-    return NUtilities::NConversions::computeCaloriesFormula( imperial(), seaWater(), "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" );
+    return NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial(), seaWater(), "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" );
+}
+
+TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
+{
+    if ( updateFromSide == EVariableLoc::eRHS )
+        return getVariable( "calories" );
+    else
+        return getVariable( "duration" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
 {
-    (void)unsetVar;
-    return R"__(<calories>)__";
+    if ( unsetVar->name() == "calories" )
+        return NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial(), seaWater(), "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" );
+    else if ( unsetVar->name() == "duration" )
+        return NUtilities::NConversions::NCaloriesComputer::computeDurationFormula( imperial(), seaWater(), "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" );
+
+    return {};
 }
 
 void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
@@ -89,7 +102,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == calories )
     {
-        calories->setValue( NUtilities::NConversions::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value(), duration->value() ) );
+        calories->setValue( NUtilities::NConversions::NCaloriesComputer::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value(), duration->value() ) );
+    }
+    else if ( unsetVar == duration )
+    {
+        duration->setValue( NUtilities::NConversions::NCaloriesComputer::computeDuration( imperial(), seaWater(), calories->value(), weight->value(), depth->value(), temp->value(), activityLevel->value() ) );
     }
 }
-

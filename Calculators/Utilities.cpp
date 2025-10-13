@@ -885,7 +885,7 @@ namespace NUtilities
                     actualDepthFieldName += "C";
                 }
 
-                QString retVal = QString( "<%1> = \frac{<%2>}{<%3>" ).arg( durationFieldName ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+                QString retVal = QString( R"__(<%1> = \frac{<%2>}{<%3>)__" ).arg( durationFieldName ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
                 retVal += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
 
                 if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
