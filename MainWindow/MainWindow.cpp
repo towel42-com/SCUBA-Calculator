@@ -3,6 +3,8 @@
 
 #include "SCUBACalculator.h"
 #include "SCUBACalculatorPage.h"
+#include "Utilities.h"
+
 #include "T42-Qt6MathJax/include/Qt6MathJax.h"
 #include "SABUtils/utils.h"
 
@@ -23,7 +25,7 @@
 #include <QJsonParseError>
 #include <QTimer>
 
-#include <map>
+#include <set>
 #include <libloaderapi.h>
 
 static QString toString( EFormulaType formulaType )
@@ -349,14 +351,12 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *p
 
 void CMainWindow::showUnits( bool show )
 {
-    fImpl->imperial->setVisible( show );
-    fImpl->metric->setVisible( show );
+    fImpl->unitGroupBox->setVisible( show );
 }
 
 void CMainWindow::showWaterType( bool show )
 {
-    fImpl->seaWater->setVisible( show );
-    fImpl->freshWater->setVisible( show );
+    fImpl->waterGroupBox->setVisible( show );
 }
 
 QTreeWidgetItem *CMainWindow::getItemForPage( QWidget *page ) const
@@ -513,101 +513,85 @@ void CMainWindow::slotGenerateAllFormulas()
         return;
 
     // formula -> formula name
-    std::unordered_map< QString, QString > allFormulas;
+    std::unordered_set< QString > allFormulas;
+    std::list< std::shared_ptr< NUtilities::SNamedFormula > > byName;
 
-    auto processFormulas = [ &allFormulas ]( CSCUBACalculator *calc, bool reversedOnly )
+    auto processFormulas = [ &allFormulas, &byName ]( CSCUBACalculator *calc /*, bool reversedOnly*/ )
     {
         qDebug().noquote().nospace() << "Getting Formulas from: " << calc->calculatorName();
-
-        if ( calc->isReversable() )
-        {
-            if ( reversedOnly )
-            {
-                if ( !calc->isReversed() )
-                    return;
-            }
-            else
-            {
-                if ( calc->isReversed() )
-                    return;
-            }
-        }
 
         auto formulas = calc->getAllFormulas();
         for ( auto &&jj : formulas )
         {
-            auto formulaName = jj.first;
-            auto tex = jj.second;
+            auto tex = jj->fFormula;
 
             auto pos = allFormulas.find( tex );
             if ( pos != allFormulas.end() )
                 continue;
 
-            allFormulas[ tex ] = formulaName;
+            allFormulas.insert( tex );
+            byName.push_back( jj );
         }
     };
 
     for ( auto &&ii : fCalculators )
     {
-        processFormulas( ii.second, false );
+        processFormulas( ii.second /*, false*/ );
     }
 
-    for ( auto &&ii : fCalculators )
-    {
-        processFormulas( ii.second, true );
-    }
+    byName.sort(   //
+        []( const std::shared_ptr< NUtilities::SNamedFormula > &lhs, const std::shared_ptr< NUtilities::SNamedFormula > &rhs )   //
+        {   //
+            return lhs->name() < rhs->name();
+        } );
 
-    std::map< QString, QString > byName;
     int numToBeRendered = 0;
-    for ( auto &&curr : allFormulas )
+    for ( auto &&curr : byName )
     {
-        if ( !fRenderingEngine->beenCreated( curr.first ) )
+        if ( !fRenderingEngine->beenCreated( curr->fFormula ) )
             numToBeRendered++;
-
-        Q_ASSERT( byName.find( curr.second ) == byName.end() );
-        byName[ curr.second ] = curr.first;
     }
-    Q_ASSERT( byName.size() == allFormulas.size() );
 
     QJsonArray svgArray;
 
     fRenderingEngine->blockSignals( true );
     QProgressDialog progress( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, numToBeRendered, this );
-    progress.setMinimumDuration( 0 );
+    progress.setMinimumDuration( 1000 );
     for ( auto &&ii : byName )
     {
-        progress.setValue( progress.value() + 1 );
+        if ( !fRenderingEngine->beenCreated( ii->fFormula ) )
+        {
+            progress.setMinimumDuration( 0 );
+            progress.setValue( progress.value() + 1 );
+        }
         if ( progress.wasCanceled() )
             break;
 
-        auto formulaName = ii.first;
-        auto formula = ii.second;
-
         QJsonObject obj;
-        obj.insert( "name", QJsonValue::fromVariant( formulaName ) );
-        obj.insert( "formula", QJsonValue::fromVariant( formula ) );
-        auto cleanedFormula = NTowel42::cleanupFormula( formula );
-        if ( cleanedFormula != formula )
+        obj.insert( "name", QJsonValue::fromVariant( ii->name() ) );
+        obj.insert( "formula", QJsonValue::fromVariant( ii->fFormula ) );
+        auto cleanedFormula = NTowel42::cleanupFormula( ii->fFormula );
+        if ( cleanedFormula != ii->fFormula )
             obj.insert( "cleanedFormula", QJsonValue::fromVariant( cleanedFormula ) );
 
-        auto label = QString( "Generating SVG for formula:<br/>%1" ).arg( formulaName );
+        auto label = QString( "Generating SVG for formula:<br/>%1<br/>%2 of %3 to be Rendered<br/>Total Formulas: %4" ).arg( ii->name() ).arg( progress.value() + 1 ).arg( numToBeRendered ).arg( byName.size() );
         progress.setLabelText( label );
 
         fRenderingEngine->renderSVG(
-            formula,   //
+            ii->fFormula,   //
             [ =, &obj ]( const QString &texCode, const std::optional< QByteArray > &svg )   //
             {
                 if ( !svg.has_value() )
                     return;
 
-                if ( formula != texCode )   // only do it once, ignore the cleanedMessage
+                if ( ii->fFormula != texCode )   // only do it once, ignore the cleanedMessage
                     return;
 
                 obj.insert( "svg", QJsonValue::fromVariant( svg.value().toBase64() ) );
             },   //
             [ =, &obj ]( const QString &errorMessage )
             {
-                qDebug().noquote().nospace() << tr( "Error Generating SVG: %1: %2" ).arg( formulaName ).arg( errorMessage );
+                qDebug().noquote().nospace() << tr( "Error Generating SVG: %1: %2" ).arg( ii->name() ).arg( errorMessage );
                 obj.insert( "error", QJsonValue::fromVariant( "ERROR: " + errorMessage ) );
             }   //
         );
@@ -689,7 +673,9 @@ void CMainWindow::loadCache()
             qDebug().noquote().nospace() << "Skipping cache item: name '" << name << "' tex '" << formula << "'";
             continue;
         }
-        if ( auto result = QByteArray::fromBase64Encoding( svgCacheObject[ "svg" ].toString().toUtf8() ) )
+        
+        auto svg = svgCacheObject[ "svg" ].toString().toUtf8();
+        if ( auto result = QByteArray::fromBase64Encoding( svg ) )
         {
             fRenderingEngine->addToCache( formula, cleanedFormula, *result );
         }
