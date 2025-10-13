@@ -66,9 +66,10 @@ public:
 
     virtual void resetVariables() /*final*/;
 
+    virtual TNamedFormulaList getAllFormulas() const;
+
 public:
     // used inside the DLL
-    virtual void renderDefaultFormulas() const final;
     virtual void compute( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
     virtual bool showUnits() const { return true; }
     virtual bool isWaterTypeBased() const { return false; }
@@ -85,6 +86,8 @@ protected:
     virtual const TVariableInfoList &getVariables() const final;
     virtual const TVariableInfoList &getLHSVariables() const final;
     virtual const TVariableInfoList &getRHSVariables() const final;
+
+    virtual std::list< std::pair< QString, QString > > myGetAllFormulas() const;;
 
     virtual bool isReversed() const { return fReversed; }
 

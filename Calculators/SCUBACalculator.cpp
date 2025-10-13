@@ -229,34 +229,6 @@ TVariableInfo CSCUBACalculator::getVariable( const QString &varName )
     return ( *pos ).second;
 }
 
-void CSCUBACalculator::renderDefaultFormulas() const
-{
-    auto baseFormula = getBaseFormula();
-    std::unordered_set< QString > baseFormulas;
-
-    QString currBase;
-
-    for ( auto imperial : { true, false } )
-    {
-        for ( auto seaWater : { true, false } )
-        {
-            auto formula = finalizeFormula( imperial, seaWater, baseFormula, EFormulaType::eBaseFormula );
-            if ( ( this->imperial() == imperial ) && ( this->seaWater() == seaWater ) )
-                currBase = formula;
-            else
-                baseFormulas.insert( formula );
-        }
-    }
-    Q_ASSERT( baseFormulas.size() <= 4 );
-    Q_ASSERT( !currBase.isEmpty() );
-    if ( !currBase.isEmpty() )
-        notifyOfNewFormula( currBase, EFormulaType::eBaseFormula );
-    for ( auto &&formula : baseFormulas )
-    {
-        notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
-    }
-}
-
 TVariableInfoList CSCUBACalculator::getMyVariables( bool *preReversed ) const
 {
     *preReversed = false;
@@ -266,6 +238,78 @@ TVariableInfoList CSCUBACalculator::getMyVariables( bool *preReversed ) const
 TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
 {
     return {};
+}
+
+TNamedFormulaList CSCUBACalculator::myGetAllFormulas() const
+{
+    TNamedFormulaList retVal;
+    
+    std::unordered_set< QString > allFormulas;
+    auto baseFormula = myBaseFormula();
+    allFormulas.insert( baseFormula );
+    retVal.emplace_back( this->calculatorName() + "-baseFormula", baseFormula );
+
+    auto reverseBase = myReversedBaseFormula();
+    if ( !reverseBase.isEmpty() && ( baseFormula != reverseBase ) )
+    {
+        allFormulas.insert( reverseBase );
+        retVal.emplace_back( this->calculatorName() + "-reverseBaseFormula", reverseBase );
+    }
+
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+
+        auto currFormula = getFormulaForVar( ii );
+        if ( !currFormula.has_value() || currFormula.value().isEmpty() )
+            continue;
+
+        auto pos = allFormulas.find( currFormula.value() );
+        if ( pos != allFormulas.end() )
+            continue;
+        allFormulas.insert( currFormula.value() );
+        retVal.emplace_back( calculatorName() + "-" + ii->name(), currFormula.value() );
+    }
+
+    return retVal;
+}
+
+TNamedFormulaList CSCUBACalculator::getAllFormulas() const
+{
+    auto allFormulas = myGetAllFormulas();
+
+    TNamedFormulaList retVal;
+    std::unordered_set< QString > existingFormulas;
+
+    for ( auto &&currFormula : allFormulas )
+    {
+        for ( auto imperial : { true, false } )
+        {
+            for ( auto seaWater : { true, false } )
+            {
+                auto formula = finalizeFormula( imperial, seaWater, currFormula.second, EFormulaType::eBaseFormula );
+                auto pos = existingFormulas.find( formula );
+                if ( pos != existingFormulas.end() )
+                    continue;
+
+                auto formulaName = currFormula.first;
+                formulaName += "_";
+                if ( imperial )
+                    formulaName += "i";
+                else
+                    formulaName += "m";
+                if ( seaWater )
+                    formulaName += "s";
+                else
+                    formulaName += "f";
+
+                existingFormulas.insert( formula );
+                retVal.emplace_back( formulaName, formula );
+            }
+        }
+    }
+    return retVal;
 }
 
 TVariableInfo CSCUBACalculator::getLastVariable( EVariableLoc side ) const
