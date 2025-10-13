@@ -100,13 +100,6 @@ namespace NUtilities
         CALCULATORS_EXPORT double baseMETForScuba();
     }
 
-    CALCULATORS_EXPORT QString descForType( EVariableType type );
-    CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
-
-    CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
-    CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
-    CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
-
     namespace NConversions
     {
         CALCULATORS_EXPORT double toAbsZeroBasedTemp( bool imperial, double temp );
@@ -159,13 +152,21 @@ namespace NUtilities
 
         namespace NCaloriesComputer
         {
-            CALCULATORS_EXPORT double computeCalories   ( bool imperial, bool seaWater,                  double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
-            CALCULATORS_EXPORT double computeDuration   ( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier );
+            CALCULATORS_EXPORT double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
+            CALCULATORS_EXPORT double computeDuration( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier );
 
             CALCULATORS_EXPORT QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
             CALCULATORS_EXPORT QString computeDurationFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
         }
     }
+
+    CALCULATORS_EXPORT QString descForType( EVariableType type );
+    CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
+
+    CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
+    CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
+    CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
+
 };
 
 #endif
