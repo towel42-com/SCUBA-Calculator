@@ -376,6 +376,9 @@ void CMainWindow::setMathJaxWidgetsVisible( bool visible )
 
 void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType )
 {
+    auto regEx = QRegularExpression( R"__(\<[A-Za-z]+\>)__" );
+    Q_ASSERT( !regEx.match( formula ).hasMatch() );
+
     auto widget = mathJaxForFormulaType( formulaType );
     Q_ASSERT( widget );
     if ( formula.isEmpty() )
@@ -496,6 +499,15 @@ void CMainWindow::updateSVGSize( EFormulaType formulaType )
 
 void CMainWindow::slotGenerateAllFormulas()
 {
+    static bool first = true;
+    if ( first )
+    {
+        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\MainWindow)";
+        if ( QDir::current() != QDir( defaultDir ) )
+            QDir::setCurrent( defaultDir );
+        first = false;
+    }
+
     auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Target Directory:" ) );
     if ( dir.isEmpty() )
         return;
@@ -503,12 +515,25 @@ void CMainWindow::slotGenerateAllFormulas()
     // formula -> formula name
     std::unordered_map< QString, QString > allFormulas;
 
-    for ( auto &&ii : fCalculators )
+    auto processFormulas = [ &allFormulas ]( CSCUBACalculator *calc, bool reversedOnly )
     {
-        // map formula name -> formula
-        qDebug().noquote().nospace() << "Getting Formulas from: " << ii.second->calculatorName();
+        qDebug().noquote().nospace() << "Getting Formulas from: " << calc->calculatorName();
 
-        auto formulas = ii.second->getAllFormulas();
+        if ( calc->isReversable() )
+        {
+            if ( reversedOnly )
+            {
+                if ( !calc->isReversed() )
+                    return;
+            }
+            else
+            {
+                if ( calc->isReversed() )
+                    return;
+            }
+        }
+
+        auto formulas = calc->getAllFormulas();
         for ( auto &&jj : formulas )
         {
             auto formulaName = jj.first;
@@ -520,11 +545,25 @@ void CMainWindow::slotGenerateAllFormulas()
 
             allFormulas[ tex ] = formulaName;
         }
+    };
+
+    for ( auto &&ii : fCalculators )
+    {
+        processFormulas( ii.second, false );
+    }
+
+    for ( auto &&ii : fCalculators )
+    {
+        processFormulas( ii.second, true );
     }
 
     std::map< QString, QString > byName;
-    for(auto && curr : allFormulas)
+    int numToBeRendered = 0;
+    for ( auto &&curr : allFormulas )
     {
+        if ( !fRenderingEngine->beenCreated( curr.first ) )
+            numToBeRendered++;
+
         Q_ASSERT( byName.find( curr.second ) == byName.end() );
         byName[ curr.second ] = curr.first;
     }
@@ -533,7 +572,7 @@ void CMainWindow::slotGenerateAllFormulas()
     QJsonArray svgArray;
 
     fRenderingEngine->blockSignals( true );
-    QProgressDialog progress( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)allFormulas.size(), this );
+    QProgressDialog progress( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, numToBeRendered, this );
     progress.setMinimumDuration( 0 );
     for ( auto &&ii : byName )
     {
@@ -542,23 +581,26 @@ void CMainWindow::slotGenerateAllFormulas()
             break;
 
         auto formulaName = ii.first;
-        auto tex = ii.second;
+        auto formula = ii.second;
 
         QJsonObject obj;
         obj.insert( "name", QJsonValue::fromVariant( formulaName ) );
-        obj.insert( "tex", QJsonValue::fromVariant( tex ) );
+        obj.insert( "formula", QJsonValue::fromVariant( formula ) );
+        auto cleanedFormula = NTowel42::cleanupFormula( formula );
+        if ( cleanedFormula != formula )
+            obj.insert( "cleanedFormula", QJsonValue::fromVariant( cleanedFormula ) );
 
         auto label = QString( "Generating SVG for formula:<br/>%1" ).arg( formulaName );
         progress.setLabelText( label );
 
         fRenderingEngine->renderSVG(
-            tex,   //
+            formula,   //
             [ =, &obj ]( const QString &texCode, const std::optional< QByteArray > &svg )   //
             {
                 if ( !svg.has_value() )
                     return;
 
-                if ( tex != texCode )
+                if ( formula != texCode )   // only do it once, ignore the cleanedMessage
                     return;
 
                 obj.insert( "svg", QJsonValue::fromVariant( svg.value().toBase64() ) );
@@ -572,7 +614,7 @@ void CMainWindow::slotGenerateAllFormulas()
 
         svgArray.append( obj );
     }
-    progress.setValue( (int)allFormulas.size() );
+    progress.setValue( numToBeRendered );
 
     auto jsonFileName = QDir( dir ).absoluteFilePath( "formulas.json" );
     QFile jsonFile( jsonFileName );
@@ -588,6 +630,8 @@ void CMainWindow::slotGenerateAllFormulas()
     jsonFile.close();
 
     fRenderingEngine->blockSignals( false );
+
+    QMessageBox::information( this, tr( "Finished generating SVGs" ), tr( "Total Number of Formulas: %1<br>Number needing Rendering: %2" ).arg( byName.size() ).arg( numToBeRendered ) );
 }
 
 void CMainWindow::loadCache()
@@ -622,28 +666,33 @@ void CMainWindow::loadCache()
 
         auto svgCacheObject = svgItem.toObject();
 
-        if ( !svgCacheObject.contains( "tex" ) || !svgCacheObject.contains( "name" ) )
+        if ( !svgCacheObject.contains( "formula" ) || !svgCacheObject.contains( "name" ) )
         {
-            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected tex and name keys" ) );
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected 'formula' and 'name' fields" ) );
             continue;
         }
 
         if ( !svgCacheObject.contains( "svg" ) && !svgCacheObject.contains( "error" ) )
         {
-            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected svg or error keys" ) );
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected svg or error fields" ) );
             continue;
         }
 
         auto name = svgCacheObject[ "name" ].toString();
-        auto tex = svgCacheObject[ "tex" ].toString();
+        auto formula = svgCacheObject[ "formula" ].toString();
+        std::optional< QString > cleanedFormula;
+        if ( svgCacheObject.contains( "cleanedFormula" ) )
+            cleanedFormula = svgCacheObject[ "cleanedFormula" ].toString();
 
         if ( svgCacheObject.contains( "error" ) )
         {
-            qDebug().noquote().nospace() << "Skipping cache item: name '" << name << "' tex '" << tex << "'";
+            qDebug().noquote().nospace() << "Skipping cache item: name '" << name << "' tex '" << formula << "'";
             continue;
         }
         if ( auto result = QByteArray::fromBase64Encoding( svgCacheObject[ "svg" ].toString().toUtf8() ) )
-            fRenderingEngine->addToCache( tex, *result );
+        {
+            fRenderingEngine->addToCache( formula, cleanedFormula, *result );
+        }
         else
         {
             QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid SVG base 64" ) );
