@@ -499,21 +499,27 @@ void CMainWindow::slotGenerateAllFormulas()
     if ( dir.isEmpty() )
         return;
 
-    // formula -> formula name, filename
-    std::unordered_map< QString, std::pair< QString, QString > > allFormulas;
+    // formula -> formula name
+    std::unordered_map< QString, QString > allFormulas;
 
     for ( auto &&ii : fCalculators )
     {
         // map formula name -> formula
+        qDebug().noquote().nospace() << "Getting Formulas from: " << ii.second->calculatorName();
+
         auto formulas = ii.second->getAllFormulas();
         for ( auto &&jj : formulas )
         {
             auto formulaName = jj.first;
             auto tex = jj.second;
+            if ( fRenderingEngine->beenCreated( tex ) )
+                continue;
+
             auto pos = allFormulas.find( tex );
             if ( pos != allFormulas.end() )
                 continue;
-            allFormulas[ tex ] = { formulaName, QString( "formula-%1.svg" ).arg( (int)allFormulas.size() + 1, 2, 10, QChar( '0' ) ) };
+
+            allFormulas[ tex ] = formulaName;
         }
     }
 
@@ -532,9 +538,7 @@ void CMainWindow::slotGenerateAllFormulas()
         //    break;
 
         auto tex = ii.first;
-        auto formulaName = ii.second.first;
-        auto fileName = ii.second.second;
-        auto path = QDir( dir ).absoluteFilePath( fileName );
+        auto formulaName = ii.second;
 
         QJsonObject obj;
         obj.insert( "name", QJsonValue::fromVariant( formulaName ) );
@@ -556,8 +560,6 @@ void CMainWindow::slotGenerateAllFormulas()
             {
                 qDebug().noquote().nospace() << tr( "Error Generating SVG: %1: %2" ).arg( formulaName ).arg( errorMessage );
                 obj.insert( "error", QJsonValue::fromVariant( "ERROR: " + errorMessage ) );
-                if ( QFileInfo( path ).exists() )
-                    QFile::remove( path );
             }   //
         );
 
