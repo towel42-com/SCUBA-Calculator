@@ -86,6 +86,9 @@ public:
     void reverseVariableLoc();
 
     bool needsFieldUpdate( QWidget *triggerWidget );
+    bool hasValues() const;
+    std::optional< TOptionalDoubleVector > validValues() const;
+    bool hasCustomValue() const;
 
 private:
     TOptionalDouble valueForString( const QString &text ) const;

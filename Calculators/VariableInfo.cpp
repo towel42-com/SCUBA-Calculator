@@ -10,6 +10,7 @@
 #include <QFormLayout>
 #include <QComboBox>
 
+#include <optional>
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation ) :
     fName( name ),
     fDescription( desc ),
@@ -205,20 +206,40 @@ bool CVariableInfo::needsFieldUpdate( QWidget *triggerWidget )
     if ( !isWidget( triggerWidget ) || !optValue().has_value() )
         return true;
 
-    //if ( comboBox() )
-    //{
-    //    auto comboData = comboBox()->currentData();
-    //    auto le = dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() );
-    //    if ( !le )
-    //        return false;
+    return false;
+}
 
-    //    if ( ( comboData.isNull() && !le->isEnabled() ) || ( !comboData.isNull() && le->isEnabled() ) )
-    //        return true;
+bool CVariableInfo::hasValues() const
+{
+    return fValues.has_value();
+}
 
-    //    auto textData = valueForString( le->text() );
-    //    return !textData.has_value() || ( comboData.toDouble() != textData.value() );
-    //}
+std::optional< TOptionalDoubleVector > CVariableInfo::validValues() const
+{
+    if ( !hasValues() )
+        return {};
+    TOptionalDoubleVector retVal;
+    for ( auto &&ii : fValues.value() )
+    {
+        if ( ii.second.has_value() )
+            retVal.push_back( ii.second );
+    }
+    if ( retVal.empty() )
+        return {};
+    return retVal;
+}
 
+bool CVariableInfo::hasCustomValue() const
+{
+    if ( !hasValues() )
+        return false;
+
+    for ( auto &&ii : fValues.value() )
+    {
+        if ( ii.second.has_value() )
+            continue;
+        return true;
+    }
     return false;
 }
 
