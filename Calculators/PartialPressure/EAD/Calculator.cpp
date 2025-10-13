@@ -14,7 +14,7 @@ public:
     virtual bool isWaterTypeBased() const override { return true; }
 
     virtual TVariableInfoList getMyVariables() const override;
-
+    
     virtual QString myBaseFormula() const override;   // for descriptive purposes
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo & unsetVar ) const override;   // returns the current formula in use
 
@@ -65,7 +65,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QString( R"__(<depth> = [\frac{(<ead>+<%1>)}{\frac{<fn2>}{<%2>}]-<%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName );
+        return QString( R"__(<depth> = [\frac{(<ead>+<%1>)}{\frac{<fn2>}{<%2>}}]-<%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName );
     }
     return {};
 }
