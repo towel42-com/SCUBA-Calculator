@@ -813,7 +813,7 @@ namespace NUtilities
                     retVal += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
                 }
 
-                retVal += QString( R"__( \times <%1> \times <%2> \times <%3>)__" )   //
+                retVal += QString( R"__( \times <%1> \times \frac{<%2>}{100\%} \times <%3>)__" )   //
                               .arg( actualWeightFieldName )
                               .arg( activityLevelFieldName )
                               .arg( durationFieldName );
@@ -893,7 +893,7 @@ namespace NUtilities
                     retVal += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
                 }
 
-                retVal += QString( R"__( \times <%1> \times <%2> })__" )   //
+                retVal += QString( R"__( \times \frac{<%1>}{100\%} \times <%2> })__" )   //
                               .arg( activityLevelFieldName )
                               .arg( actualWeightFieldName );
 
