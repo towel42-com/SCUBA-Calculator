@@ -42,7 +42,7 @@ QString CCalculator::myReversedCalculatorName() const
 
 QStringList CCalculator::calculatorPath() const
 {
-    return { tr( "Miscellaneous" ) };
+    return { tr( "Unit Conversion" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
