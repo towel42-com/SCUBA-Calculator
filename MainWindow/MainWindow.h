@@ -86,24 +86,11 @@ private:
     CSCUBACalculator *getCalculator( QWidget *page ) const;
     QTreeWidgetItem *getItemForPage( QWidget *page ) const;
 
-    //TGetPageFunc getGetPageFunc( QTreeWidgetItem *leaf ) const;
-    //TSetBoolFunc getSetImperialFunc( QTreeWidgetItem *leaf ) const;
-    //TSetBoolFunc getSetSeaWaterFunc( QTreeWidgetItem *leaf ) const;
-    //TInitFunc getInitFunc( QTreeWidgetItem *leaf ) const;
-
     QTreeWidgetItem *findItem( QTreeWidgetItem *parent, const QStringList &path, bool createIfNecessary );
     std::unique_ptr< Ui::CMainWindow > fImpl;
 
     QWidget *fBlankPage{ nullptr };
 
-    //struct SPageInfo
-    //{
-    //CSCUBACalculator *fCalculator{ nullptr };
-    //TInitFunc fInitFunc{ nullptr };
-    //TGetPageFunc fGetPageFunc{ nullptr };
-    //TSetBoolFunc fSetImperialFunc{ nullptr };
-    //TSetBoolFunc fSetSeaWaterFunc{ nullptr };
-    //};
     std::unordered_map< QTreeWidgetItem *, CSCUBACalculator * > fCalculators;
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
     std::unordered_map< QWidget *, SFormulas > fPageToFormulasMap;

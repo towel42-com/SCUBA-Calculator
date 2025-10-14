@@ -11,6 +11,7 @@
 #include <list>
 #include <memory>
 #include <unordered_set>
+#include <QJsonArray>
 
 // https://scuba.garykessler.net/EANcalculator/EAN_psi.html
 // mixing O2 + Air for proper Nitrox
@@ -36,6 +37,8 @@
 // buoyancy
 // sac
 // calories burned
+
+Q_LOGGING_CATEGORY( ScubaCalculator, "Towel42.ScubaCalculator", QtMsgType::QtInfoMsg )
 
 CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
     QObject( parent )
@@ -253,9 +256,9 @@ TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateF
     return {};
 }
 
-std::pair< TNamedFormulaList, TValesForVariablePairVector > CSCUBACalculator::myGetAllFormulas() const
+std::pair< TFormulaList, TValuesForVariablePairVector > CSCUBACalculator::getFormulaListAndValues() const
 {
-    TNamedFormulaList namedFormulas;
+    TFormulaList namedFormulas;
 
     for ( auto imperial : { true, false } )
     {
@@ -271,7 +274,7 @@ std::pair< TNamedFormulaList, TValesForVariablePairVector > CSCUBACalculator::my
             }
         }
     }
-    TValesForVariablePairVector variablesWithValues;
+    TValuesForVariablePairVector variablesWithValues;
     for ( auto &&ii : fVariables )
     {
         if ( !ii->isVariable() )
@@ -316,13 +319,13 @@ std::pair< TNamedFormulaList, TValesForVariablePairVector > CSCUBACalculator::my
     return { namedFormulas, variablesWithValues };
 }
 
-TNamedFormulaList CSCUBACalculator::getAllFormulas() const
+TFormulaList CSCUBACalculator::getFormulaList() const
 {
-    auto &&[ allFormulas, valuesForVariables ] = myGetAllFormulas();
+    auto &&[ allFormulas, valuesForVariables ] = getFormulaListAndValues();
 
     Q_ASSERT( valuesForVariables.size() <= 1 );
 
-    TNamedFormulaList retVal;
+    TFormulaList retVal;
     std::unordered_set< QString > existingFormulas;
 
     std::unordered_map< TVariableInfo, TOptionalDouble > currValues;
@@ -378,6 +381,33 @@ TNamedFormulaList CSCUBACalculator::getAllFormulas() const
     }
 
     return retVal;
+}
+
+TCalculatorFormulaData CSCUBACalculator::getAllFormulas() const
+{
+    std::unordered_set< QString > allFormulasMap;
+    TFormulaList byNameList;
+
+    qCDebug( ScubaCalculator ).noquote().nospace() << "Getting Formulas from: " << calculatorName();
+    auto formulas = getFormulaList();
+
+    for ( auto &&jj : formulas )
+    {
+        auto tex = jj->formula();
+
+        auto pos = allFormulasMap.find( tex );
+        if ( pos != allFormulasMap.end() )
+            continue;
+
+        allFormulasMap.insert( tex );
+        byNameList.emplace_back( jj );
+    }
+    return std::make_tuple( allFormulasMap, byNameList, QJsonArray() );
+}
+
+void CSCUBACalculator::initResources() const
+{
+    Q_INIT_RESOURCE( calculator );
 }
 
 TVariableInfo CSCUBACalculator::getLastVariable( EVariableLoc side ) const

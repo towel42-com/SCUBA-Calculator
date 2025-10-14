@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/formulas">
+        <file alias="./CombinedGasLaw.json">./formulas.json</file>
+    </qresource>
+</RCC>

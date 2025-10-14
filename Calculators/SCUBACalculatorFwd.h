@@ -38,6 +38,9 @@
 #include <vector>
 #include <memory>
 #include <QString>
+#include <QLoggingCategory>
+#include <unordered_set>
+#include <tuple>
 
 class CSCUBACalculatorPage;
 class CSCUBACalculator;
@@ -45,6 +48,7 @@ class QWidget;
 class QLabel;
 class QLineEdit;
 class QString;
+class QJsonArray;
 
 enum class EFormulaType;
 
@@ -118,12 +122,17 @@ namespace NUtilities
 {
     struct SFormula;
 }
-using TNamedFormulaList = std::list< std::shared_ptr< NUtilities::SFormula > >;
+using TFormula = std::shared_ptr< NUtilities::SFormula >;
+using TFormulaList = std::list< TFormula >;
 using TStringList = std::list< QString >;
 using TValuesForVariablePair = std::pair< TVariableInfo, TOptionalDoubleVector >;
-using TValesForVariablePairVector = std::vector< TValuesForVariablePair >;
+using TValuesForVariablePairVector = std::vector< TValuesForVariablePair >;
+using TCalculatorFormulaData = std::tuple< std::unordered_set< QString >, TFormulaList, QJsonArray >;
+    
 
 using TNameValuePair = std::pair< QString, TOptionalDouble >;
 using TOptionalNameValuePair = std::optional< TNameValuePair >;
+
+CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
 
 #endif

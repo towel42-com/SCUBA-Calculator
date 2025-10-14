@@ -67,7 +67,9 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual TNamedFormulaList getAllFormulas() const;
+    virtual TCalculatorFormulaData getAllFormulas() const;
+
+    virtual void initResources() const;
 
 public:
     // used inside the DLL
@@ -88,7 +90,8 @@ protected:
     virtual const TVariableInfoList &getLHSVariables() const final;
     virtual const TVariableInfoList &getRHSVariables() const final;
 
-    virtual std::pair< TNamedFormulaList, TValesForVariablePairVector > myGetAllFormulas() const;
+    TFormulaList getFormulaList() const;
+    virtual std::pair< TFormulaList, TValuesForVariablePairVector > getFormulaListAndValues() const;
 
     virtual QString myCalculatorName() const = 0;
     virtual QString myReversedCalculatorName() const;

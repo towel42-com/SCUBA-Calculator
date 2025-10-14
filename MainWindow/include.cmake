@@ -36,7 +36,7 @@ set(qtproject_UIS
 )
 
 set(qtproject_QRC
-    application.qrc
+    MainWindow.qrc
 )
 
 SET( project_pub_DEPS

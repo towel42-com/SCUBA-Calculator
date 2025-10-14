@@ -71,6 +71,7 @@ DeployQt( ${PROJECT_NAME} .
         PressureToDepth
         PSIToBar
         CombinedGasLaw
+        IdealGasLaw
         PressureChangeInTemp
         DegreeChangeToPressureChange
         VolumeChangeInTemp

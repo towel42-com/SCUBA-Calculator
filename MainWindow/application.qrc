@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>resources/scuba-calc.png</file>
-        <file>resources/formulas.json</file>
-    </qresource>
-</RCC>

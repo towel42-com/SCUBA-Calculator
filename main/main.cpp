@@ -8,7 +8,7 @@
 int main( int argc, char ** argv )
 {
     QApplication appl( argc, argv );
-    Q_INIT_RESOURCE( application );
+    Q_INIT_RESOURCE( MainWindow );
     NTowel42::CQt6MathJax::initResources();
 
     appl.setApplicationName( NVersion::APP_NAME );
