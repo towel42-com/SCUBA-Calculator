@@ -30,7 +30,6 @@
 #include <QString>
 #include <QObject>
 class QWidget;
-class QSvgWidget;
 class QFrame;
 
 class CALCULATORS_EXPORT CSCUBACalculator : public QObject

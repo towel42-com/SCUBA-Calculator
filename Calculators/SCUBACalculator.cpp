@@ -582,6 +582,7 @@ QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const Q
     }
 
     retVal = retVal.replace( " ", R"__(\ )__" );
+
     return retVal;
 }
 

@@ -28,7 +28,6 @@
 #include <QWidget>
 #include <tuple>
 
-class QSvgWidget;
 class QFrame;
 class QGroupBox;
 

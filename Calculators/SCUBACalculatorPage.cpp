@@ -5,8 +5,6 @@
 
 #include <QFormLayout>
 #include <QFrame>
-#include <QSvgWidget>
-#include <QSvgRenderer>
 #include <QGroupBox>
 
 #include <list>
@@ -101,6 +99,8 @@ std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::construc
 
     auto retVal = new CSCUBACalculatorPage( calculator, parent );
     auto formLayout = new QFormLayout( retVal );
+    formLayout->setSpacing( 0 );
+    formLayout->setContentsMargins( 0, 0, 0, 0 );
 
     auto &&[ groupBox, currNumVariables ] = loadVariables( tr( "LHS" ), calculator->getLHSVariables(), retVal );
     numVariables += currNumVariables;
