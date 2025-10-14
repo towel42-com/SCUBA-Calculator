@@ -250,7 +250,7 @@
  <customwidgets>
   <customwidget>
    <class>NTowel42::CMathJaxWidget</class>
-   <extends>QWidget</extends>
+   <extends>QGroupBox</extends>
    <header>T42-Qt6MathJax/include/MathJaxWidget.h</header>
    <container>1</container>
   </customwidget>
@@ -260,7 +260,7 @@
   <tabstop>reset</tabstop>
  </tabstops>
  <resources>
-  <include location="application.qrc"/>
+  <include location="MainWindow.qrc"/>
  </resources>
  <connections>
   <connection>

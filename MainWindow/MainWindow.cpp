@@ -13,7 +13,6 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QMessageBox>
-#include <QSvgRenderer>
 #include <QButtonGroup>
 #include <QResizeEvent>
 #include <QRegularExpression>
@@ -468,31 +467,6 @@ void CMainWindow::slotResetCurrentPage()
     if ( !calc )
         return;
     calc->resetVariables();
-}
-
-bool CMainWindow::eventFilter( QObject *obj, QEvent *event )
-{
-    if ( ( obj == fImpl->stackedWidget ) && ( event->type() == QEvent::Resize ) )
-    {
-        updateSVGSizes();
-    }
-    return QObject::eventFilter( obj, event );
-}
-
-void CMainWindow::updateSVGSizes()
-{
-    if ( !currentCalculator() )
-        return;
-
-    updateSVGSize( EFormulaType::eBaseFormula );
-    updateSVGSize( EFormulaType::eCurrentFormula );
-    updateSVGSize( EFormulaType::eCurrentValueFormula );
-}
-
-void CMainWindow::updateSVGSize( EFormulaType formulaType )
-{
-    auto widget = mathJaxForFormulaType( formulaType );
-    widget->updateSVGSize();
 }
 
 void CMainWindow::slotGenerateAllFormulas()

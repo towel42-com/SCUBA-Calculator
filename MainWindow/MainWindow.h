@@ -29,7 +29,6 @@ struct SFormulas
 
 class CSCUBACalculator;
 class QTreeWidgetItem;
-class QSvgWidget;
 class CMainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -41,7 +40,6 @@ public:
     void loadCalculators();
 
 private:
-    bool eventFilter( QObject *obj, QEvent *event );
 
 Q_SIGNALS:
 
@@ -77,9 +75,6 @@ private:
     void setMathJaxWidgetsVisible( bool visible );
 
 private:
-    void updateSVGSizes();
-    void updateSVGSize( EFormulaType formulaType );
-
     void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType );
 
     CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;

@@ -819,7 +819,7 @@ namespace NUtilities
                               .arg( durationFieldName );
 
                 formulas.push_back( retVal );
-                return formulas.join( R"( \newline\newline )" );
+                return joinFormulas( formulas );
             }
 
             double computeDuration( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier )
@@ -898,8 +898,19 @@ namespace NUtilities
                               .arg( actualWeightFieldName );
 
                 formulas.push_back( retVal );
-                return formulas.join( R"( \newline\newline )" );
+                return joinFormulas( formulas );
             }
         }
+    }
+
+    QString joinFormulas( const QStringList &formulas )
+    {
+        auto retVal = formulas.join( R"( \newline )" );
+        if ( formulas.size() > 1 )
+        {
+            retVal = QString( R"__(\begin{align})__" ) + retVal + QString( R"__(\end{align})__" );
+            retVal.replace( "=", "& =" );
+        }
+        return retVal;
     }
 }

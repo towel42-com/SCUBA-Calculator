@@ -160,6 +160,7 @@ namespace NUtilities
         }
     }
 
+    CALCULATORS_EXPORT QString joinFormulas( const QStringList &formulas );
     CALCULATORS_EXPORT QString descForType( EVariableType type );
     CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
 
