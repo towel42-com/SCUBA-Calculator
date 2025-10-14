@@ -45,14 +45,6 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 {
     fImpl->setupUi( this );
 
-    auto bg = new QButtonGroup( this );
-    bg->addButton( fImpl->imperial );
-    bg->addButton( fImpl->metric );
-
-    bg = new QButtonGroup( this );
-    bg->addButton( fImpl->seaWater );
-    bg->addButton( fImpl->freshWater );
-
     setWindowIcon( QIcon( ":/resources/scubacalc.png" ) );
     setAttribute( Qt::WA_DeleteOnClose );
     fBlankPage = new QWidget;
@@ -61,10 +53,15 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
     fRenderingEngine = new NTowel42::CQt6MathJax( this );
     fImpl->baseFormulaWidget->setEngine( fRenderingEngine );
+    fImpl->baseFormulaWidget->setTitle( tr( "Base Formula" ) );
+
     fImpl->currFormulaWidget->setEngine( fRenderingEngine );
     fImpl->currFormulaWidget->setSubordinateTo( fImpl->baseFormulaWidget );
+    fImpl->currFormulaWidget->setTitle( tr( "Current Formula" ) );
+
     fImpl->currFormulaValueWidget->setEngine( fRenderingEngine );
     fImpl->currFormulaValueWidget->setSubordinateTo( { fImpl->baseFormulaWidget, fImpl->currFormulaWidget } );
+    fImpl->currFormulaValueWidget->setTitle( tr( "Formula with Values" ) );
 
     connect(
         fImpl->baseFormulaWidget, &NTowel42::CMathJaxWidget::sigErrorMessage,
