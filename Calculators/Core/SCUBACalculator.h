@@ -29,8 +29,27 @@
 #include <QStringList>
 #include <QString>
 #include <QObject>
+#include <QJsonArray>
+#include <memory>
+
+namespace NTowel42
+{
+    class CQt6MathJax;
+}
+
 class QWidget;
 class QFrame;
+
+struct CALCULATORS_EXPORT SGeneratedFormulaData
+{
+    virtual void sortByName();
+    virtual std::pair< int, int > formulaCounts( NTowel42::CQt6MathJax *renderingEngine ) const;
+
+    std::unordered_set< QString > fAllFormulas;
+    TFormulaList fByNameList;
+    QJsonArray fJsonArray;
+    bool fUpdated{ false };
+};
 
 class CALCULATORS_EXPORT CSCUBACalculator : public QObject
 {
@@ -57,8 +76,8 @@ public:
     virtual QStringList calculatorPath() const = 0;
     virtual QString calculatorName() const /*final*/;
 
-    virtual CSCUBACalculatorPage *getPage( QWidget *parent ) /*final*/;
-    virtual CSCUBACalculatorPage *getPage() const /*final*/;
+    virtual QWidget *getPage( QWidget *parent ) /*final*/;
+    virtual QWidget *getPage() const /*final*/;
 
     virtual void setUpdateFormulaFunc( const TUpdateFormulaFunc &func ) /*final*/;
     virtual void setImperial( bool imperial ) /*final*/;
@@ -66,7 +85,7 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual TCalculatorFormulaData getAllFormulas() const;
+    virtual std::shared_ptr< SGeneratedFormulaData > getAllFormulas() const;
 
     virtual void initResources() const;
 
@@ -125,7 +144,7 @@ protected:
     virtual void computeValues() final;   // updates all values
     TVariableInfo getFirstUnsetVariable() const;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const=0;   // returns the current formula in use
+    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
     virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;

@@ -20,25 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-project( SCUBACalculators )
-
-include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
-
-add_library(${PROJECT_NAME} STATIC
-    ${_PROJECT_DEPENDENCIES} 
-)
-
-target_link_libraries( ${PROJECT_NAME}
-      PUBLIC
-          ${project_pub_DEPS}
-      PRIVATE
-          ${project_pri_DEPS}
-)
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
-
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators )
+add_subdirectory( Core )
 
 add_subdirectory( Buoyancy )
 add_subdirectory( Miscellaneous )

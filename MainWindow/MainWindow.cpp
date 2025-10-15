@@ -1,9 +1,9 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "Calculators/SCUBACalculator.h"
-#include "Calculators/SCUBACalculatorPage.h"
-#include "Calculators/Formula.h"
+#include "Calculators/Core/SCUBACalculator.h"
+#include "Calculators/Core/SCUBACalculatorPage.h"
+#include "Calculators/Core/Formula.h"
 
 #include "T42-Qt6MathJax/include/Qt6MathJax.h"
 #include "SABUtils/utils.h"
@@ -97,6 +97,8 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     connect( fImpl->freshWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
 
     connect( fImpl->actionGenerateAllFormulas, &QAction::triggered, this, &CMainWindow::slotGenerateAllFormulas );
+    connect( fImpl->actionGenerateUpdatedFormulas, &QAction::triggered, this, &CMainWindow::slotGenerateUpdatedFormulas );
+
     slotSelectCalculator( nullptr );
     QTimer::singleShot( 100, [ = ] { loadCache(); } );
 }
@@ -302,7 +304,7 @@ void CMainWindow::slotWaterChanged()
 void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
 {
     auto calculator = getCalculator( item );
-    auto page = calculator ? calculator->getPage( nullptr ) : nullptr;
+    auto page = dynamic_cast< CSCUBACalculatorPage * >( calculator ? calculator->getPage( nullptr ) : nullptr );
     bool needsInit = page ? page->needsInit() : false;
 
     if ( page )
@@ -471,10 +473,20 @@ void CMainWindow::slotResetCurrentPage()
 
 void CMainWindow::slotGenerateAllFormulas()
 {
-    static bool first = true;
+    generateFormulas( false );
+}
+
+void CMainWindow::slotGenerateUpdatedFormulas()
+{
+    generateFormulas( true );
+}
+
+void CMainWindow::generateFormulas( bool needUpdatingOnly )
+{
+    bool first = true;
     if ( first )
     {
-        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\MainWindow)";
+        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators)";
         if ( QDir::current() != QDir( defaultDir ) )
             QDir::setCurrent( defaultDir );
         first = false;
@@ -484,7 +496,7 @@ void CMainWindow::slotGenerateAllFormulas()
     if ( dir.isEmpty() )
         return;
 
-    using TFormulaMap = std::unordered_map< CSCUBACalculator *, TCalculatorFormulaData >;
+    using TFormulaMap = std::unordered_map< CSCUBACalculator *, std::shared_ptr< SGeneratedFormulaData > >;
     TFormulaMap allFormulas;
 
     for ( auto &&ii : fCalculators )
@@ -498,19 +510,13 @@ void CMainWindow::slotGenerateAllFormulas()
 
     for ( auto &&ii : allFormulas )
     {
-        std::get< 1 >( ii.second )
-            .sort(   //
-                []( const TFormula &lhs, const TFormula &rhs )   //
-                {   //
-                    return lhs->name() < rhs->name();
-                } );
+        ii.second->sortByName();
 
-        for ( auto &&curr : std::get< 1 >( ii.second ) )
-        {
-            totalFormulas++;
-            if ( !fRenderingEngine->beenCreated( curr->formula() ) )
-                numToBeRendered++;
-        }
+        auto &&[ lclNumTotal, lclToRender ] = ii.second->formulaCounts( fRenderingEngine );
+        ii.second->fUpdated = ( lclToRender != 0 );
+
+        numToBeRendered += lclToRender;
+        totalFormulas += lclNumTotal;
     }
 
     fRenderingEngine->blockSignals( true );
@@ -518,9 +524,10 @@ void CMainWindow::slotGenerateAllFormulas()
     progress->setMinimumDuration( 1000 );
     for ( auto &&currFormulaData : allFormulas )
     {
-        for ( auto &&ii : std::get< 1 >( currFormulaData.second ) )
+        for ( auto &&ii : currFormulaData.second->fByNameList )
         {
-            if ( !fRenderingEngine->beenCreated( ii->formula() ) )
+            bool beenCreated = fRenderingEngine->beenCreated( ii->formula() );
+            if ( !beenCreated )
             {
                 progress->setMinimumDuration( 0 );
                 progress->setValue( progress->value() + 1 );
@@ -557,7 +564,7 @@ void CMainWindow::slotGenerateAllFormulas()
                 }   //
             );
 
-            std::get< 2 >( currFormulaData.second ).append( obj );
+            currFormulaData.second->fJsonArray.append( obj );
         }
     }
     delete progress;
@@ -566,6 +573,8 @@ void CMainWindow::slotGenerateAllFormulas()
     for ( auto &&ii : allFormulas )
     {
         auto calc = ii.first;
+        if ( needUpdatingOnly && !ii.second->fUpdated )
+            continue;
 
         auto jsonFileName = QDir( dir ).absoluteFilePath( QString( "%1-formulas.json" ).arg( calc->calculatorName() ) );
         QFile jsonFile( jsonFileName );
@@ -575,8 +584,7 @@ void CMainWindow::slotGenerateAllFormulas()
             return;
         }
         QJsonDocument doc;
-        auto &&jsonArrayData = std::get< 2 >( ii.second );
-        doc.setArray( jsonArrayData );
+        doc.setArray( ii.second->fJsonArray );
 
         jsonFile.write( doc.toJson( QJsonDocument::Indented ) );
         jsonFile.close();

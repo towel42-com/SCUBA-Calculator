@@ -1,12 +1,12 @@
 #ifndef CMAINWINDOW_H
 #define CMAINWINDOW_H
 
-#include "Calculators/ScubaCalculator.h"
 #include <QMainWindow>
 #include <unordered_map>
 #include <memory>
 #include <optional>
 
+#include "Calculators/Core/ScubaCalculatorFwd.h"
 namespace Ui
 {
     class CMainWindow;
@@ -49,8 +49,11 @@ public Q_SLOTS:
     void slotWaterChanged();
     void slotResetCurrentPage();
     void slotGenerateAllFormulas();
+    void slotGenerateUpdatedFormulas();
 
 private:
+    void generateFormulas( bool updatedOnly );
+
     CSCUBACalculator *currentCalculator() const;
     CSCUBACalculatorPage *currentCalculatorPage() const;
 

@@ -1,6 +1,6 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
-#include "SCUBACalculator.h"
+#include "Core/SCUBACalculator.h"
 
 #endif

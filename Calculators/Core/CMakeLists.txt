@@ -20,30 +20,22 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-set(qtproject_SRCS
-    Calculator.cpp
+project( SCUBACalculatorCore )
+
+include( include.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
+
+add_library(${PROJECT_NAME} STATIC
+    ${_PROJECT_DEPENDENCIES} 
 )
 
-set(qtproject_H
+target_link_libraries( ${PROJECT_NAME}
+      PUBLIC
+          ${project_pub_DEPS}
+      PRIVATE
+          ${project_pri_DEPS}
 )
 
-set(project_H
-    Calculator.h
-)
+target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
 
-set(qtproject_UIS
-)
-
-set(qtproject_QRC
-    calculator.qrc
-)
-
-SET( project_pub_DEPS
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Widgets
-    Qt6::SvgWidgets
-    SCUBACalculatorCore
-    SABUtils
-    ${project_pub_DEPS}
-)
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators )

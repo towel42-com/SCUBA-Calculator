@@ -127,11 +127,12 @@ using TFormulaList = std::list< TFormula >;
 using TStringList = std::list< QString >;
 using TValuesForVariablePair = std::pair< TVariableInfo, TOptionalDoubleVector >;
 using TValuesForVariablePairVector = std::vector< TValuesForVariablePair >;
-using TCalculatorFormulaData = std::tuple< std::unordered_set< QString >, TFormulaList, QJsonArray >;
-    
 
 using TNameValuePair = std::pair< QString, TOptionalDouble >;
 using TOptionalNameValuePair = std::optional< TNameValuePair >;
+
+struct SGeneratedFormulaData;
+using TGeneratedFormulaData = std::shared_ptr< SGeneratedFormulaData >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
 

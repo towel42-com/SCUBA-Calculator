@@ -3,6 +3,7 @@
 #include "VariableInfo.h"
 #include "Utilities.h"
 #include "Formula.h"
+#include "T42-Qt6MathJax/include/Qt6MathJax.h"
 
 #include <QFrame>
 
@@ -75,13 +76,13 @@ QString CSCUBACalculator::getBaseFormula() const
     return retVal;
 }
 
-CSCUBACalculatorPage *CSCUBACalculator::getPage() const
+QWidget *CSCUBACalculator::getPage() const
 {
     Q_ASSERT( fPage );
     return fPage;
 }
 
-CSCUBACalculatorPage *CSCUBACalculator::getPage( QWidget *parent )
+QWidget *CSCUBACalculator::getPage( QWidget *parent )
 {
     if ( !fPage )
     {
@@ -137,7 +138,7 @@ bool CSCUBACalculator::seaWater() const
 void CSCUBACalculator::notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const
 {
     if ( fUpdateFormulaFunc )
-        fUpdateFormulaFunc( getPage(), formula, formulaType );
+        fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, formulaType );
 }
 
 TVariableInfoList &CSCUBACalculator::getVariables()
@@ -383,10 +384,9 @@ TFormulaList CSCUBACalculator::getFormulaList() const
     return retVal;
 }
 
-TCalculatorFormulaData CSCUBACalculator::getAllFormulas() const
+std::shared_ptr< SGeneratedFormulaData > CSCUBACalculator::getAllFormulas() const
 {
-    std::unordered_set< QString > allFormulasMap;
-    TFormulaList byNameList;
+    auto retVal = std::make_shared< SGeneratedFormulaData >();
 
     qCDebug( ScubaCalculator ).noquote().nospace() << "Getting Formulas from: " << calculatorName();
     auto formulas = getFormulaList();
@@ -395,14 +395,14 @@ TCalculatorFormulaData CSCUBACalculator::getAllFormulas() const
     {
         auto tex = jj->formula();
 
-        auto pos = allFormulasMap.find( tex );
-        if ( pos != allFormulasMap.end() )
+        auto pos = retVal->fAllFormulas.find( tex );
+        if ( pos != retVal->fAllFormulas.end() )
             continue;
 
-        allFormulasMap.insert( tex );
-        byNameList.emplace_back( jj );
+        retVal->fAllFormulas.insert( tex );
+        retVal->fByNameList.emplace_back( jj );
     }
-    return std::make_tuple( allFormulasMap, byNameList, QJsonArray() );
+    return retVal;
 }
 
 void CSCUBACalculator::initResources() const
@@ -590,3 +590,26 @@ QString CSCUBACalculator::finalizeFormula( const QString &formula, EFormulaType 
 {
     return finalizeFormula( imperial(), seaWater(), formula, formulaType );
 }
+
+void SGeneratedFormulaData::sortByName()
+{
+    fByNameList.sort(   //
+        []( const TFormula &lhs, const TFormula &rhs )   //
+        {   //
+            return lhs->name() < rhs->name();
+        } );
+}
+
+std::pair< int, int > SGeneratedFormulaData::formulaCounts( NTowel42::CQt6MathJax * renderingEngine ) const
+{
+    int total = 0;
+    int needsRendering = 0;
+
+    for ( auto &&curr : fByNameList )
+    {
+        total++;
+        if ( !renderingEngine->beenCreated( curr->formula() ) )
+            needsRendering++;
+    }
+    return { total, needsRendering };
+};

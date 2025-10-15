@@ -1,6 +1,6 @@
 #include "Calculator.h"
-#include "VariableInfo.h"
-#include "Utilities.h"
+#include "Core/VariableInfo.h"
+#include "Core/Utilities.h"
 
 ////https://swimmingcalculators.com/scuba-diving-calculator/
 
