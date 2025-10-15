@@ -5,7 +5,7 @@
 #include "Calculators/Core/SCUBACalculatorPage.h"
 #include "Calculators/Core/Formula.h"
 
-#include "T42-Qt6MathJax/include/MathJaxQt6.h"
+#include "T42-MathJaxQt6/include/MathJaxQt6.h"
 #include "SABUtils/utils.h"
 
 #include <QDir>
