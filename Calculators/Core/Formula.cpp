@@ -1,6 +1,6 @@
 #include "Formula.h"
 #include "Utilities.h"
-#include "T42-Qt6MathJax/include/Qt6MathJax.h"
+#include "T42-Qt6MathJax/include/MathJaxQt6.h"
 
 #include <QString>
 

@@ -34,7 +34,7 @@
 
 namespace NTowel42
 {
-    class CQt6MathJax;
+    class CMathJaxQt6;
 }
 
 class QWidget;
@@ -43,7 +43,7 @@ class QFrame;
 struct CALCULATORS_EXPORT SGeneratedFormulaData
 {
     virtual void sortByName();
-    virtual std::pair< int, int > formulaCounts( NTowel42::CQt6MathJax *renderingEngine ) const;
+    virtual std::pair< int, int > formulaCounts( NTowel42::CMathJaxQt6 *renderingEngine ) const;
 
     std::unordered_set< QString > fAllFormulas;
     TFormulaList fByNameList;

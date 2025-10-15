@@ -14,8 +14,8 @@ namespace Ui
 
 namespace NTowel42
 {
-    class CQt6MathJax;
-    class CMathJaxWidget;
+    class CMathJaxQt6;
+    class CMathJaxQt6Widget;
 }
 
 struct SFormulas
@@ -74,7 +74,7 @@ private:
 
 private:
     std::optional< QString > formulaForFormulaType( EFormulaType formulaType ) const;
-    NTowel42::CMathJaxWidget *mathJaxForFormulaType( EFormulaType formulaType ) const;
+    NTowel42::CMathJaxQt6Widget *mathJaxForFormulaType( EFormulaType formulaType ) const;
     void setMathJaxWidgetsVisible( bool visible );
 
 private:
@@ -93,7 +93,7 @@ private:
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
     std::unordered_map< QWidget *, SFormulas > fPageToFormulasMap;
 
-    NTowel42::CQt6MathJax *fRenderingEngine{ nullptr };
+    NTowel42::CMathJaxQt6 *fRenderingEngine{ nullptr };
 };
 
 #endif

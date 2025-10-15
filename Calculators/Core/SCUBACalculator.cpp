@@ -3,7 +3,7 @@
 #include "VariableInfo.h"
 #include "Utilities.h"
 #include "Formula.h"
-#include "T42-Qt6MathJax/include/Qt6MathJax.h"
+#include "T42-Qt6MathJax/include/MathJaxQt6.h"
 
 #include <QFrame>
 
@@ -600,7 +600,7 @@ void SGeneratedFormulaData::sortByName()
         } );
 }
 
-std::pair< int, int > SGeneratedFormulaData::formulaCounts( NTowel42::CQt6MathJax * renderingEngine ) const
+std::pair< int, int > SGeneratedFormulaData::formulaCounts( NTowel42::CMathJaxQt6 * renderingEngine ) const
 {
     int total = 0;
     int needsRendering = 0;

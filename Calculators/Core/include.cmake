@@ -52,7 +52,7 @@ SET( project_pub_DEPS
     Qt6::Widgets
     Qt6::SvgWidgets
     SABUtils
-    T42Qt6MathJax
+    MathJaxQt6
     ${project_pub_DEPS}
 )
 

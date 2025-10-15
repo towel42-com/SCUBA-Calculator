@@ -1,5 +1,5 @@
 #include "MainWindow/MainWindow.h"
-#include "T42-Qt6MathJax/include/Qt6MathJax.h"
+#include "T42-Qt6MathJax/include/MathJaxQt6.h"
 #include <QApplication>
 #include <QMessageBox>
 
@@ -9,7 +9,7 @@ int main( int argc, char ** argv )
 {
     QApplication appl( argc, argv );
     Q_INIT_RESOURCE( MainWindow );
-    NTowel42::CQt6MathJax::initResources();
+    NTowel42::CMathJaxQt6::initResources();
 
     appl.setApplicationName( NVersion::APP_NAME );
     appl.setApplicationVersion( NVersion::getVersionString( true ) );

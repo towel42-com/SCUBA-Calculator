@@ -21,5 +21,5 @@ set(qtproject_QRC
         Qt6::SvgWidgets
         MainWindow
         SABUtils
-        T42Qt6MathJax
+        MathJaxQt6
 )

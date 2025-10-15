@@ -32,7 +32,6 @@ add_executable( ${PROJECT_NAME} WIN32
 if ( NOT DEPLOYQT_EXECUTABLE )
     message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
 endif()
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER App )
           
 get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 include_directories( ${CMAKE_BINARY_DIR} )
@@ -43,7 +42,7 @@ set ( DEBUG_PATH
         )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
-        FOLDER App 
+        FOLDER Apps
         VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
         VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
         VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}" 
@@ -81,7 +80,7 @@ DeployQt( ${PROJECT_NAME} .
         RelativeChangeInAmbientPressure
         Calories
     EXTRA_TARGETS2
-       T42Qt6MathJax 
+       MathJaxQt6
        SABUtils
 )
 

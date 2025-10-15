@@ -5,7 +5,7 @@
 #include "Calculators/Core/SCUBACalculatorPage.h"
 #include "Calculators/Core/Formula.h"
 
-#include "T42-Qt6MathJax/include/Qt6MathJax.h"
+#include "T42-Qt6MathJax/include/MathJaxQt6.h"
 #include "SABUtils/utils.h"
 
 #include <QDir>
@@ -50,7 +50,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl->stackedWidget->addWidget( fBlankPage );
     fImpl->stackedWidget->installEventFilter( this );
 
-    fRenderingEngine = new NTowel42::CQt6MathJax( this );
+    fRenderingEngine = new NTowel42::CMathJaxQt6( this );
     fImpl->baseFormulaWidget->setEngine( fRenderingEngine );
     fImpl->baseFormulaWidget->setTitle( tr( "Base Formula" ) );
 
@@ -63,7 +63,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl->currFormulaValueWidget->setTitle( tr( "Formula with Values" ) );
 
     connect(
-        fImpl->baseFormulaWidget, &NTowel42::CMathJaxWidget::sigErrorMessage,
+        fImpl->baseFormulaWidget, &NTowel42::CMathJaxQt6Widget::sigErrorMessage,
         [ = ]( const QString &msg )
         {
             fImpl->baseFormulaWidget->setVisible( false );
@@ -71,7 +71,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
         } );
 
     connect(
-        fImpl->currFormulaWidget, &NTowel42::CMathJaxWidget::sigErrorMessage,
+        fImpl->currFormulaWidget, &NTowel42::CMathJaxQt6Widget::sigErrorMessage,
         [ = ]( const QString &msg )
         {
             fImpl->currFormulaWidget->setVisible( false );
@@ -79,7 +79,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
         } );
 
     connect(
-        fImpl->currFormulaValueWidget, &NTowel42::CMathJaxWidget::sigErrorMessage,
+        fImpl->currFormulaValueWidget, &NTowel42::CMathJaxQt6Widget::sigErrorMessage,
         [ = ]( const QString &msg )
         {
             fImpl->currFormulaValueWidget->setVisible( false );
@@ -431,7 +431,7 @@ std::optional< QString > CMainWindow::formulaForFormulaType( EFormulaType formul
     return ( *pos ).second.formula( formulaType );
 }
 
-NTowel42::CMathJaxWidget *CMainWindow::mathJaxForFormulaType( EFormulaType formulaType ) const
+NTowel42::CMathJaxQt6Widget *CMainWindow::mathJaxForFormulaType( EFormulaType formulaType ) const
 {
     if ( formulaType == EFormulaType::eBaseFormula )
         return fImpl->baseFormulaWidget;
