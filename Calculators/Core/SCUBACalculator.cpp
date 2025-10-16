@@ -3,7 +3,6 @@
 #include "VariableInfo.h"
 #include "Utilities.h"
 #include "Formula.h"
-#include "T42-MathJaxQt6/include/MathJaxQt6.h"
 
 #include <QFrame>
 
@@ -135,10 +134,10 @@ bool CSCUBACalculator::seaWater() const
     return false;
 }
 
-void CSCUBACalculator::notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const
+void CSCUBACalculator::notifyOfNewFormula( const QString &formula, EFormulaType formulaType, bool finished ) const
 {
     if ( fUpdateFormulaFunc )
-        fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, formulaType );
+        fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, formulaType, finished );
 }
 
 TVariableInfoList &CSCUBACalculator::getVariables()
@@ -214,7 +213,7 @@ void CSCUBACalculator::resetVariables()
 
     auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
     updateFields( nullptr );
-    notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
+    notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
 }
 
 std::size_t CSCUBACalculator::numUnsetVariables() const
@@ -498,7 +497,7 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     if ( currFormula.has_value() )
     {
         auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentFormula );
-        notifyOfNewFormula( formula, EFormulaType::eCurrentFormula );
+        notifyOfNewFormula( formula, EFormulaType::eCurrentFormula, false );
     }
 
     computeValues();
@@ -507,11 +506,11 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     if ( currFormula.has_value() )
     {
         auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentValueFormula );
-        notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula );
+        notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula, false );
     }
 
     auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
-    notifyOfNewFormula( formula, EFormulaType::eBaseFormula );
+    notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
 }
 
 std::optional< QString > CSCUBACalculator::getCurrentFormula() const
@@ -600,7 +599,7 @@ void SGeneratedFormulaData::sortByName()
         } );
 }
 
-std::pair< int, int > SGeneratedFormulaData::formulaCounts( NTowel42::CMathJaxQt6 * renderingEngine ) const
+std::pair< int, int > SGeneratedFormulaData::formulaCounts( const std::function< bool( const QString & formula ) > & beenCreated ) const
 {
     int total = 0;
     int needsRendering = 0;
@@ -608,7 +607,7 @@ std::pair< int, int > SGeneratedFormulaData::formulaCounts( NTowel42::CMathJaxQt
     for ( auto &&curr : fByNameList )
     {
         total++;
-        if ( !renderingEngine->beenCreated( curr->formula() ) )
+        if ( !beenCreated( curr->formula() ) )
             needsRendering++;
     }
     return { total, needsRendering };

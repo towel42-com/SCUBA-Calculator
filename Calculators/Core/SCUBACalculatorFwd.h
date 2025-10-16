@@ -55,7 +55,7 @@ enum class EFormulaType;
 using TOptionalDouble = std::optional< double >;
 using TOptionalDoubleVector = std::vector< TOptionalDouble >;
 
-using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, EFormulaType ) >;
+using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, EFormulaType, bool finished ) >;
 using TInstantiateCalcFunc = CSCUBACalculator *(*)();
 
 constexpr char kInstantiateCalcFuncName[] = "instantiateCalculator";

@@ -43,7 +43,7 @@ class QFrame;
 struct CALCULATORS_EXPORT SGeneratedFormulaData
 {
     virtual void sortByName();
-    virtual std::pair< int, int > formulaCounts( NTowel42::CMathJaxQt6 *renderingEngine ) const;
+    virtual std::pair< int, int > formulaCounts( const std::function< bool( const QString &formula ) > &beenCreated ) const;
 
     std::unordered_set< QString > fAllFormulas;
     TFormulaList fByNameList;
@@ -128,7 +128,7 @@ protected:
     TConstVariableInfo getVariable( const QString &varName ) const;
     TVariableInfo getVariable( const QString &varName );
 
-    virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType ) const final;
+    virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType, bool finished ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
     virtual QString finalizeFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const final;
     virtual QString finalizeFormula( const QString &formula, EFormulaType formulaType ) const final;
