@@ -52,7 +52,7 @@
          </widget>
         </item>
         <item row="5" column="0">
-         <widget class="NTowel42::CMathJaxQt6Widget" name="currFormulaWidget">
+         <widget class="NTowel42::CMathJaxQt6GroupBox" name="currFormulaGroupBox">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -148,7 +148,7 @@
          </widget>
         </item>
         <item row="6" column="0">
-         <widget class="NTowel42::CMathJaxQt6Widget" name="currFormulaValueWidget">
+         <widget class="NTowel42::CMathJaxQt6GroupBox" name="currFormulaValueGroupBox">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -158,7 +158,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="NTowel42::CMathJaxQt6Widget" name="baseFormulaWidget">
+         <widget class="NTowel42::CMathJaxQt6GroupBox" name="baseFormulaGroupBox">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -255,9 +255,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NTowel42::CMathJaxQt6Widget</class>
+   <class>NTowel42::CMathJaxQt6GroupBox</class>
    <extends>QGroupBox</extends>
-   <header>T42-MathJaxQt6/include/MathJaxQt6Widget.h</header>
+   <header>T42-MathJaxQt6/include/MathJaxQt6GroupBox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

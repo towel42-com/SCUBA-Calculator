@@ -15,7 +15,7 @@ namespace Ui
 namespace NTowel42
 {
     class CMathJaxQt6;
-    class CMathJaxQt6Widget;
+    class CMathJaxQt6GroupBox;
 }
 
 struct SFormulas
@@ -72,13 +72,13 @@ private:
     bool renderSVG( const QString &formula );
     std::optional< QString > formulaForPage( QWidget *page, EFormulaType formulaType );
 
-private:
+    void initMathJaxWidgets();
     std::optional< QString > formulaForFormulaType( EFormulaType formulaType ) const;
-    NTowel42::CMathJaxQt6Widget *mathJaxForFormulaType( EFormulaType formulaType ) const;
+    NTowel42::CMathJaxQt6GroupBox *mathJaxForFormulaType( EFormulaType formulaType ) const;
     void setMathJaxWidgetsVisible( bool visible );
 
 private:
-    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType );
+    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType, bool finished );
 
     CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;
     CSCUBACalculator *getCalculator( QWidget *page ) const;
@@ -93,7 +93,7 @@ private:
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
     std::unordered_map< QWidget *, SFormulas > fPageToFormulasMap;
 
-    NTowel42::CMathJaxQt6 *fRenderingEngine{ nullptr };
+    std::shared_ptr< NTowel42::CMathJaxQt6 > fRenderingEngine;
 };
 
 #endif
