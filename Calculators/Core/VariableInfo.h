@@ -45,6 +45,9 @@ class CALCULATORS_EXPORT CVariableInfo
 {
 public:
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
+    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range );
+    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values );
+    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const QString &unitLabel );
     CVariableInfo( EVariableType type );   // for use with constants
     ~CVariableInfo() {}
 
@@ -75,8 +78,8 @@ public:
     bool isVariable() const { return fType == EVariableType::eVariable; }
     bool isWidget( QWidget *widget ) const;
 
-    void setRange( const std::optional< SRange > &range ) { fRange = range; }
-    void setValues( const TOptionalNamedValueItemList &values ) { fValues = values; }
+    void setRange( const SRange &range ) { fRange = range; }
+    void setValues( const TNamedValueItemList &values ) { fValues = values; }
     void setUnitLabel( const QString &string ) { fUnitText = string; }   // overrides default behavior and always uses this string for the label
 
     QLineEdit *lineEdit() const;

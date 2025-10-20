@@ -26,6 +26,24 @@ CVariableInfo::CVariableInfo( EVariableType type ) :
     Q_ASSERT( ( fType != EVariableType::eIntermediate ) && ( fType != EVariableType::eVariable ) );
 }
 
+ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range ) :
+    CVariableInfo( name, desc, type, unitType, variableLocation )
+{
+    setRange( range );
+}
+
+ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values ) :
+    CVariableInfo( name, desc, type, unitType, variableLocation )
+{
+    setValues( values );
+}
+
+ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const QString &unitLabel ) :
+    CVariableInfo( name, desc, type, unitType, variableLocation )
+{
+    setUnitLabel( unitLabel );
+}
+
 bool CVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout )
 {
     if ( fType != EVariableType::eVariable )

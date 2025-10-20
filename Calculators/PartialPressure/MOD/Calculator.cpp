@@ -42,11 +42,10 @@ TVariableInfoList CCalculator::getMyVariables() const
     auto retVal = TVariableInfoList(   //
         {
             std::make_shared< CVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS, SRange( { 0.21, 2.0, 1.4, 0.1 } ) ),   //
             std::make_shared< CVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
-    ( *std::next( retVal.begin() ) )->setRange( SRange( { 0.21, 2.0, 1.4, 0.1 } ) );
     return retVal;
 }
 
