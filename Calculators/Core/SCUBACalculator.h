@@ -57,7 +57,7 @@ class CALCULATORS_EXPORT CSCUBACalculator : public QObject
 
     Q_PROPERTY( bool showUnits READ showUnits );
     Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
-    Q_PROPERTY( bool isReversable READ isReversable );
+    Q_PROPERTY( bool isReversible READ isReversible );
 
 public:
     // used inside the DLL
@@ -69,11 +69,11 @@ public:
     // dont know why, but making them final means they can not be imported
     virtual void init( bool imperial, bool seaWater ) /*final*/;   // initializes the default equations and sets the equations to the current setup
 
-    virtual bool isReversable() const { return false; }
+    virtual bool isReversible() const { return false; }
     virtual bool isReversed() const { return fReversed; }
-    virtual void setIsReversed( bool isReversed ) /*final*/ { fReversed = isReversed; }
+    virtual void setIsReversed( bool isReversed ) /*final*/;
 
-    virtual QStringList calculatorPath() const = 0;
+    virtual QStringList calculatorPath() const /*final*/;
     virtual QString calculatorName() const /*final*/;
 
     virtual QWidget *getPage( QWidget *parent ) /*final*/;
@@ -85,9 +85,9 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual std::shared_ptr< SGeneratedFormulaData > getAllFormulas() const;
+    virtual std::shared_ptr< SGeneratedFormulaData > getAllFormulas() const /*final*/;
 
-    virtual void initResources() const;
+    virtual void initResources() const /*final*/;
 
 public:
     // used inside the DLL
@@ -111,7 +111,12 @@ protected:
     TFormulaList getFormulaList() const;
     virtual std::pair< TFormulaList, TValuesForVariablePairVector > getFormulaListAndValues() const;
 
-    virtual QString myCalculatorName() const = 0;
+    virtual std::pair< QString, QString > fromToLabels() const { return {}; }
+
+    virtual QStringList myCalculatorPath() const = 0;
+    virtual QStringList myReversedCalculatorPath() const { return {}; }
+
+    virtual QString myCalculatorName() const;
     virtual QString myReversedCalculatorName() const;
 
     virtual QString getBaseFormula() const final;   // for descriptive purposes
@@ -145,7 +150,6 @@ protected:
     virtual bool valuesSetProperly() const;
 
 protected:
-
     virtual int numAllowedUnset() const { return 1; }
 
     TVariableInfoList getUnsetVariables() const;

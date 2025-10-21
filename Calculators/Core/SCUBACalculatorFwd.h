@@ -89,13 +89,17 @@ enum class EVariableType
     eFeetToMetersConst,
     eMetersToFeetConst,
     eLbsPerKgsConst,
+    eKgsPerLbsConst,
     eFreshWaterToSeaWaterConst,
     ePSIToBarConst,
+    eBarToPSIConst,
     eAbsZeroOffsetConst,
     ePressureOffsetConst,
     eBaseMETofSCUBAConst,
     eFillRateO2Const,
-    eFillRateAirConst
+    eFillRateAirConst,
+    eCubicFeetToLitersConst,
+    eLitersToCubicFeetConst
 };
 
 enum class EVariableLoc

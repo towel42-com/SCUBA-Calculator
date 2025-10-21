@@ -50,8 +50,15 @@ CSCUBACalculator::~CSCUBACalculator()
 {
 }
 
+QString CSCUBACalculator::myCalculatorName() const
+{
+    Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for non reversible calculators." );
+    return {};
+}
+
 QString CSCUBACalculator::myReversedCalculatorName() const
 {
+    Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for non reversible calculators." );
     return {};
 }
 
@@ -98,10 +105,53 @@ void CSCUBACalculator::init( bool imperial, bool seaWater )
         fPage->init( imperial, seaWater );
 }
 
+void CSCUBACalculator::setIsReversed( bool isReversed ) /**/
+{
+    fReversed = isReversed;
+    if ( fReversed )
+    {
+        auto currName = objectName();
+        auto pos = currName.indexOf( "To" );
+        if ( pos != -1 )
+        {
+            auto lhs = currName.left( pos );
+            auto rhs = currName.mid( pos + 2 );
+            setObjectName( rhs + "To" + lhs );
+        }
+        else
+            int xyz = 0;
+    }
+}
+
+QStringList CSCUBACalculator::calculatorPath() const
+{
+    QStringList retVal;
+    if ( isReversed() )
+    {
+        retVal = myReversedCalculatorPath();
+        if ( retVal.isEmpty() )
+            retVal = myCalculatorPath();
+    }
+    else
+        retVal = myCalculatorPath();
+    Q_ASSERT_X( !retVal.isEmpty(), "calculatorPath", "myCalculatorPath and/or myReversedCalculatorPath is not overridden" );
+    return retVal;
+}
+
 QString CSCUBACalculator::calculatorName() const
 {
-    auto retVal = ( isReversed() ) ? myReversedCalculatorName() : myCalculatorName();
-    return retVal;
+    if ( isReversible() )
+    {
+        auto labels = fromToLabels();
+        Q_ASSERT_X( !labels.first.isEmpty() && !labels.second.isEmpty(), "myCalculatorName", "fromToLabels MUST be overridden for reversible calculators" );
+
+        if ( isReversed() )
+            return tr( "%1 to %2" ).arg( labels.second ).arg( labels.first );
+        else
+            return tr( "%2 to %1" ).arg( labels.second ).arg( labels.first );
+    }
+
+    return ( isReversed() ) ? myReversedCalculatorName() : myCalculatorName();
 }
 
 void CSCUBACalculator::setImperial( bool imperial )

@@ -60,10 +60,15 @@ namespace NUtilities
         CALCULATORS_EXPORT QString feetToMeters( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString metersToFeet( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString lbsPerKgs( bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString kgsPerLbs( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString psiToBar( bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString barToPSI( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString pressureOffset( bool imperial, bool useAbbreviations, bool tex );
+
+        CALCULATORS_EXPORT QString cubicFeetToLiters( bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString litersToCubicFeet( bool useAbbreviations, bool tex );
     }
 
     namespace NConstants
@@ -77,11 +82,17 @@ namespace NUtilities
         extern const char *kFeetToMetersConstFieldName;
         extern const char *kMetersToFeetConstFieldName;
         extern const char *kLbsPerKgsConstFieldName;
+        extern const char *kKgsPerLbsConstFieldName;
         extern const char *kFreshWaterToSeaWaterConstFieldName;
         extern const char *kPSIToBarConstFieldName;
+        extern const char *kBarToPSIConstFieldName;
         extern const char *kAbsZeroOffsetConstFieldName;
         extern const char *kPressureOffsetConstFieldName;
         extern const char *kBaseMETofSCUBAConstFieldName;
+        extern const char *kFillRateAirConstFieldName;
+        extern const char *kFillRateO2ConstFieldName;
+        extern const char *kCubicFeetToLitersFieldName;
+        extern const char *kLitersToCubicFeetFieldName;
 
         CALCULATORS_EXPORT double absZeroOffset( bool imperial );
         CALCULATORS_EXPORT double pressureChangePerDegreeChange( bool imperial );
@@ -97,6 +108,7 @@ namespace NUtilities
         CALCULATORS_EXPORT double percentN2AtSurface();
         CALCULATORS_EXPORT double percentO2AtSurface();
         CALCULATORS_EXPORT double barToPSI();
+        CALCULATORS_EXPORT double psiToBar();
 
         CALCULATORS_EXPORT double lbsPerKGs();
         CALCULATORS_EXPORT double kgsPerLbs();
@@ -105,6 +117,8 @@ namespace NUtilities
         CALCULATORS_EXPORT double fillRateAir( bool imperial );
         CALCULATORS_EXPORT double fillRateO2( bool imperial );
 
+        CALCULATORS_EXPORT double cubicFeetPerLiter();
+        CALCULATORS_EXPORT double litersPerCubicFeet();
     }
 
     namespace NConversions
@@ -156,6 +170,12 @@ namespace NUtilities
 
         CALCULATORS_EXPORT QString farenheightToCelsiusFormula( const std::optional< QString > &celsiusFieldName, const QString &farenheightFieldName );
         CALCULATORS_EXPORT QString celsiusToFarenheightFormula( const QString &celsiusFieldName, const std::optional< QString > &farenheightFieldName );
+
+        CALCULATORS_EXPORT QString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName );
+        CALCULATORS_EXPORT QString litersToCubicFeetFormula( const QString &cubicFeetFieldName, const QString &litersFieldName );
+
+        CALCULATORS_EXPORT double cubicFeetToLiters( double volume );
+        CALCULATORS_EXPORT double litersToCubicFeet( double volume );
 
         namespace NCaloriesComputer
         {

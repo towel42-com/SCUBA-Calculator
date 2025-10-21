@@ -38,10 +38,10 @@ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariabl
     setValues( false, false, values );
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const QString &unitLabel ) :
-    CVariableInfo( name, desc, type, unitType, variableLocation )
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitType, bool imperial ) :
+    CVariableInfo( name, desc, type, EUnit::eNone, variableLocation )
 {
-    setUnitLabel( unitLabel );
+    setUnitOverride( unitType, imperial );
 }
 
 bool CVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout )
@@ -121,10 +121,15 @@ void CVariableInfo::updateLabels( bool imperial, bool seaWater )
 
 QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const
 {
-    if ( fUnitText.has_value() )
-        return fUnitText.value();
+    auto unitType = fUnit;
 
-    switch ( fUnit )
+    if ( fUnitOverride.has_value() )
+    {
+        unitType = fUnitOverride.value().first;
+        imperial = fUnitOverride.value().second;
+    }
+
+    switch ( unitType )
     {
         case EUnit::eNone:
             return {};
@@ -387,6 +392,12 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = "%1";
                 }
                 break;
+            case EVariableType::eKgsPerLbsConst:
+                {
+                    value = NUtilities::NUnitStrings::kgsPerLbs( true, true );
+                    format = "%1";
+                }
+                break;
             case EVariableType::eFreshWaterToSeaWaterConst:
                 {
                     value = NUtilities::NUnitStrings::freshWaterToSeaWater( imperial, true, true );
@@ -396,6 +407,12 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
             case EVariableType::ePSIToBarConst:
                 {
                     value = NUtilities::NUnitStrings::psiToBar( true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eBarToPSIConst:
+                {
+                    value = NUtilities::NUnitStrings::barToPSI( true, true );
                     format = "%1";
                 }
                 break;
@@ -417,15 +434,27 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = "%1";
                 }
                 break;
+            case EVariableType::eFillRateO2Const:
+                {
+                    value = NUtilities::NUnitStrings::fillRateO2( imperial, true, true );
+                    format = "%1";
+                }
+                break;
             case EVariableType::eFillRateAirConst:
                 {
                     value = NUtilities::NUnitStrings::fillRateAir( imperial, true, true );
                     format = "%1";
                 }
                 break;
-            case EVariableType::eFillRateO2Const:
+            case EVariableType::eCubicFeetToLitersConst:
                 {
-                    value = NUtilities::NUnitStrings::fillRateO2( imperial, true, true );
+                    value = NUtilities::NUnitStrings::cubicFeetToLiters( true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eLitersToCubicFeetConst:
+                {
+                    value = NUtilities::NUnitStrings::litersToCubicFeet( true, true );
                     format = "%1";
                 }
                 break;

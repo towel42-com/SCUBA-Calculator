@@ -168,21 +168,21 @@ namespace NUtilities
 
         QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
             retVal = retVal.arg( NConstants::pressureChangePerDegreeChange( imperial ) ).arg( NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString lbsPerKgs( bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
             retVal = retVal.arg( NConstants::lbsPerKGs() ).arg( NUnitStrings::weightUnit( true, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString kgsPerLbs( bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)" );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
             retVal = retVal.arg( NConstants::kgsPerLbs() ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( true, useAbbreviations, tex ) );
             return retVal;
         }
@@ -190,7 +190,7 @@ namespace NUtilities
         // kcal/(kg*minute)
         QString metUnit( bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(\frac{%1}{(%2 \times %3)})__" : "%1/(%2*%3)" );
+            auto retVal = QString( tex ? R"__(\frac{%1}{%2 \times %3})__" : "%1/(%2*%3)" );
             retVal = retVal.arg( energyUnit( false, useAbbreviations, tex ) ).arg( NUnitStrings::weightUnit( false, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( false, true, true ) );
             return retVal;
         }
@@ -204,7 +204,7 @@ namespace NUtilities
 
         QString fillRate( bool imperial, bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(\frac{%1}{%2})__" : "%1/%2" );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
             retVal = retVal.arg( pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
@@ -225,7 +225,7 @@ namespace NUtilities
 
         QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
         {
-            auto retVal = QString( tex ? R"__(%1 \frac{%2}{%3})__" : "%1 %2/%3" );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
             auto weightOfWater = doubleToString( NConstants::weightOfWater( imperial, seaWater ), 2 );
             retVal = retVal.arg( weightOfWater ).arg( weightUnit( imperial, useAbbreviations, tex ) ).arg( volumeUnit( imperial, useAbbreviations, tex ) );
             return retVal;
@@ -298,21 +298,21 @@ namespace NUtilities
 
         QString feetToMeters( bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"__(%1 (\frac{%2}{%3}))__" : "%1 (%2/%3))";
-            retVal = retVal.arg( doubleToString( NConstants::feetPerMeters(), 3 ) ).arg( lengthUnit( false, useAbbreviations, true ) ).arg( lengthUnit( true, useAbbreviations, true ) );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::feetPerMeters(), 3 ) ).arg( lengthUnit( false, useAbbreviations, tex ) ).arg( lengthUnit( true, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString metersToFeet( bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"__(%1 (\frac{%2}{%3}))__" : "%1 (%2/%3))";
-            retVal = retVal.arg( doubleToString( NConstants::metersPerFeet(), 3 ) ).arg( lengthUnit( true, useAbbreviations, true ) ).arg( lengthUnit( false, useAbbreviations, true ) );
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3))";
+            retVal = retVal.arg( doubleToString( NConstants::metersPerFeet(), 3 ) ).arg( lengthUnit( true, useAbbreviations, tex ) ).arg( lengthUnit( false, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
             retVal = retVal.arg( doubleToString( NConstants::freshWaterToSeaWater(), 2 ) ).arg( depthUnit( imperial, false, useAbbreviations, tex ) ).arg( depthUnit( imperial, true, useAbbreviations, tex ) );
             return retVal;
         }
@@ -320,7 +320,14 @@ namespace NUtilities
         QString psiToBar( bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
-            retVal = retVal.arg( doubleToString( NConstants::barToPSI(), 1 ) ).arg( pressureUnit( true, useAbbreviations, true ) ).arg( pressureUnit( false, useAbbreviations, true ) );
+            retVal = retVal.arg( doubleToString( NConstants::psiToBar(), 3 ) ).arg( pressureUnit( true, useAbbreviations, tex ) ).arg( pressureUnit( false, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString barToPSI( bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::barToPSI(), 1 ) ).arg( pressureUnit( false, useAbbreviations, tex ) ).arg( pressureUnit( true, useAbbreviations, tex ) );
             return retVal;
         }
 
@@ -337,6 +344,20 @@ namespace NUtilities
             retVal = retVal.arg( doubleToString( NConstants::pressureOffset( imperial ), 1 ) ).arg( pressureUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
+
+        QString cubicFeetToLiters( bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::cubicFeetPerLiter(), 4 ) ).arg( volumeUnit( true, useAbbreviations, tex ) ).arg( volumeUnit( false, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString litersToCubicFeet( bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::litersPerCubicFeet(), 4 ) ).arg( volumeUnit( false, useAbbreviations, tex ) ).arg( volumeUnit( true, useAbbreviations, tex ) );
+            return retVal;
+        }
     }
 
     namespace NConstants
@@ -350,13 +371,17 @@ namespace NUtilities
         const char *kFeetToMetersConstFieldName = "feetToMeters";
         const char *kMetersToFeetConstFieldName = "metersToFeet";
         const char *kLbsPerKgsConstFieldName = "lbsToKgs";
+        const char *kKgsPerLbsConstFieldName = "kgsToLbs";
         const char *kFreshWaterToSeaWaterConstFieldName = "freshWaterToSeaWater";
         const char *kPSIToBarConstFieldName = "psiToBar";
+        const char *kBarToPSIConstFieldName = "barToPSI";
         const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
         const char *kPressureOffsetConstFieldName = "pressureOffset";
         const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
         const char *kFillRateAirConstFieldName = "fillRateAir";
         const char *kFillRateO2ConstFieldName = "fillRateO2";
+        const char *kCubicFeetToLitersFieldName = "cubicFeetToLiters";
+        const char *kLitersToCubicFeetFieldName = "litersToCubicFeet";
 
         double absZeroOffset( bool imperial )
         {
@@ -428,6 +453,11 @@ namespace NUtilities
             return 14.7;
         }
 
+        double psiToBar()
+        {
+            return 1 / barToPSI();
+        }
+
         double lbsPerKGs()
         {
             return 2.20462;
@@ -436,6 +466,16 @@ namespace NUtilities
         double kgsPerLbs()
         {
             return 1 / lbsPerKGs();
+        }
+
+        double cubicFeetPerLiter()
+        {
+            return 1 / litersPerCubicFeet();
+        }
+
+        double litersPerCubicFeet()
+        {
+            return 28.3168;
         }
 
         // the base unit of 7.0 is
@@ -492,10 +532,14 @@ namespace NUtilities
                 return QObject::tr( "How many Meters to a Foot", "descForType" );
             case EVariableType::eLbsPerKgsConst:
                 return QObject::tr( "How many Pounds per Kilogram", "descForType" );
+            case EVariableType::eKgsPerLbsConst:
+                return QObject::tr( "How many Kilograms per Pound", "descForType" );
             case EVariableType::eFreshWaterToSeaWaterConst:
                 return QObject::tr( "How much depth of Freshwater to Seawater", "descForType" );
             case EVariableType::ePSIToBarConst:
                 return QObject::tr( "PSI to Bar", "descForType" );
+            case EVariableType::eBarToPSIConst:
+                return QObject::tr( "Bar to PSI", "descForType" );
             case EVariableType::eAbsZeroOffsetConst:
                 return QObject::tr( "Absolute Zero Offset", "descForType" );
             case EVariableType::ePressureOffsetConst:
@@ -506,6 +550,10 @@ namespace NUtilities
                 return QObject::tr( "Fill Rate for Air", "descForType" );
             case EVariableType::eFillRateO2Const:
                 return QObject::tr( "Fill Rate for Pure O2", "descForType" );
+            case EVariableType::eCubicFeetToLitersConst:
+                return QObject::tr( "Cubic Feet to Liters", "descForType" );
+            case EVariableType::eLitersToCubicFeetConst:
+                return QObject::tr( "Liters to Cubic Feet", "descForType" );
         };
         return {};
     }
@@ -535,10 +583,14 @@ namespace NUtilities
                 return NConstants::kMetersToFeetConstFieldName;
             case EVariableType::eLbsPerKgsConst:
                 return NConstants::kLbsPerKgsConstFieldName;
+            case EVariableType::eKgsPerLbsConst:
+                return NConstants::kKgsPerLbsConstFieldName;
             case EVariableType::eFreshWaterToSeaWaterConst:
                 return NConstants::kFreshWaterToSeaWaterConstFieldName;
             case EVariableType::ePSIToBarConst:
                 return NConstants::kPSIToBarConstFieldName;
+            case EVariableType::eBarToPSIConst:
+                return NConstants::kBarToPSIConstFieldName;
             case EVariableType::eAbsZeroOffsetConst:
                 return NConstants::kAbsZeroOffsetConstFieldName;
             case EVariableType::ePressureOffsetConst:
@@ -549,6 +601,10 @@ namespace NUtilities
                 return NConstants::kFillRateAirConstFieldName;
             case EVariableType::eFillRateO2Const:
                 return NConstants::kFillRateO2ConstFieldName;
+            case EVariableType::eCubicFeetToLitersConst:
+                return NConstants::kCubicFeetToLitersFieldName;
+            case EVariableType::eLitersToCubicFeetConst:
+                return NConstants::kLitersToCubicFeetFieldName;
         };
         return {};
     }
@@ -688,7 +744,7 @@ namespace NUtilities
 
         double lbsToKGs( double lbs )
         {
-            return lbs / NConstants::lbsPerKGs();
+            return lbs * NConstants::kgsPerLbs();
         }
 
         double kgsToLbs( double kgs )
@@ -698,7 +754,7 @@ namespace NUtilities
 
         QString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
         {
-            return QString( R"__(<%1> = \frac{<%2>}{<%3>})__" ).arg( kgsFieldName ).arg( lbsFieldName ).arg( NConstants::kLbsPerKgsConstFieldName );
+            return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( kgsFieldName ).arg( lbsFieldName ).arg( NConstants::kKgsPerLbsConstFieldName );
         }
 
         QString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
@@ -734,6 +790,26 @@ namespace NUtilities
                 retVal = QString( "<%1> = %2" ).arg( farenheightFieldName.value() ).arg( retVal );
             }
             return retVal;
+        }
+
+        double cubicFeetToLiters( double cuft )
+        {
+            return cuft * NConstants::litersPerCubicFeet();
+        }
+
+        double litersToCubicFeet( double liters )
+        {
+            return liters * NConstants::cubicFeetPerLiter();
+        }
+
+        QString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
+        {
+            return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( litersFieldName ).arg( cubicFeetFieldName ).arg( NConstants::kLitersToCubicFeetFieldName );
+        }
+
+        QString litersToCubicFeetFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
+        {
+            return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( cubicFeetFieldName ).arg( litersFieldName ).arg( NConstants::kCubicFeetToLitersFieldName );
         }
 
         namespace NCaloriesComputer

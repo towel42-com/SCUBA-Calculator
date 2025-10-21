@@ -118,7 +118,7 @@ public:
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range );
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values );
-    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const QString &unitLabel );
+    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitLabel, bool imperial );
     CVariableInfo( EVariableType type );   // for use with constants
     ~CVariableInfo() {}
 
@@ -154,7 +154,7 @@ public:
     void setRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range );
     void setDefaultValues( const TNamedValueItemList &values );
     void setValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values );
-    void setUnitLabel( const QString &string ) { fUnitText = string; }   // overrides default behavior and always uses this string for the label
+    void setUnitOverride( EUnit unit, bool imperial ) { fUnitOverride = { unit, imperial }; }   // overrides default behavior and always uses this string for the label
 
     QLineEdit *lineEdit() const;
     QDoubleSpinBox *doubleSpinBox() const;
@@ -195,7 +195,7 @@ private:
 
     SVariableValue< SRange > fRanges;
     SVariableValue< TNamedValueItemList > fValues;
-    std::optional< QString > fUnitText;
+    std::optional< std::pair< EUnit, bool > > fUnitOverride;
     TOptionalDouble fValue;
 };
 #endif
