@@ -56,30 +56,11 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
+GET_PROPERTY(CALCULATOR_LIST GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
+add_dependencies(${PROJECT_NAME} ${CALCULATOR_LIST})
 
 DeployQt( ${PROJECT_NAME} . 
-    EXTRA_TARGETS_DIR Calculators
-    EXTRA_TARGETS 
-        BuoyancyOfObject
-        OffsetNegativeBuoyancy
-        EAD
-        MOD
-        PartialPressureForDepth
-        FeetToMeters
-        DepthFreshwaterToSeawater
-        PressureToDepth
-        PSIToBar
-        CombinedGasLaw
-        IdealGasLaw
-        PressureChangeInTemp
-        DegreeChangeToPressureChange
-        VolumeChangeInTemp
-        GasConsumptionTimeToDepth
-        PressureChangeInVolume
-        VolumeChangeInPressure
-        RelativeChangeInAmbientPressure
-        Calories
-    EXTRA_TARGETS2
+    EXTRA_TARGETS
        MathJaxQt6
        SABUtils
 )
