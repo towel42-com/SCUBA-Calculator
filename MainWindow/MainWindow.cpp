@@ -181,7 +181,7 @@ void CMainWindow::loadCalculators()
         auto calculator = constructor();
         addCalculator( calculator );
 
-        if ( calculator->isReversable() )
+        if ( calculator->isReversible() )
         {
             auto reversedCalc = constructor();
             reversedCalc->setIsReversed( true );
@@ -224,6 +224,23 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator )
                                       } );
 }
 
+QString pathForItem( QTreeWidgetItem *rootItem, QTreeWidgetItem *item )
+{
+    if ( !item )
+        return {};
+
+    auto parentItem = item->parent();
+
+    QString retVal;
+    if ( parentItem && ( parentItem != rootItem ) )
+        retVal = pathForItem( rootItem, parentItem );
+
+    if ( !retVal.isEmpty() )
+        retVal += ".";
+    retVal += item->text( 0 );
+    return retVal;
+}
+
 QTreeWidgetItem *CMainWindow::findItem( QTreeWidgetItem *parent, const QStringList &path, bool createIfNecessary )
 {
     if ( !parent )
@@ -243,6 +260,7 @@ QTreeWidgetItem *CMainWindow::findItem( QTreeWidgetItem *parent, const QStringLi
         {
             foundChild = new QTreeWidgetItem( parent );
             foundChild->setText( 0, path.front() );
+            qDebug() << "Creating Item: " << pathForItem( fImpl->whichCalculator->invisibleRootItem(), foundChild );
         }
     }
     if ( path.length() == 1 )
