@@ -105,10 +105,10 @@ void CSCUBACalculator::init( bool imperial, bool seaWater )
         fPage->init( imperial, seaWater );
 }
 
-void CSCUBACalculator::setIsReversed( bool isReversed ) /**/
+void CSCUBACalculator::setIsReversed( CSCUBACalculator *nonReversedCalc, bool isReversed )
 {
-    fReversed = isReversed;
-    if ( fReversed )
+    fReversed = { nonReversedCalc, isReversed };
+    if ( fReversed.second )
     {
         auto currName = objectName();
         auto pos = currName.indexOf( "To" );
@@ -118,8 +118,6 @@ void CSCUBACalculator::setIsReversed( bool isReversed ) /**/
             auto rhs = currName.mid( pos + 2 );
             setObjectName( rhs + "To" + lhs );
         }
-        else
-            int xyz = 0;
     }
 }
 
@@ -434,23 +432,16 @@ TFormulaList CSCUBACalculator::getFormulaList() const
     return retVal;
 }
 
-std::shared_ptr< SGeneratedFormulaData > CSCUBACalculator::getAllFormulas() const
+std::shared_ptr< SGeneratedFormulaData > CSCUBACalculator::getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const
 {
-    auto retVal = std::make_shared< SGeneratedFormulaData >();
-
     qCDebug( ScubaCalculator ).noquote().nospace() << "Getting Formulas from: " << calculatorName();
-    auto formulas = getFormulaList();
-
-    for ( auto &&jj : formulas )
+    auto retVal = std::make_shared< SGeneratedFormulaData >( getFormulaList(), beenCreated );
+    if ( isReversed() )
     {
-        auto tex = jj->formula();
+        auto nonReversed = fReversed.first->getAllFormulas( beenCreated );
 
-        auto pos = retVal->fAllFormulas.find( tex );
-        if ( pos != retVal->fAllFormulas.end() )
-            continue;
-
-        retVal->fAllFormulas.insert( tex );
-        retVal->fByNameList.emplace_back( jj );
+        if ( *retVal == *nonReversed )
+            return {};
     }
     return retVal;
 }
@@ -685,16 +676,59 @@ void SGeneratedFormulaData::sortByName()
         } );
 }
 
-std::pair< int, int > SGeneratedFormulaData::formulaCounts( const std::function< bool( const QString &formula ) > &beenCreated ) const
+void SGeneratedFormulaData::computeFormulaCounts( const std::function< bool( const QString &formula ) > &beenCreated )
 {
-    int total = 0;
-    int needsRendering = 0;
+    fFormulaCounts = { 0, 0 };
 
     for ( auto &&curr : fByNameList )
     {
-        total++;
+        fFormulaCounts.first++;
         if ( !beenCreated( curr->formula() ) )
-            needsRendering++;
+            fFormulaCounts.second++;
     }
-    return { total, needsRendering };
+    fUpdated = fFormulaCounts.second != 0;
 };
+
+SGeneratedFormulaData::SGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated )
+{
+    for ( auto &&jj : formulas )
+    {
+        addFormula( jj );
+    }
+    sortByName();
+    computeFormulaCounts( beenCreated );
+}
+
+bool SGeneratedFormulaData::operator==( const SGeneratedFormulaData &rhs ) const
+{
+    if ( fUpdated != rhs.fUpdated )
+        return false;
+    if ( fFormulaCounts != rhs.fFormulaCounts )
+        return false;
+
+    if ( fAllFormulas != rhs.fAllFormulas )
+        return false;
+    
+    if ( fByNameList.size() != rhs.fByNameList.size() )
+        return false;
+
+    auto ii = fByNameList.begin();
+    auto jj = rhs.fByNameList.begin();
+    for ( ; ( ii != fByNameList.end() ) && ( jj != rhs.fByNameList.end() ); ++ii, ++jj )
+    {
+        if ( **ii != **jj )
+            return false;
+    }
+    return true;
+}
+
+void SGeneratedFormulaData::addFormula( const TFormula &formula )
+{
+    auto tex = formula->formula();
+    auto pos = fAllFormulas.find( tex );
+    if ( pos != fAllFormulas.end() )
+        return;
+
+    fAllFormulas.insert( tex );
+    fByNameList.emplace_back( formula );
+}

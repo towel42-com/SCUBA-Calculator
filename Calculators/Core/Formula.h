@@ -43,6 +43,9 @@ namespace NUtilities
         virtual QString cleanedFormula() const;
 
         virtual void setFormula( const QString &formula ) { fFormula = formula; }
+        virtual bool operator==( const SFormula &rhs ) const;
+        virtual bool operator!=( const SFormula &rhs ) const { return !operator==( rhs ); }
+
     private:
         QString fName;
         QString fFormula;

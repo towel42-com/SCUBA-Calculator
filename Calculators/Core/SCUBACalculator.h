@@ -42,13 +42,27 @@ class QFrame;
 
 struct CALCULATORS_EXPORT SGeneratedFormulaData
 {
-    virtual void sortByName();
-    virtual std::pair< int, int > formulaCounts( const std::function< bool( const QString &formula ) > &beenCreated ) const;
+    SGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated );
+    virtual std::pair< int, int > formulaCounts() const { return fFormulaCounts; };
 
+    virtual const TFormulaList &formulaList() const { return fByNameList; }
+
+    virtual QJsonArray &jsonArray() { return fJsonArray; }
+    virtual bool updated() const { return fFormulaCounts.second != 0; }
+
+    virtual bool operator==( const SGeneratedFormulaData &rhs ) const;
+
+private:
     std::unordered_set< QString > fAllFormulas;
+
     TFormulaList fByNameList;
     QJsonArray fJsonArray;
     bool fUpdated{ false };
+
+    void computeFormulaCounts( const std::function< bool( const QString &formula ) > &beenCreated );
+    void sortByName();
+    void addFormula( const TFormula &formula );
+    std::pair< int, int > fFormulaCounts;
 };
 
 class CALCULATORS_EXPORT CSCUBACalculator : public QObject
@@ -70,8 +84,8 @@ public:
     virtual void init( bool imperial, bool seaWater ) /*final*/;   // initializes the default equations and sets the equations to the current setup
 
     virtual bool isReversible() const { return false; }
-    virtual bool isReversed() const { return fReversed; }
-    virtual void setIsReversed( bool isReversed ) /*final*/;
+    virtual bool isReversed() const { return fReversed.second; }
+    virtual void setIsReversed( CSCUBACalculator *nonReversedCalc, bool isReversed ) /*final*/;
 
     virtual QStringList calculatorPath() const /*final*/;
     virtual QString calculatorName() const /*final*/;
@@ -85,7 +99,7 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual std::shared_ptr< SGeneratedFormulaData > getAllFormulas() const /*final*/;
+    virtual std::shared_ptr< SGeneratedFormulaData > getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const /*final*/;
 
     virtual void initResources() const /*final*/;
 
@@ -171,7 +185,7 @@ protected:
 
     std::unordered_map< QString, TVariableInfo > fVariableMap;
     std::size_t fNumVariables{ 0 };   // if there are constants in the variable list, this value will not equal fVariables.size();
-    bool fReversed{ false };
+    std::pair< CSCUBACalculator *, bool > fReversed{ nullptr, false };
 };
 
 extern "C" CALCULATORS_EXPORT CSCUBACalculator *instantiateCalculator();

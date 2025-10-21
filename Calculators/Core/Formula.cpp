@@ -53,4 +53,35 @@ namespace NUtilities
         return NTowel42::cleanupFormula( formula() );
     }
 
+    bool SFormula::operator==( const SFormula &rhs ) const
+    {
+        //if ( fName != rhs.fName )
+        //    return false;
+        if ( fFormula != rhs.fFormula )
+            return false;
+        if ( fImperial != rhs.fImperial )
+            return false;
+        if ( fSeaWater != rhs.fSeaWater )
+            return false;
+
+        if ( fNameValuePair.has_value() != rhs.fNameValuePair.has_value() )
+            return false;
+
+        if ( fNameValuePair.has_value() /* && rhs.fNameValuePair.has_value() */ )
+        {
+            if ( fNameValuePair.value().first != rhs.fNameValuePair.value().first )
+                return false;
+
+            if ( fNameValuePair.value().second.has_value() != rhs.fNameValuePair.value().second.has_value() )
+                return false;
+
+            if ( fNameValuePair.value().second.has_value() )
+            {
+                if ( fNameValuePair.value().second.value() != rhs.fNameValuePair.value().second.value() )
+                    return false;
+            }
+        }
+        return true;
+    }
+
 }

@@ -184,7 +184,7 @@ void CMainWindow::loadCalculators()
         if ( calculator->isReversible() )
         {
             auto reversedCalc = constructor();
-            reversedCalc->setIsReversed( true );
+            reversedCalc->setIsReversed( calculator, true );
             addCalculator( reversedCalc );
         }
     }
@@ -532,21 +532,18 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     using TFormulaMap = std::unordered_map< CSCUBACalculator *, std::shared_ptr< SGeneratedFormulaData > >;
     TFormulaMap allFormulas;
 
-    for ( auto &&ii : fCalculators )
-    {
-        const auto &formulaData = ii.second->getAllFormulas();
-        allFormulas[ ii.second ] = formulaData;
-    }
-
     int numToBeRendered = 0;
     int totalFormulas = 0;
 
-    for ( auto &&ii : allFormulas )
+    for ( auto &&ii : fCalculators )
     {
-        ii.second->sortByName();
+        const auto &formulaData = ii.second->getAllFormulas( [ = ]( const QString &formula ) { return fRenderingEngine->beenCreated( formula ); } );
+        if ( !formulaData )
+            continue;
 
-        auto &&[ lclNumTotal, lclToRender ] = ii.second->formulaCounts( [ = ]( const QString &formula ) { return fRenderingEngine->beenCreated( formula ); } );
-        ii.second->fUpdated = ( lclToRender != 0 );
+        allFormulas[ ii.second ] = formulaData;
+
+        auto &&[ lclNumTotal, lclToRender ] = formulaData->formulaCounts();
 
         numToBeRendered += lclToRender;
         totalFormulas += lclNumTotal;
@@ -557,7 +554,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     progress->setMinimumDuration( 1000 );
     for ( auto &&currFormulaData : allFormulas )
     {
-        for ( auto &&ii : currFormulaData.second->fByNameList )
+        for ( auto &&ii : currFormulaData.second->formulaList() )
         {
             bool beenCreated = fRenderingEngine->beenCreated( ii->formula() );
             if ( !beenCreated )
@@ -597,7 +594,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
                 }   //
             );
 
-            currFormulaData.second->fJsonArray.append( obj );
+            currFormulaData.second->jsonArray().append( obj );
         }
     }
     delete progress;
@@ -606,7 +603,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     for ( auto &&ii : allFormulas )
     {
         auto calc = ii.first;
-        if ( needUpdatingOnly && !ii.second->fUpdated )
+        if ( needUpdatingOnly && !ii.second->updated() )
             continue;
 
         auto jsonFileName = QDir( dir ).absoluteFilePath( QString( "%1-formulas.json" ).arg( calc->calculatorName() ) );
@@ -617,7 +614,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
             return;
         }
         QJsonDocument doc;
-        doc.setArray( ii.second->fJsonArray );
+        doc.setArray( ii.second->jsonArray() );
 
         jsonFile.write( doc.toJson( QJsonDocument::Indented ) );
         jsonFile.close();
