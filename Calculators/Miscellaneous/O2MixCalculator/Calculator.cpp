@@ -2,6 +2,8 @@
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
+#include <cmath>
+
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
@@ -36,79 +38,81 @@ QStringList CCalculator::calculatorPath() const
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
-    return   //
-        {
-            std::make_shared< CVariableInfo >( "mix1", tr( "Starting Mix" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "p1", tr( "Starting Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "o2", tr( "100% O2 Fill" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-        };
+    auto retVal =   //
+        TVariableInfoList( {
+            std::make_shared< CVariableInfo >( "mix1", tr( "Starting Mix" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ),   //
+            std::make_shared< CVariableInfo >( "p1", tr( "Starting Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS, SRange( { 0.0, 4000, {}, 10 } ) ),   //
+            std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ),   //
+            std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS, SRange( { 0.0, 4000, {}, 10 } ) ),   //
+            std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "o2_t", tr( "Approximate Time to fill with 100% O2" ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFO2AtSurfaceConst ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFN2AtSurfaceConst ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFillRateO2Const ),   //
+            std::make_shared< CVariableInfo >( EVariableType::eFillRateAirConst ),   //
+        } );
+    auto pos = std::next( retVal.begin() );
+    ( *pos )->setRange( false, {}, SRange( { 0.0, NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
+    pos++;
+    pos++;
+    ( *pos )->setRange( false, {}, SRange( { NUtilities::NConversions::psiToBar( 1000 ), NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
+    return retVal;
+}
+
+QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+{
+    QStringList formulas;
+
+    formulas << QString( R"__(<o2_p> = \frac{( <p2> \times (<mix2> - <%1>) ) - ( <p1> \times ( <mix1> - <%1> ) )}{<%2>} - <p1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+    formulas << QString( R"__(<o2_t> = \frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) );
+    formulas << QString( R"__(<air_t> = \frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) );
+
+    return NUtilities::joinFormulas( formulas );
+}
+
+std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+{
+    QStringList formulas;
+    if ( unsetVar->name() == "o2_p" )
+    {
+        return getBaseFormula();
+    }
+    else if ( unsetVar->name() == "mix1" )
+    {
+        formulas << QString( R"__(<mix1> = \frac{( <p2> \times (<mix2> - <%1>) ) - ((<o2_p> + <p1>) \times <%2>)}{<p1>} + <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+    }
+    else if ( unsetVar->name() == "p1" )
+    {
+        formulas << QString( R"__(<p1> = \frac{<p2>(<mix2> - <%1>) - <%2> \times <o2_p>}{(<mix1> - <%1>) + <%2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+    }
+    else if ( unsetVar->name() == "mix2" )
+    {
+        formulas << QString( R"__(<mix2> = \frac{((<o2_p> + <p1>) \times <%2>) + ( <p1> \times ( <mix1> - <%1> ) )}{<p2>} + <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+    }
+    else if ( unsetVar->name() == "p2" )
+    {
+        formulas << QString( R"__(<p2> = \frac{((<o2_p> + <p1>) \times <%2>) + ( <p1> \times ( <mix1> - <%1> ) )}{<mix2> - <%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+    }
+    if ( !formulas.isEmpty() )
+    {
+        formulas << QString( R"__(<o2_t> = \frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) );
+        formulas << QString( R"__(<air_t> = \frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) );
+    }
+    return NUtilities::joinFormulas( formulas );
 }
 
 /**
+// https://scuba.garykessler.net/EANcalculator/EAN_psi.html
+// mixing O2 + Air for proper Nitrox
+
 function check()
 {
-    // Define variables
-    var error = [];
-    var O2_press = O2_minutes = 0;
-    var printed_answer = "";
-
-    var strt_mix_field = document.getElementById( strt_mix_id );
-    var strt_press_field = document.getElementById( strt_press_id );
-
-    var end_mix_field = document.getElementById( end_mix_id );
-    var end_press_field = document.getElementById( end_press_id );
-    
     // Get user input
     var strt_mix = parseFloat( strt_mix_field.value );
     var strt_press = parseInt( strt_press_field.value );
     var end_mix = parseFloat( end_mix_field.value );
     var end_press = parseInt( end_press_field.value );
-
-    // Make sure we are dealing with numbers; if not, force an error condition
-    if ( isNaN( strt_mix ) )
-        strt_mix = -99;
-    if ( isNaN( strt_press ) )
-        strt_press = -99;
-    if ( isNaN( end_mix ) )
-        end_mix = -99;
-    if ( isNaN( end_press ) )
-        end_press = -99;
-
-    // Error checks we can do before calculating
-
-    if ( strt_mix < 20.9 || strt_mix > 40 )
-    {
-        error.push( "Your starting gas blend must be a number between 20.9 and 40%" );
-        strt_mix_field.focus();
-    }
-
-    if ( strt_press < 0 || strt_press > 4000 )
-    {
-        error.push( "Your starting pressure must be a number between 0 and 4000 psi" );
-        strt_press_field.focus();
-    }
-
-    if ( end_mix < 20.9 || end_mix > 40 )
-    {
-        error.push( "Your desired gas blend must be a number between 20.9 and 40%" );
-        end_mix_label.className = "error";
-        end_mix_field.focus();
-    }
-
-    if ( end_press < 0 || end_press > 4000 )
-    {
-        error.push( "Your desired pressure must be a number between 0 and 4000 psi" );
-        end_press_label.className = "error";
-        end_press_field.focus();
-    }
-
-    if ( error.length )
-    {
-        output_errors( error );
-        return false;
-    }
 
     // Determine the required 100% O2 press and amount of time
 
@@ -124,36 +128,47 @@ function check()
 }
 */
 
-QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
-{
-    return NUtilities::NConversions::pressureChangeForDegreeChangeFormula( "t1", "p1" );
-}
-
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
-{
-    if ( unsetVar->name() == "p1" )
-    {
-        return NUtilities::NConversions::pressureChangeForDegreeChangeFormula( "t1", "p1" );
-    }
-    else if ( unsetVar->name() == "t1" )
-    {
-        return NUtilities::NConversions::degreeChangeForPressureChangeFormula( "t1", "p1" );
-    }
-
-    return {};
-}
-
 void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
+    auto mix1 = getVariable( "mix1" );
     auto p1 = getVariable( "p1" );
-    auto t1 = getVariable( "t1" );
+    auto mix2 = getVariable( "mix2" );
+    auto p2 = getVariable( "p2" );
 
-    if ( unsetVar == p1 )
+    auto o2_p = getVariable( "o2_p" );
+    auto o2_t = getVariable( "o2_t" );
+    auto air_t = getVariable( "air_t" );
+
+    if ( unsetVar == o2_p )
     {
-        p1->setValue( NUtilities::NConversions::pressureChangeForDegreeChange( imperial(), t1->value() ) );
+        if ( ( mix1->value() == mix2->value() ) && ( mix1->value() == NUtilities::NConstants::percentO2AtSurface() ) )
+        {
+            o2_p->setValue( 0.0 );
+            o2_t->setValue( 0.0 );
+            air_t->setValue( ( p2->value() - p1->value() ) / NUtilities::NConstants::fillRateAir( imperial() ) );
+            return;
+        }
+        o2_p->setValue( std::ceil( ( ( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) ) - ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / NUtilities::NConstants::percentN2AtSurface() ) + p1->value() ) );
     }
-    else if ( unsetVar == t1 )
+
+    else if ( unsetVar == mix1 )
     {
-        t1->setValue( NUtilities::NConversions::degreeChangeForPressureChange( imperial(), p1->value() ) );
+        mix1->setValue( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) ) - ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) / p1->value() ) + NUtilities::NConstants::percentO2AtSurface() );
     }
+    else if ( unsetVar->name() == "p1" )
+    {
+        p1->setValue( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) - NUtilities::NConstants::percentN2AtSurface() * o2_p->value() ) / ( ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) + NUtilities::NConstants::percentN2AtSurface() ) );
+        return;
+    }
+    else if ( unsetVar->name() == "mix2" )
+    {
+        mix2->setValue( ( ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) + ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / p2->value() ) + NUtilities::NConstants::percentO2AtSurface() );
+    }
+    else if ( unsetVar->name() == "p2" )
+    {
+        p2->setValue( ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) + ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) );
+    }
+
+    o2_t->setValue( std::ceil( ( o2_p->value() - p1->value() ) / NUtilities::NConstants::fillRateO2( imperial() ) ) );
+    air_t->setValue( std::ceil( ( p2->value() - o2_p->value() ) / NUtilities::NConstants::fillRateAir( imperial() ) ) );
 }
