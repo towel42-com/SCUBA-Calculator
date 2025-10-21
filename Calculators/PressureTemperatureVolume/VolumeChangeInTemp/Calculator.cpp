@@ -5,11 +5,11 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "VolumeChangeInTemp" ); }
     virtual ~CCalculator() override {}
 
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
@@ -30,7 +30,7 @@ QString CCalculator::myCalculatorName() const
     return tr( "Calculating Volume Following a Change in Temperature" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }

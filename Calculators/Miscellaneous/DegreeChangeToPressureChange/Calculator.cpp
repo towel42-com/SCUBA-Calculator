@@ -5,19 +5,20 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "DegreeChangeToPressureChange" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isReversable() const override { return true; }
-    virtual QString myReversedCalculatorName() const override;
-    virtual QString myReversedBaseFormula() const override;
-
+    virtual bool isReversible() const override { return true; }
+    virtual std::pair< QString, QString > fromToLabels() const override;
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QString myReversedCalculatorName() const override;
+
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual QString myReversedBaseFormula() const override;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -26,6 +27,11 @@ public:
 extern "C" CSCUBACalculator *instantiateCalculator()
 {
     return new CCalculator;
+}
+
+std::pair< QString, QString > CCalculator::fromToLabels() const
+{
+    return { tr( "Pressure Change" ), tr( "Temperature Change" ) };
 }
 
 QString CCalculator::myCalculatorName() const
@@ -38,7 +44,7 @@ QString CCalculator::myReversedCalculatorName() const
     return tr( "Quick Estimate for Temperature when Pressure Changes" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Miscellaneous" ) };
 }

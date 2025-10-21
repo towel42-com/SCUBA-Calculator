@@ -7,13 +7,13 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "Calories" ); }
     virtual ~CCalculator() override {}
 
     virtual bool isWaterTypeBased() const override { return true; }
 
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
@@ -34,7 +34,7 @@ QString CCalculator::myCalculatorName() const
     return tr( "Calories burned while Diving" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Miscellaneous" ) };
 }

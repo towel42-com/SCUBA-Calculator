@@ -5,21 +5,22 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "GasConsumptionTimeToDepth" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isReversable() const override { return true; }
-    virtual QString myReversedCalculatorName() const override;
-    virtual QString myReversedBaseFormula() const override;
-
+    virtual bool isReversible() const override { return true; }
+    virtual std::pair< QString, QString > fromToLabels() const override;
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QString myReversedCalculatorName() const override;
+
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual QString myReversedBaseFormula() const override;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -28,6 +29,11 @@ public:
 extern "C" CSCUBACalculator *instantiateCalculator()
 {
     return new CCalculator;
+}
+
+std::pair< QString,QString > CCalculator::fromToLabels() const
+{
+    return { tr( "Gas Consumption Time" ), tr( "Gas Used" ) };
 }
 
 QString CCalculator::myCalculatorName() const
@@ -40,7 +46,7 @@ QString CCalculator::myReversedCalculatorName() const
     return tr( "Calculating Gas Consumption Used based on Known Consumption at a Specific Depth" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Pressure and Volume Conversions" ) };
 }

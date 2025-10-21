@@ -7,11 +7,11 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "O2MixCalculator" ); }
     virtual ~CCalculator() override {}
 
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
 
@@ -31,7 +31,7 @@ QString CCalculator::myCalculatorName() const
     return tr( "Oxygen Mix Calculator" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Miscellaneous" ) };
 }

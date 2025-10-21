@@ -5,11 +5,11 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "BuoyancyOfObject" ); }
     virtual ~CCalculator() override {}
 
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual bool isWaterTypeBased() const override { return true; }
 
@@ -31,7 +31,7 @@ QString CCalculator::myCalculatorName() const
     return tr( "Buoyancy Characteristics of an Object" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Buoyancy Calculations" ) };
 }

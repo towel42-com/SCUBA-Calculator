@@ -5,14 +5,14 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "PSIToBar" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isReversable() const override { return true; }
-    virtual QString myReversedCalculatorName() const override;
+    virtual bool isReversible() const override { return true; }
+    virtual std::pair< QString, QString > fromToLabels() const override;
 
-    virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
+    virtual QStringList myReversedCalculatorPath() const override;
 
     virtual bool showUnits() const { return false; }
 
@@ -30,27 +30,27 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::myCalculatorName() const
+std::pair< QString, QString > CCalculator::fromToLabels() const
 {
-    return tr( "PSI to BAR" );
+    return { tr( "PSI" ), tr( "BAR" ) };
 }
 
-QString CCalculator::myReversedCalculatorName() const
+QStringList CCalculator::myCalculatorPath() const
 {
-    return tr( "BAR to PSI" );
+    return { tr( "Unit Conversion" ), tr( "Imperial to Metric" ) };
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myReversedCalculatorPath() const
 {
-    return { tr( "Unit Conversion" ) };
+    return { tr( "Unit Conversion" ), tr( "Metric to Imperial" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "bar", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS, NUtilities::NUnitStrings::pressureUnit( false, true, false ) ),   //
-            std::make_shared< CVariableInfo >( "psi", tr( "Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS, NUtilities::NUnitStrings::pressureUnit( true, true, false ) ),   //
+            std::make_shared< CVariableInfo >( "psi", tr( "Pressure" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::ePressure, true ),   //
+            std::make_shared< CVariableInfo >( "bar", tr( "Pressure" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::ePressure, false),   //
             std::make_shared< CVariableInfo >( EVariableType::ePSIToBarConst ),   //
         } );
 

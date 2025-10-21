@@ -5,19 +5,18 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "DepthFreshwaterToSeawater" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isReversable() const override { return true; }
-    virtual QString myReversedCalculatorName() const override;
-    virtual QString myReversedBaseFormula() const override;
+    virtual bool isReversible() const override { return true; }
+    virtual std::pair< QString, QString > fromToLabels() const override;
 
-    virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual QString myReversedBaseFormula() const override;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -28,17 +27,12 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::myCalculatorName() const
+std::pair< QString, QString > CCalculator::fromToLabels() const
 {
-    return tr( "Depth Freshwater to Seawater" );
+    return { tr( "Depth Freshwater" ), tr( "Depth Seawater" ) };
 }
 
-QString CCalculator::myReversedCalculatorName() const
-{
-    return tr( "Depth Seawater to Freshwater" );
-}
-
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Pressure and Depth Conversions" ) };
 }

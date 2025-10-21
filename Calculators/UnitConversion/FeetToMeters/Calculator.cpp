@@ -5,21 +5,21 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "FeetToMeters" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isReversable() const override { return true; }
-    virtual QString myReversedCalculatorName() const override;
-    virtual QString myReversedBaseFormula() const override;
+    virtual bool isReversible() const override { return true; }
+    virtual std::pair< QString, QString > fromToLabels() const override;
 
-    virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
+    virtual QStringList myReversedCalculatorPath() const override;
 
     virtual bool showUnits() const { return false; }
 
     virtual TVariableInfoList getMyVariables() const override;
 
     virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual QString myReversedBaseFormula() const override;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -30,27 +30,27 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-QString CCalculator::myCalculatorName() const
+std::pair< QString, QString > CCalculator::fromToLabels() const
 {
-    return tr( "Feet to Meters" );
+    return { tr( "Feet" ), tr( "Meters" ) };
 }
 
-QString CCalculator::myReversedCalculatorName() const
+QStringList CCalculator::myCalculatorPath() const
 {
-    return tr( "Meters to Feet" );
+    return { tr( "Unit Conversion" ), tr( "Imperial to Metric" ) };
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myReversedCalculatorPath() const
 {
-    return { tr( "Unit Conversion" ) };
+    return { tr( "Unit Conversion" ), tr( "Metric to Imperial" ) };
 }
 
 TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "meters", tr( "Length" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eLHS, NUtilities::NUnitStrings::lengthUnit( false, true, false ) ),   //
-            std::make_shared< CVariableInfo >( "feet", tr( "Length" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS, NUtilities::NUnitStrings::lengthUnit( true, true, false ) ),   //
+            std::make_shared< CVariableInfo >( "feet", tr( "Length" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::eLength, true ),   //
+            std::make_shared< CVariableInfo >( "meters", tr( "Length" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::eLength, false ),   //
             std::make_shared< CVariableInfo >( EVariableType::eFeetToMetersConst ),   //
             std::make_shared< CVariableInfo >( EVariableType::eMetersToFeetConst ),   //
         } );

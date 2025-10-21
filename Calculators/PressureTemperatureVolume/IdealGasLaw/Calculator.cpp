@@ -5,11 +5,11 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "IdealGasLaw" ); }
     virtual ~CCalculator() override {}
 
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables() const override;
 
@@ -29,7 +29,7 @@ QString CCalculator::myCalculatorName() const
     return tr( "Ideal Gas Law" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }

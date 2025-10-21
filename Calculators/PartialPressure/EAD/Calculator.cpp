@@ -5,11 +5,11 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() {}
+    CCalculator() { setObjectName( "EAD" ); }
     virtual ~CCalculator() override {}
 
     virtual QString myCalculatorName() const override;
-    virtual QStringList calculatorPath() const override;
+    virtual QStringList myCalculatorPath() const override;
 
     virtual bool isWaterTypeBased() const override { return true; }
 
@@ -31,7 +31,7 @@ QString CCalculator::myCalculatorName() const
     return tr( "Equivalent Air Depth (EAD)" );
 }
 
-QStringList CCalculator::calculatorPath() const
+QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Partial Pressure Calculations" ) };
 }
