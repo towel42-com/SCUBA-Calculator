@@ -26,19 +26,19 @@ CVariableInfo::CVariableInfo( EVariableType type ) :
     Q_ASSERT( ( fType != EVariableType::eIntermediate ) && ( fType != EVariableType::eVariable ) );
 }
 
- CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range ) :
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range ) :
     CVariableInfo( name, desc, type, unitType, variableLocation )
 {
-    setRange( range );
+    setRange( false, false, range );
 }
 
- CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values ) :
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values ) :
     CVariableInfo( name, desc, type, unitType, variableLocation )
 {
-    setValues( values );
+    setValues( false, false, values );
 }
 
- CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const QString &unitLabel ) :
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const QString &unitLabel ) :
     CVariableInfo( name, desc, type, unitType, variableLocation )
 {
     setUnitLabel( unitLabel );
@@ -53,26 +53,18 @@ bool CVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *form
     fLabel->setText( QString( "%1:" ).arg( fDescription ) );
 
     QHBoxLayout *fieldLayout = nullptr;
-    if ( fRange.has_value() )
+    if ( hasRange() )
     {
         auto spinBox = new QDoubleSpinBox( page );
         fField = spinBox;
         spinBox->setObjectName( fName.data() );
         spinBox->setDecimals( 2 );
-        spinBox->setMinimum( fRange.value().fMin );
-        spinBox->setMaximum( fRange.value().fMax );
-        spinBox->setSingleStep( fRange.value().fStep );
-        spinBox->setValue( fRange.value().fDefaultValue );
     }
-    else if ( fValues.has_value() )
+    else if ( hasValues() )
     {
         auto comboBox = new QComboBox( page );
         comboBox->setEditable( false );
         comboBox->setObjectName( fName.data() );
-        for ( auto &&ii : fValues.value() )
-        {
-            comboBox->addItem( ii.first, ii.second.has_value() ? ii.second.value() : QVariant() );
-        }
         fField = comboBox;
 
         auto le = new NSABUtils::CDelayLineEdit( page );
@@ -168,12 +160,12 @@ QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
     }
 }
 
-void CVariableInfo::resetValue( bool updateUI, bool notifyUI )
+void CVariableInfo::resetValue( bool imperial, bool seaWater, bool updateUI, bool notifyUI )
 {
     fValue.reset();
     if ( !updateUI )
         return;
-    updateFieldFromValue( notifyUI );
+    updateFieldFromValue( imperial, seaWater, notifyUI );
 }
 
 TOptionalDouble CVariableInfo::optValue() const
@@ -232,12 +224,22 @@ bool CVariableInfo::hasValues() const
     return fValues.has_value();
 }
 
-std::optional< TOptionalDoubleVector > CVariableInfo::validValues() const
+bool CVariableInfo::hasRange() const
+{
+    return fRanges.has_value();
+}
+
+std::optional< TOptionalDoubleVector > CVariableInfo::validValues( bool imperial, bool seaWater ) const
 {
     if ( !hasValues() )
         return {};
+
+    auto values = getValues( imperial, seaWater );
+    if ( !values.has_value() )
+        return {};
+
     TOptionalDoubleVector retVal;
-    for ( auto &&ii : fValues.value() )
+    for ( auto &&ii : values.value() )
     {
         if ( ii.second.has_value() )
             retVal.push_back( ii.second );
@@ -247,16 +249,35 @@ std::optional< TOptionalDoubleVector > CVariableInfo::validValues() const
     return retVal;
 }
 
+TOptionalNamedValueItemList CVariableInfo::getValues( bool imperial, bool seaWater ) const
+{
+    return fValues.getValue( imperial, seaWater );
+}
+
 bool CVariableInfo::hasCustomValue() const
 {
-    if ( !hasValues() )
+    if ( !fValues.has_value() )
         return false;
-
-    for ( auto &&ii : fValues.value() )
+    if ( fValues.fDefaultValue.has_value() )
     {
-        if ( ii.second.has_value() )
-            continue;
-        return true;
+        for ( auto &&ii : fValues.fDefaultValue.value() )
+        {
+            if ( ii.second.has_value() )
+                continue;
+            return true;
+        }
+    }
+    else
+    {
+        for ( auto &&ii : fValues.fValues )
+        {
+            for ( auto &&jj : ii.second )
+            {
+                if ( jj.second.has_value() )
+                    continue;
+                return true;
+            }
+        }
     }
     return false;
 }
@@ -396,6 +417,18 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = "%1";
                 }
                 break;
+            case EVariableType::eFillRateAirConst:
+                {
+                    value = NUtilities::NUnitStrings::fillRateAir( imperial, true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eFillRateO2Const:
+                {
+                    value = NUtilities::NUnitStrings::fillRateO2( imperial, true, true );
+                    format = "%1";
+                }
+                break;
         };
     }
 
@@ -454,6 +487,26 @@ bool CVariableInfo::isWidget( QWidget *widget ) const
     return false;
 }
 
+void CVariableInfo::setDefaultRange( const SRange &range )
+{
+    fRanges.setDefault( range );
+}
+
+void CVariableInfo::setRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range )
+{
+    fRanges.setValue( imperial, seaWater, range );
+}
+
+void CVariableInfo::setDefaultValues( const TNamedValueItemList &values )
+{
+    fValues.setDefault( values );
+}
+
+void CVariableInfo::setValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values )
+{
+    fValues.setValue( imperial, seaWater, values );
+}
+
 double CVariableInfo::formulaValue() const
 {
     if ( !has_value() )
@@ -466,7 +519,7 @@ double CVariableInfo::formulaValue() const
     return value();
 }
 
-void CVariableInfo::clearField( bool notifyUI )
+void CVariableInfo::clearField( bool imperial, bool seaWater, bool notifyUI )
 {
     if ( !notifyUI )
         fField->blockSignals( true );
@@ -474,7 +527,13 @@ void CVariableInfo::clearField( bool notifyUI )
     if ( lineEdit() )
         lineEdit()->clear();
     else if ( doubleSpinBox() )
-        doubleSpinBox()->setValue( fRange.value().fDefaultValue );
+    {
+        auto value = fRanges.getValue( imperial, seaWater );
+        if ( value.has_value() && value.value().fDefaultValue.has_value() )
+            doubleSpinBox()->setValue( value.value().fDefaultValue.value() );
+        else
+            doubleSpinBox()->setValue( doubleSpinBox()->minimum() );
+    }
     else if ( comboBox() )
         comboBox()->setCurrentIndex( 0 );
 
@@ -484,7 +543,7 @@ void CVariableInfo::clearField( bool notifyUI )
         fField->blockSignals( false );
 }
 
-void CVariableInfo::updateFieldFromValue( bool notifyUI )
+void CVariableInfo::updateFieldFromValue( bool imperial, bool seaWater, bool notifyUI )
 {
     if ( fType != EVariableType::eVariable )
         return;
@@ -494,7 +553,7 @@ void CVariableInfo::updateFieldFromValue( bool notifyUI )
         return;
 
     if ( !has_value() )
-        clearField( notifyUI );
+        clearField( imperial, seaWater, notifyUI );
 
     if ( !has_value() )
         return;
@@ -589,4 +648,56 @@ void CVariableInfo::updateFieldFromValue( QComboBox *comboBox, bool notifyUI )
 
     if ( !notifyUI )
         comboBox->blockSignals( false );
+}
+
+void CVariableInfo::updateValuesAndRanges( bool imperial, bool seaWater )
+{
+    setupValues( imperial, seaWater );
+    setupRange( imperial, seaWater );
+}
+
+void CVariableInfo::setupRange( bool imperial, bool seaWater )
+{
+    if ( !doubleSpinBox() )
+        return;
+
+    auto range = fRanges.getValue( imperial, seaWater );
+    if ( !range.has_value() )
+        return;
+
+    doubleSpinBox()->setMinimum( range.value().fMin );
+    doubleSpinBox()->setMaximum( range.value().fMax );
+    doubleSpinBox()->setSingleStep( range.value().fStep );
+    if ( range.value().fDefaultValue.has_value() )
+        doubleSpinBox()->setValue( range.value().fDefaultValue.value() );
+}
+
+void CVariableInfo::setupValues( bool imperial, bool seaWater )
+{
+    if ( !comboBox() )
+        return;
+
+    auto values = fValues.getValue( imperial, seaWater );
+    if ( !values.has_value() )
+        return;
+
+    TNamedValueItemList currValues;
+    for ( auto ii = 0; ii < comboBox()->count(); ++ii )
+    {
+        auto currText = comboBox()->itemText( ii );
+        auto currValue = comboBox()->itemData( ii );
+        TOptionalDouble value;
+        if ( !currValue.isNull() )
+            value = currValue.toDouble();
+        currValues.emplace_back( currText, value );
+    }
+
+    if ( values == currValues )
+        return;
+
+    comboBox()->clear();
+    for ( auto &&ii : values.value() )
+    {
+        comboBox()->addItem( ii.first, ii.second.has_value() ? ii.second.value() : QVariant() );
+    }
 }

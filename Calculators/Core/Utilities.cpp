@@ -202,6 +202,27 @@ namespace NUtilities
             return retVal;
         }
 
+        QString fillRate( bool imperial, bool useAbbreviations, bool tex )
+        {
+            auto retVal = QString( tex ? R"__(\frac{%1}{%2})__" : "%1/%2" );
+            retVal = retVal.arg( pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString fillRateO2( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( NConstants::fillRateO2( imperial ) ).arg( NUnitStrings::fillRate( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString fillRateAir( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( NConstants::fillRateAir( imperial ) ).arg( NUnitStrings::fillRate( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
         QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
         {
             auto retVal = QString( tex ? R"__(%1 \frac{%2}{%3})__" : "%1 %2/%3" );
@@ -334,6 +355,8 @@ namespace NUtilities
         const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
         const char *kPressureOffsetConstFieldName = "pressureOffset";
         const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
+        const char *kFillRateAirConstFieldName = "fillRateAir";
+        const char *kFillRateO2ConstFieldName = "fillRateO2";
 
         double absZeroOffset( bool imperial )
         {
@@ -392,12 +415,12 @@ namespace NUtilities
 
         double percentN2AtSurface()
         {
-            return 0.79;
+            return 1.0 - percentO2AtSurface();
         }
 
         double percentO2AtSurface()
         {
-            return 0.21;
+            return 0.209;
         }
 
         double barToPSI()
@@ -421,6 +444,26 @@ namespace NUtilities
         double baseMETForScuba()
         {
             return 7.0 / 60.0;
+        }
+
+        double fillRateAir( bool imperial )
+        {
+            double retVal = 600;   // psi/min
+            if ( !imperial )
+            {
+                retVal = NUtilities::NConversions::psiToBar( retVal );
+            }
+            return retVal;
+        }
+
+        double fillRateO2( bool imperial )
+        {
+            double retVal = 60;   // psi/min
+            if ( !imperial )
+            {
+                retVal = NUtilities::NConversions::psiToBar( retVal );
+            }
+            return retVal;
         }
     }
 
@@ -459,7 +502,10 @@ namespace NUtilities
                 return QObject::tr( "Pressure Offset", "descForType" );
             case EVariableType::eBaseMETofSCUBAConst:
                 return QObject::tr( "Base MET Value for SCUBA", "descForType" );
-                break;
+            case EVariableType::eFillRateAirConst:
+                return QObject::tr( "Fill Rate for Air", "descForType" );
+            case EVariableType::eFillRateO2Const:
+                return QObject::tr( "Fill Rate for Pure O2", "descForType" );
         };
         return {};
     }
@@ -499,7 +545,10 @@ namespace NUtilities
                 return NConstants::kPressureOffsetConstFieldName;
             case EVariableType::eBaseMETofSCUBAConst:
                 return NConstants::kBaseMETofSCUBAConstFieldName;
-                break;
+            case EVariableType::eFillRateAirConst:
+                return NConstants::kFillRateAirConstFieldName;
+            case EVariableType::eFillRateO2Const:
+                return NConstants::kFillRateO2ConstFieldName;
         };
         return {};
     }
@@ -513,15 +562,6 @@ namespace NUtilities
             numEmpty += value.has_value() ? 0 : 1;
         }
         return numEmpty;
-    }
-
-    bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty )
-    {
-        if ( values.empty() )
-            return false;
-        if ( checkNumEmpty && numEmpty( values ) != 1 )
-            return false;
-        return true;
     }
 
     QString doubleToString( const TOptionalDouble &value, int numDecimal )
@@ -551,8 +591,7 @@ namespace NUtilities
 
         double barToPSI( double bar )
         {
-            auto barToPSI = NConstants::barToPSI();
-            return bar * barToPSI;
+            return bar * NConstants::barToPSI();
         }
 
         QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName )
@@ -562,8 +601,7 @@ namespace NUtilities
 
         double psiToBar( double psi )
         {
-            auto barToPSI = NConstants::barToPSI();
-            return psi / barToPSI;
+            return psi / NConstants::barToPSI();
         }
 
         QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName )

@@ -93,7 +93,9 @@ enum class EVariableType
     ePSIToBarConst,
     eAbsZeroOffsetConst,
     ePressureOffsetConst,
-    eBaseMETofSCUBAConst
+    eBaseMETofSCUBAConst,
+    eFillRateO2Const,
+    eFillRateAirConst
 };
 
 enum class EVariableLoc

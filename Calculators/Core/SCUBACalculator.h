@@ -142,6 +142,13 @@ protected:
     // only necessary if the number of variables on either side is greater than two.
 
     virtual void computeValues() final;   // updates all values
+    virtual bool valuesSetProperly() const;
+
+protected:
+
+    virtual int numAllowedUnset() const { return 1; }
+
+    TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
@@ -149,6 +156,7 @@ protected:
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;
     TVariableInfo getLastVariable( EVariableLoc side ) const;
+    std::size_t numVariables( EVariableLoc side ) const;
 
 protected:
     CSCUBACalculatorPage *fPage{ nullptr };

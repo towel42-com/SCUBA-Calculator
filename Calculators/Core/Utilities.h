@@ -46,6 +46,10 @@ namespace NUtilities
         CALCULATORS_EXPORT QString metUnit( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString scubaMET( bool useAbbreviations, bool tex );
 
+        CALCULATORS_EXPORT QString fillRate( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString fillRateO2( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString fillRateAir( bool imperial, bool useAbbreviations, bool tex );
+
         CALCULATORS_EXPORT QString weightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex );
 
@@ -98,6 +102,9 @@ namespace NUtilities
         CALCULATORS_EXPORT double kgsPerLbs();
 
         CALCULATORS_EXPORT double baseMETForScuba();
+        CALCULATORS_EXPORT double fillRateAir( bool imperial );
+        CALCULATORS_EXPORT double fillRateO2( bool imperial );
+
     }
 
     namespace NConversions
@@ -165,7 +172,6 @@ namespace NUtilities
     CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
 
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
-    CALCULATORS_EXPORT bool valuesValid( const TOptionalDoubleVector &values, bool checkNumEmpty = true );
     CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
 };
 

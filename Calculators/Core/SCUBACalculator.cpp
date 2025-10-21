@@ -12,6 +12,7 @@
 #include <memory>
 #include <unordered_set>
 #include <QJsonArray>
+#include <QRegularExpression>
 
 // https://scuba.garykessler.net/EANcalculator/EAN_psi.html
 // mixing O2 + Air for proper Nitrox
@@ -208,7 +209,7 @@ void CSCUBACalculator::resetVariables()
 {
     for ( auto &&ii = fVariables.begin(); ii != fVariables.end(); ++ii )
     {
-        ( *ii )->resetValue( true, false );
+        ( *ii )->resetValue( imperial(), seaWater(), true, false );
     }
 
     auto formula = finalizeFormula( getBaseFormula(), EFormulaType::eBaseFormula );
@@ -280,7 +281,7 @@ std::pair< TFormulaList, TValuesForVariablePairVector > CSCUBACalculator::getFor
         if ( !ii->isVariable() )
             continue;
 
-        auto values = ii->validValues();
+        auto values = ii->validValues( imperial(), seaWater() );
         if ( !values.has_value() )
             continue;
 
@@ -332,7 +333,7 @@ TFormulaList CSCUBACalculator::getFormulaList() const
     for ( auto &&jj : fVariables )
     {
         currValues[ jj ] = jj->optValue();
-        jj->resetValue( false, false );
+        jj->resetValue( imperial(), seaWater(), false, false );
     }
 
     for ( auto &&currFormula : allFormulas )
@@ -432,6 +433,18 @@ TVariableInfo CSCUBACalculator::getFirstVariable( EVariableLoc side ) const
     return {};
 }
 
+std::size_t CSCUBACalculator::numVariables( EVariableLoc side ) const
+{
+    auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
+    std::size_t retVal = 0;
+    for ( auto &&ii : variables )
+    {
+        if ( ii->isVariable() )
+            retVal++;
+    }
+    return retVal;
+}
+
 void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
     if ( numUnsetVariables() != 0 )
@@ -443,11 +456,11 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
     auto varToReset = determineVariableToUnset( updateFromSide, triggerWidget, true );
     if ( !varToReset && ( updateFromSide == EVariableLoc::eRHS ) )
     {
-        if ( ( fLHSVariables.size() == 1 ) || ( fRHSVariables.size() == 1 ) )
+        if ( ( numVariables( EVariableLoc::eLHS ) == 1 ) || ( numVariables( EVariableLoc::eRHS ) == 1 ) )
         {
             varToReset = getFirstVariable( EVariableLoc::eLHS );
         }
-        else if ( fRHSVariables.size() == 2 )
+        else if ( numVariables( EVariableLoc::eRHS ) == 2 )
         {
             Q_ASSERT( !triggerWidget || ( fRHSVariables.front()->isWidget( triggerWidget ) ) || ( fRHSVariables.back()->isWidget( triggerWidget ) ) );
             if ( fRHSVariables.front()->isWidget( triggerWidget ) )
@@ -458,11 +471,11 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
     }
     else if ( !varToReset && ( updateFromSide == EVariableLoc::eLHS ) )
     {
-        if ( ( fRHSVariables.size() == 1 ) || ( fLHSVariables.size() == 1 ) )
+        if ( ( numVariables( EVariableLoc::eRHS ) == 1 ) || ( numVariables( EVariableLoc::eLHS ) == 1 ) )
         {
             varToReset = getFirstVariable( EVariableLoc::eRHS );
         }
-        else if ( fLHSVariables.size() == 2 )
+        else if ( numVariables( EVariableLoc::eLHS ) == 2 )
         {
             Q_ASSERT( !triggerWidget || ( fLHSVariables.front()->isWidget( triggerWidget ) ) || ( fLHSVariables.back()->isWidget( triggerWidget ) ) );
             if ( fLHSVariables.front()->isWidget( triggerWidget ) )
@@ -477,8 +490,7 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
 
     if ( varToReset )
     {
-        varToReset->resetValue( false, false );
-        return;
+        varToReset->resetValue( imperial(), seaWater(), false, false );
     }
 }
 
@@ -487,6 +499,7 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     auto &&variables = getVariables();
     for ( auto &&curr : variables )
     {
+        curr->updateValuesAndRanges( imperial(), seaWater() );
         curr->updateLabels( imperial(), seaWater() );
         curr->updateValueFromField();
     }
@@ -515,9 +528,8 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
 std::optional< QString > CSCUBACalculator::getCurrentFormula() const
 {
-    auto numUnset = numUnsetVariables();
-    if ( numUnset != 1 )
-        return getBaseFormula();
+    if ( !valuesSetProperly() )
+        return {};
 
     auto unsetVar = getFirstUnsetVariable();
     if ( !unsetVar )
@@ -528,8 +540,7 @@ std::optional< QString > CSCUBACalculator::getCurrentFormula() const
 
 void CSCUBACalculator::computeValues()
 {
-    auto numUnset = numUnsetVariables();
-    if ( numUnset != 1 )
+    if ( !valuesSetProperly() )
         return;
 
     auto unsetVar = getFirstUnsetVariable();
@@ -539,19 +550,33 @@ void CSCUBACalculator::computeValues()
     computeValueForVar( unsetVar );
 }
 
-TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
+bool CSCUBACalculator::valuesSetProperly() const
 {
+    auto numUnset = numUnsetVariables();
+    return ( numUnset == numAllowedUnset() );
+}
+
+TVariableInfoList CSCUBACalculator::getUnsetVariables() const
+{
+    TVariableInfoList retVal;
     for ( auto &&ii : fVariables )
     {
         if ( !ii->isVariable() )
             continue;
         if ( !ii->has_value() )
         {
-            return ii;
-            break;
+            retVal.push_back( ii );
         }
     }
-    return {};
+    return retVal;
+}
+
+TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
+{
+    auto unset = getUnsetVariables();
+    if ( unset.empty() )
+        return {};
+    return unset.front();
 }
 
 std::optional< QString > CSCUBACalculator::getFormulaForVar( const TConstVariableInfo &unsetVar ) const
@@ -566,7 +591,7 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
     for ( auto &&curr : variables )
     {
         if ( curr->needsFieldUpdate( triggerWidget ) )
-            curr->updateFieldFromValue();
+            curr->updateFieldFromValue( imperial(), seaWater() );
     }
 }
 
@@ -581,6 +606,17 @@ QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const Q
     }
 
     retVal = retVal.replace( " ", R"__(\ )__" );
+    auto regEx = QRegularExpression( R"__(([^\\])%)__" );
+    auto matchII = regEx.globalMatch( retVal );
+    int offset = 0;
+    while ( matchII.hasNext() )
+    {
+        auto match = matchII.next();
+        auto replacementText = match.captured( 1 ) + R"__(\%)__";
+        auto start = match.capturedStart( 1 );
+        retVal.replace( start + offset, 2, replacementText );
+        offset++;
+    }
 
     return retVal;
 }
@@ -599,7 +635,7 @@ void SGeneratedFormulaData::sortByName()
         } );
 }
 
-std::pair< int, int > SGeneratedFormulaData::formulaCounts( const std::function< bool( const QString & formula ) > & beenCreated ) const
+std::pair< int, int > SGeneratedFormulaData::formulaCounts( const std::function< bool( const QString &formula ) > &beenCreated ) const
 {
     int total = 0;
     int needsRendering = 0;
