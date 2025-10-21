@@ -45,13 +45,43 @@ include( VersionInfo.cmake )
 
 file( REAL_PATH ~/bin/SCUBA-Calculator CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
+function(AddToCalculatorList calculator)
+    get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
+    list(APPEND _CURR "${calculator}")
+    set_property(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "${_CURR}")
+    
+    INSTALL( TARGETS ${calculator} RUNTIME DESTINATION Calculators )
+    INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
+
+    set( ROOT_TARGET "SCUBA-Calculator" )
+    set( CALC_DIR "Calculators" )
+    SET( DEST_DIR "$<TARGET_FILE_DIR:${ROOT_TARGET}>/${CALC_DIR}" )
+    SET( DLL_NAME "$<TARGET_FILE_NAME:${calculator}>" )
+    SET( DLL_SRC_PATH "$<TARGET_FILE:${calculator}>" )
+    SET( DLL_DEST_PATH "${DEST_DIR}/${DLL_NAME}" )
+    
+    SET( PDB_NAME "$<TARGET_FILE_NAME:${calculator}>" )
+    SET( PDB_SRC_PATH "$<TARGET_PDB_FILE:${calculator}>" )
+    SET( PDB_DEST_PATH "${DEST_DIR}/$<TARGET_FILE_BASE_NAME:${calculator}>.pdb" )
+    
+    add_custom_command(TARGET ${calculator} POST_BUILD
+#        COMMAND "${CMAKE_COMMAND}" -E echo "Making Directory '${DEST_DIR}' for '${ROOT_TARGET}'"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
+        COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target Library Library '${DLL_NAME}' for '${ROOT_TARGET}'"
+        COMMAND "${CMAKE_COMMAND}" -E create_symlink "${DLL_SRC_PATH}" \"${DLL_DEST_PATH}\"
+        COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target PDB File '${PDB_SRC_PATH}' for '${ROOT_TARGET}'"
+        COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
+    )
+endfunction()
+
 add_subdirectory( T42-MathJaxQt6  )
 add_subdirectory( SABUtils )
 add_subdirectory( MainWindow )
-add_subdirectory( main )
+
+SET_PROPERTY(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "")
+
 add_subdirectory( Calculators )
-
-
+add_subdirectory( main )
 
 SET( CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION} )
 SET( CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION} )
