@@ -73,7 +73,9 @@ enum class EUnit
     eAbsZeroTemperature,
     ePercent,
     eTime,
-    eCalories
+    eCalories,
+    eVolumePerMinute,
+    eFlowRate
 };
 
 enum class EVariableType

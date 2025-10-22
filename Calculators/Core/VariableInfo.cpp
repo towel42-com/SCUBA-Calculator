@@ -137,6 +137,10 @@ QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
             return NUtilities::NUnitStrings::volumeUnit( imperial, true, tex );
         case EUnit::eCalories:
             return NUtilities::NUnitStrings::energyUnit( imperial, true, tex );
+        case EUnit::eVolumePerMinute:
+            return NUtilities::NUnitStrings::volumePerMinuteUnit( imperial, true, tex );
+        case EUnit::eFlowRate:
+            return NUtilities::NUnitStrings::flowRateUnit( imperial, true, tex );
         case EUnit::eWeight:
             return NUtilities::NUnitStrings::weightUnit( imperial, true, tex );
         case EUnit::eLength:

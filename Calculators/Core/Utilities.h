@@ -43,10 +43,11 @@ namespace NUtilities
         CALCULATORS_EXPORT QString idealGasConstantUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString molesUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString energyUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString flowRateUnit( bool imperial, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString volumePerMinuteUnit( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString metUnit( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString scubaMET( bool useAbbreviations, bool tex );
 
-        CALCULATORS_EXPORT QString fillRate( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString fillRateO2( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString fillRateAir( bool imperial, bool useAbbreviations, bool tex );
 
@@ -135,11 +136,11 @@ namespace NUtilities
         CALCULATORS_EXPORT QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName );
         CALCULATORS_EXPORT QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName );
 
-        CALCULATORS_EXPORT double depthToPressure( bool imperial, bool seaWater, double depth );
-        CALCULATORS_EXPORT double pressureToDepth( bool imperial, bool seaWater, double pressure );
+        CALCULATORS_EXPORT double depthToATA( bool imperial, bool seaWater, double depth );
+        CALCULATORS_EXPORT double ataToDepth( bool imperial, bool seaWater, double pressure );
 
-        CALCULATORS_EXPORT QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName );
-        CALCULATORS_EXPORT QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName );
+        CALCULATORS_EXPORT QString depthToATAFormula( const QString &ataFieldName, const QString &depthFieldName );
+        CALCULATORS_EXPORT QString ataToDepthFormula( const QString &ataFieldName, const QString &depthFieldName );
 
         CALCULATORS_EXPORT double depthFreshwaterToSeawater( double depthFW );
         CALCULATORS_EXPORT double depthSeawaterToFreshwater( double depthSW );
@@ -176,6 +177,9 @@ namespace NUtilities
 
         CALCULATORS_EXPORT double cubicFeetToLiters( double volume );
         CALCULATORS_EXPORT double litersToCubicFeet( double volume );
+
+        CALCULATORS_EXPORT double sacToRMV( double sac, double volume, double pressure );
+        CALCULATORS_EXPORT double rmvToSAC( double rmv, double volume, double pressure );
 
         namespace NCaloriesComputer
         {

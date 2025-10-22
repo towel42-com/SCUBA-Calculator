@@ -50,12 +50,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return NUtilities::NConversions::pressureToDepthFormula( "pressure", "depth" );
+    return NUtilities::NConversions::ataToDepthFormula( "pressure", "depth" );
 }
 
 QString CCalculator::myReversedBaseFormula() const
 {
-    return NUtilities::NConversions::depthToPressureFormula( "pressure", "depth" );
+    return NUtilities::NConversions::depthToATAFormula( "pressure", "depth" );
 }
 
 std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
@@ -66,7 +66,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     }
     else if ( unsetVar->name() == "pressure" )
     {
-        return NUtilities::NConversions::depthToPressureFormula( "pressure", "depth" );
+        return NUtilities::NConversions::depthToATAFormula( "pressure", "depth" );
     }
     return {};
 }
@@ -78,10 +78,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == depth )
     {
-        depth->setValue( NUtilities::NConversions::pressureToDepth( imperial(), seaWater(), pressure->value() ) );
+        depth->setValue( NUtilities::NConversions::ataToDepth( imperial(), seaWater(), pressure->value() ) );
     }
     else if ( unsetVar == pressure )
     {
-        pressure->setValue( NUtilities::NConversions::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        pressure->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
     }
 }

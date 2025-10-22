@@ -59,7 +59,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     QStringList formulas;
-    formulas << NUtilities::NConversions::depthToPressureFormula( "ata", "depth" );
+    formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
     formulas << R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__";
     return NUtilities::joinFormulas( formulas );
 }
@@ -77,7 +77,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     else if ( unsetVar->name() == "partialPressureAtSurface" )
     {
         QStringList formulas;
-        formulas << NUtilities::NConversions::depthToPressureFormula( "ata", "depth" );
+        formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
         formulas << R"__(<partialPressureAtSurface> = \frac{<partialPressureAtDepth>}{<ata_value>})__";
         return NUtilities::joinFormulas( formulas );
     }
@@ -94,7 +94,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == partialPressureAtDepth )
     {
-        ata->setValue( NUtilities::NConversions::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        ata->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
         partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
     }
     else if ( unsetVar == depth )
@@ -103,7 +103,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     }
     else if ( unsetVar == partialPressureAtSurface )
     {
-        ata->setValue( NUtilities::NConversions::depthToPressure( imperial(), seaWater(), depth->value() ) );
+        ata->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
         partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
 }

@@ -202,24 +202,31 @@ namespace NUtilities
             return retVal;
         }
 
-        QString fillRate( bool imperial, bool useAbbreviations, bool tex )
+        QString flowRateUnit( bool imperial, bool useAbbreviations, bool tex )
         {
-            QString retVal = tex ? R"__(%1 \frac{%2}{%3})__" : "%1 (%2/%3)";
+            QString retVal = tex ? R"__(\frac{%2}{%3})__" : "(%2/%3)";
             retVal = retVal.arg( pressureUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString volumePerMinuteUnit( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? R"__(\frac{%2}{%3})__" : "(%2/%3)";
+            retVal = retVal.arg( volumeUnit( imperial, useAbbreviations, tex ) ).arg( NUnitStrings::timeUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString fillRateO2( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( NConstants::fillRateO2( imperial ) ).arg( NUnitStrings::fillRate( imperial, useAbbreviations, tex ) );
+            retVal = retVal.arg( NConstants::fillRateO2( imperial ) ).arg( NUnitStrings::flowRateUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
         QString fillRateAir( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( NConstants::fillRateAir( imperial ) ).arg( NUnitStrings::fillRate( imperial, useAbbreviations, tex ) );
+            retVal = retVal.arg( NConstants::fillRateAir( imperial ) ).arg( NUnitStrings::flowRateUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
@@ -450,7 +457,7 @@ namespace NUtilities
 
         double barToPSI()
         {
-            return 14.7;
+            return 14.504;
         }
 
         double psiToBar()
@@ -660,23 +667,23 @@ namespace NUtilities
             return psi / NConstants::barToPSI();
         }
 
-        QString depthToPressureFormula( const QString &ataFieldName, const QString &depthFieldName )
+        QString depthToATAFormula( const QString &ataFieldName, const QString &depthFieldName )
         {
             return QString( R"__(<%1>=\frac{<%2>}{<%3>} + 1)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( NConstants::kDepthToSingleATMConstFieldName );
         }
 
-        double depthToPressure( bool imperial, bool seaWater, double depth )
+        double depthToATA( bool imperial, bool seaWater, double depth )
         {
             auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
             return ( depth / depthOfATM ) + 1;
         }
 
-        QString pressureToDepthFormula( const QString &ataFieldName, const QString &depthFieldName )
+        QString ataToDepthFormula( const QString &ataFieldName, const QString &depthFieldName )
         {
             return QString( R"__(<%2>=(<%1>-1) \times <%3>)__" ).arg( ataFieldName ).arg( depthFieldName ).arg( NConstants::kDepthToSingleATMConstFieldName );
         }
 
-        double pressureToDepth( bool imperial, bool seaWater, double pressure )
+        double ataToDepth( bool imperial, bool seaWater, double pressure )
         {
             auto depthOfATM = NConstants::depthToSingleAtmosphere( imperial, seaWater );
             return ( pressure - 1 ) * depthOfATM;
@@ -704,7 +711,7 @@ namespace NUtilities
 
         double feetToMeters( double feet )
         {
-            return feet * NConstants::feetPerMeters();
+            return feet * NConstants::metersPerFeet();
         }
 
         QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName )
@@ -714,7 +721,7 @@ namespace NUtilities
 
         double metersToFeet( double meters )
         {
-            return meters * NConstants::metersPerFeet();
+            return meters * NConstants::feetPerMeters();
         }
 
         QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName )
@@ -800,6 +807,20 @@ namespace NUtilities
         double litersToCubicFeet( double liters )
         {
             return liters * NConstants::cubicFeetPerLiter();
+        }
+
+        double sacToRMV( double sac, double volume, double pressure )
+        {
+            auto tankBaseline = volume / pressure;
+            auto rmv = sac * tankBaseline;
+            return rmv;
+        }
+
+        double rmvToSAC( double rmv, double volume, double pressure )
+        {
+            auto tankBaseline = volume / pressure;
+            auto sac = rmv / tankBaseline;
+            return sac;
         }
 
         QString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
