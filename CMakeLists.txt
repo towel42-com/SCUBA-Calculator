@@ -83,12 +83,9 @@ function(AddToCalculatorList calculator)
             "/formulas"
         FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/formulas.json
-    OUTPUT_TARGETS
-        QRC_OTHER_TARGETS    
+        OUTPUT_TARGETS 
+            QRC_OTHER_TARGETS    
     )
-    
-    set_target_properties( ${QRC_OTHER_TARGETS} PROPERTIES FOLDER QtAutoProjects )
-
 endfunction()
 
 add_subdirectory( T42-MathJaxQt6  )
@@ -130,3 +127,35 @@ SET( CPACK_GENERATOR NSIS ZIP )
 SET( CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/MainWindow/resources/application.ico )
 SET( CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/MainWindow/resources/application.ico )
 include( CPack )
+
+function(getAllSubdirs dir _OUTVAR)
+    set(_dirs "")
+    # get subdirectories for dir
+    get_property(subdirs DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+    # iterate any found subdirectories
+    foreach(subdir ${subdirs})
+#        # append each sub directory
+        list(APPEND _dirs ${subdir})
+        getAllSubdirs(${subdir} curr_OUTVAR)
+        list(APPEND _dirs ${curr_OUTVAR})
+    endforeach()
+    SET( ${_OUTVAR} ${_dirs} PARENT_SCOPE )
+endfunction()
+
+getAllSubDirs(. _ALLDIRS )
+
+include(CMakePrintHelpers)
+foreach( dir ${_ALLDIRS} )
+    get_property(targets DIRECTORY ${dir} PROPERTY "BUILDSYSTEM_TARGETS")
+    foreach( _target ${targets} )
+        STRING( FIND ${_target} "_qmlimportscan" _pos1 )
+        STRING( FIND ${_target} "_other_files" _pos2 )
+        if( ( _pos1 EQUAL -1 ) AND ( _pos2 EQUAL -1 ) )
+            continue()
+        endif()
+
+#        message( STATUS "Adding target ${_target} to QtAutoProjects" )
+        set_target_properties( ${_target} PROPERTIES FOLDER QtAutoProjects )
+    endforeach()
+endforeach()
+
