@@ -83,7 +83,11 @@ function(AddToCalculatorList calculator)
             "/formulas"
         FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/formulas.json
+    OUTPUT_TARGETS
+        QRC_OTHER_TARGETS    
     )
+    
+    set_target_properties( ${QRC_OTHER_TARGETS} PROPERTIES FOLDER QtAutoProjects )
 
 endfunction()
 
