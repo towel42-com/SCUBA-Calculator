@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/formulas">
-        <file alias="./O2MixCalculator.json">./formulas.json</file>
-    </qresource>
-</RCC>

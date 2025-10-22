@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/formulas">
-        <file alias="./MOD.json">./formulas.json</file>
-    </qresource>
-</RCC>

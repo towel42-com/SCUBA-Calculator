@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/formulas">
-        <file alias="./PressureToDepth.json">./formulas.json</file>
-    </qresource>
-</RCC>

@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/formulas">
-        <file alias="./Calories.json">./formulas.json</file>
-    </qresource>
-</RCC>
