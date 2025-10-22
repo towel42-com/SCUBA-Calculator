@@ -457,7 +457,7 @@ namespace NUtilities
 
         double barToPSI()
         {
-            return 14.504;
+            return 14.5037738;
         }
 
         double psiToBar()
