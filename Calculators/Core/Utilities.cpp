@@ -823,6 +823,18 @@ namespace NUtilities
             return sac;
         }
 
+        QString sacToRMVFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName )
+        {
+            return QString( R"__(<%1>=<%2> \times \frac{<%3>}{<%4>})__" ).arg( rmvFieldName ).arg( sacFieldName ).arg( tankVolumeFieldName ).arg( tankPressureFieldName );
+        }
+
+        QString rmvToSACFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName )
+        {
+            return QString( R"__(<%2>=<%1> \times \frac{<%4>}{<%3>})__" ).arg( rmvFieldName ).arg( sacFieldName ).arg( tankVolumeFieldName ).arg( tankPressureFieldName );
+        }
+
+
+
         QString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
         {
             return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( litersFieldName ).arg( cubicFeetFieldName ).arg( NConstants::kLitersToCubicFeetFieldName );

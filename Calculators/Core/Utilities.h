@@ -180,6 +180,8 @@ namespace NUtilities
 
         CALCULATORS_EXPORT double sacToRMV( double sac, double volume, double pressure );
         CALCULATORS_EXPORT double rmvToSAC( double rmv, double volume, double pressure );
+        CALCULATORS_EXPORT QString sacToRMVFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName );
+        CALCULATORS_EXPORT QString rmvToSACFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName );
 
         namespace NCaloriesComputer
         {
