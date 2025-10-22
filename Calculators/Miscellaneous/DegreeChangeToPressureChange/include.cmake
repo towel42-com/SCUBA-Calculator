@@ -35,7 +35,6 @@ set(qtproject_UIS
 )
 
 set(qtproject_QRC
-    calculator.qrc
 )
 
 SET( project_pub_DEPS

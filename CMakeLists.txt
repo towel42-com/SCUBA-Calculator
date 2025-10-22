@@ -72,6 +72,19 @@ function(AddToCalculatorList calculator)
         COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target PDB File '${PDB_SRC_PATH}' for '${ROOT_TARGET}'"
         COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
     )
+    
+    set_source_files_properties( 
+        ${CMAKE_CURRENT_SOURCE_DIR}/formulas.json 
+        PROPERTIES
+            QT_RESOURCE_ALIAS ./${PROJECT_NAME}.json
+    )
+    qt6_add_resources(${PROJECT_NAME} "calculator"
+        PREFIX
+            "/formulas"
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/formulas.json
+    )
+
 endfunction()
 
 add_subdirectory( T42-MathJaxQt6  )
