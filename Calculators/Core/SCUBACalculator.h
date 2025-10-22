@@ -143,6 +143,7 @@ protected:
     virtual QString myReversedBaseFormula( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
+    TVariableInfoList unsetVariables() const;
     std::size_t numUnsetVariables() const;
     TConstVariableInfo getVariable( const QString &varName ) const;
     TVariableInfo getVariable( const QString &varName );

@@ -265,6 +265,19 @@ void CSCUBACalculator::resetVariables()
     notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
 }
 
+TVariableInfoList CSCUBACalculator::unsetVariables() const
+{
+    TVariableInfoList retVal;
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+        if ( !ii->has_value() )
+            retVal.push_back( ii );
+    }
+    return retVal;
+}
+
 std::size_t CSCUBACalculator::numUnsetVariables() const
 {
     std::size_t retVal = 0;
