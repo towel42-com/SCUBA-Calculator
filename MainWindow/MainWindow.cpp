@@ -572,7 +572,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
             if ( cleanedFormula != ii->formula() )
                 obj.insert( "cleanedFormula", QJsonValue::fromVariant( cleanedFormula ) );
 
-            auto label = QString( "Generating SVG for formula:<br/>%1<br/>%2 of %3 to be Rendered<br/>Total Formulas: %4" ).arg( ii->name() ).arg( progress->value() + 1 ).arg( numToBeRendered ).arg( totalFormulas );
+            auto label = QString( "Generating SVG for formula:<br/>%1<br/>Rendering Formula %2 of %3<br/>Total Formulas: %4" ).arg( ii->name() ).arg( progress->value() + 1 ).arg( numToBeRendered ).arg( totalFormulas );
             progress->setLabelText( label );
 
             fRenderingEngine->renderSVG(
