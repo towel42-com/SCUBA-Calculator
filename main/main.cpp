@@ -5,7 +5,7 @@
 
 #include "Version.h"
 
-int main( int argc, char ** argv )
+int main( int argc, char **argv )
 {
     QApplication appl( argc, argv );
     Q_INIT_RESOURCE( MainWindow );
@@ -18,9 +18,8 @@ int main( int argc, char ** argv )
 
     appl.setWindowIcon( QPixmap( ":/resources/finddupe.png" ) );
 
-    CMainWindow * wnd = new CMainWindow;
+    CMainWindow *wnd = new CMainWindow;
     wnd->show();
     wnd->setWindowTitle( QString( "%1 v%2 - http://%3" ).arg( NVersion::APP_NAME ).arg( NVersion::getVersionString( true ) ).arg( NVersion::HOMEPAGE ) );
     return appl.exec();
 }
-
