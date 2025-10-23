@@ -701,14 +701,21 @@ void CVariableInfo::setupRange( bool imperial, bool seaWater )
         return;
 
     auto range = fRanges.getValue( imperial, seaWater );
+    doubleSpinBox()->setEnabled( range.has_value() );
     if ( !range.has_value() )
         return;
 
+    auto currRange = SRange( doubleSpinBox() );
+    if ( range.value() == currRange )
+        return;
+
+    auto prev = doubleSpinBox()->blockSignals( true );
     doubleSpinBox()->setMinimum( range.value().fMin );
     doubleSpinBox()->setMaximum( range.value().fMax );
     doubleSpinBox()->setSingleStep( range.value().fStep );
     if ( range.value().fDefaultValue.has_value() )
         doubleSpinBox()->setValue( range.value().fDefaultValue.value() );
+    doubleSpinBox()->blockSignals( prev );
 }
 
 void CVariableInfo::setupValues( bool imperial, bool seaWater )
@@ -717,8 +724,11 @@ void CVariableInfo::setupValues( bool imperial, bool seaWater )
         return;
 
     auto values = fValues.getValue( imperial, seaWater );
+    comboBox()->setEnabled( values.has_value() );
     if ( !values.has_value() )
+    {
         return;
+    }
 
     TNamedValueItemList currValues;
     for ( auto ii = 0; ii < comboBox()->count(); ++ii )
@@ -734,9 +744,41 @@ void CVariableInfo::setupValues( bool imperial, bool seaWater )
     if ( values == currValues )
         return;
 
+    auto prev = comboBox()->blockSignals( true );
     comboBox()->clear();
     for ( auto &&ii : values.value() )
     {
         comboBox()->addItem( ii.first, ii.second.has_value() ? ii.second.value() : QVariant() );
     }
+    comboBox()->blockSignals( prev );
+}
+
+SRange::SRange()
+{
+}
+
+SRange::SRange( double min, double max, std::optional< double > defaultValue, double step ) :
+    fMin( min ),
+    fMax( max ),
+    fDefaultValue( defaultValue ),
+    fStep( step )
+{
+}
+
+SRange::SRange( QDoubleSpinBox *spinBox )
+{
+    if ( !spinBox )
+        return;
+    fMin = spinBox->minimum();
+    fMax = spinBox->maximum();
+    fDefaultValue = spinBox->value();
+    fStep = spinBox->singleStep();
+}
+
+bool SRange::operator==( const SRange &rhs )
+{
+    return ( fMin == rhs.fMin )   //
+           && ( fMax == rhs.fMax )   //
+           && ( fDefaultValue == rhs.fDefaultValue )   //
+           && ( fStep == rhs.fStep );
 }

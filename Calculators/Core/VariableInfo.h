@@ -34,13 +34,21 @@ class QLineEdit;
 class QDoubleSpinBox;
 class QFormLayout;
 class QComboBox;
+class QDoubleSpinBox;
 
 struct SRange
 {
+    SRange();
+    SRange( double min, double max, std::optional< double > defaultValue, double step );
+    SRange( QDoubleSpinBox *spinBox );
+
     double fMin{ 0.0 };
     double fMax{ 0.0 };
     std::optional< double > fDefaultValue;
     double fStep{ 0.0 };
+
+    bool operator==( const SRange &rhs );
+    bool operator!=( const SRange &rhs ) { return !operator==( rhs ); }
 };
 
 template<>
