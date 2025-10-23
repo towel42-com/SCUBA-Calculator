@@ -7,7 +7,7 @@
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
-    CCalculator() { setObjectName( "SAC and RMV" ); }
+    CCalculator() { setObjectName( "SAC, RMV and Gas Consumption" ); }
     virtual ~CCalculator() override {}
     virtual bool isWaterTypeBased() const override { return true; }
     virtual bool valuesSetProperly() const override
@@ -51,7 +51,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 QString CCalculator::myCalculatorName() const
 {
-    return tr( "Surface Air Consumption (SAC) and Respiratory Minute Volume (RMV)" );
+    return tr( "SAC, RMV and Gas Consumption" );
 }
 
 QStringList CCalculator::myCalculatorPath() const
