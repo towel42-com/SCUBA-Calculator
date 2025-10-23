@@ -600,13 +600,18 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     delete progress;
     progress = nullptr;
 
+    auto regExp = QRegularExpression( R"__([\/\\\?\*\:\"\<\>\|])__" );
     for ( auto &&ii : allFormulas )
     {
         auto calc = ii.first;
         if ( needUpdatingOnly && !ii.second->updated() )
             continue;
 
-        auto jsonFileName = QDir( dir ).absoluteFilePath( QString( "%1-formulas.json" ).arg( calc->calculatorName() ) );
+        auto jsonFileNameBase = QString( "%1-formulas.json" ).arg( calc->calculatorName() );
+        jsonFileNameBase.replace( regExp, "_" );
+
+        auto jsonFileName = QDir( dir ).absoluteFilePath( jsonFileNameBase );
+
         QFile jsonFile( jsonFileName );
         if ( !jsonFile.open( QFile::WriteOnly | QFile::Text | QFile::Truncate ) )
         {
