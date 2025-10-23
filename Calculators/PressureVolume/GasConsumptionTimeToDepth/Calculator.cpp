@@ -19,8 +19,8 @@ public:
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual QString myReversedBaseFormula() const override;
+    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > myReversedBaseFormula() const override;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -100,12 +100,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return R"__(<m2> = <m1> \times \frac{<p1>}{<p2>})__";
 }
 
-QString CCalculator::myReversedBaseFormula() const
+std::optional< QString > CCalculator::myReversedBaseFormula() const
 {
     return R"__(<p2> = <p1> \times \frac{<m1>}{<m2>})__";
 }

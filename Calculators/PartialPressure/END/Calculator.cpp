@@ -16,7 +16,7 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -49,7 +49,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return QString( R"__(<end> = [(<depth> + <%1>) \times ( 1.0 - <fhe> ) ] - <%1> )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
 }

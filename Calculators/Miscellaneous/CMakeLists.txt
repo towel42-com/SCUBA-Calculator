@@ -1,6 +1,6 @@
 add_subdirectory( DegreeChangeToPressureChange )
 add_subdirectory( Calories )
 add_subdirectory( O2MixCalculator )
-#add_subdirectory( RelativeAltitudeDepth )
+add_subdirectory( AltitudeDiving )
 add_subdirectory( SAC )
 add_subdirectory( GasVolumeOfTank )

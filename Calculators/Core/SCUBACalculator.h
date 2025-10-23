@@ -136,11 +136,11 @@ protected:
     virtual QString getBaseFormula() const final;   // for descriptive purposes
     virtual std::optional< QString > getCurrentFormula() const final;   // returns the current formula in use
 
-    virtual QString myBaseFormula() const;
-    virtual QString myBaseFormula( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< QString > myBaseFormula() const;
+    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
 
-    virtual QString myReversedBaseFormula() const;
-    virtual QString myReversedBaseFormula( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< QString > myReversedBaseFormula() const;
+    virtual std::optional< QString > myReversedBaseFormula( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
     TVariableInfoList unsetVariables() const;

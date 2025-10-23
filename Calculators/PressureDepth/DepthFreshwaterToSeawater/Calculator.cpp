@@ -15,8 +15,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual QString myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual QString myReversedBaseFormula() const override;
+    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QString > myReversedBaseFormula() const override;
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
@@ -49,12 +49,12 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-QString CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return NUtilities::NConversions::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
 }
 
-QString CCalculator::myReversedBaseFormula() const
+std::optional< QString > CCalculator::myReversedBaseFormula() const
 {
     return NUtilities::NConversions::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
 }

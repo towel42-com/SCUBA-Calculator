@@ -62,17 +62,17 @@ QString CSCUBACalculator::myReversedCalculatorName() const
     return {};
 }
 
-QString CSCUBACalculator::myReversedBaseFormula() const
+std::optional< QString > CSCUBACalculator::myReversedBaseFormula() const
 {
     return myReversedBaseFormula( imperial(), seaWater() );
 }
 
-QString CSCUBACalculator::myReversedBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QString > CSCUBACalculator::myReversedBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return {};
 }
 
-QString CSCUBACalculator::myBaseFormula() const
+std::optional< QString > CSCUBACalculator::myBaseFormula() const
 {
     return myBaseFormula( imperial(), seaWater() );
 }
@@ -80,7 +80,9 @@ QString CSCUBACalculator::myBaseFormula() const
 QString CSCUBACalculator::getBaseFormula() const
 {
     auto retVal = ( isReversed() ) ? myReversedBaseFormula() : myBaseFormula();
-    return retVal;
+    if ( retVal.has_value() )
+        return retVal.value();
+    return {};
 }
 
 QWidget *CSCUBACalculator::getPage() const
@@ -327,12 +329,13 @@ std::pair< TFormulaList, TValuesForVariablePairVector > CSCUBACalculator::getFor
         for ( auto seaWater : { true, false } )
         {
             auto baseFormula = myBaseFormula( imperial, seaWater );
-            namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-baseFormula", baseFormula, imperial, seaWater ) );
+            if ( baseFormula.has_value() )
+                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-baseFormula", baseFormula.value(), imperial, seaWater ) );
 
             auto reverseBase = myReversedBaseFormula( imperial, seaWater );
-            if ( !reverseBase.isEmpty() && ( baseFormula != reverseBase ) )
+            if ( reverseBase.has_value() && ( baseFormula != reverseBase ) )
             {
-                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-reverseBaseFormula", reverseBase, imperial, seaWater ) );
+                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-reverseBaseFormula", reverseBase.value(), imperial, seaWater ) );
             }
         }
     }
@@ -721,7 +724,7 @@ bool SGeneratedFormulaData::operator==( const SGeneratedFormulaData &rhs ) const
 
     if ( fAllFormulas != rhs.fAllFormulas )
         return false;
-    
+
     if ( fByNameList.size() != rhs.fByNameList.size() )
         return false;
 
