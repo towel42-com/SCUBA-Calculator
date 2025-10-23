@@ -345,10 +345,24 @@ namespace NUtilities
             return retVal;
         }
 
-        QString pressureOffset( bool imperial, bool useAbbreviations, bool tex )
+        QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::pressureOffset( imperial ), 1 ) ).arg( pressureUnit( imperial, useAbbreviations, tex ) );
+            retVal = retVal.arg( doubleToString( NConstants::pressureAtSurface( imperial ), 1 ) ).arg( atmosphereUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString pressureLossPerAltitude( bool imperial, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
+            retVal = retVal.arg( doubleToString( NConstants::pressureLossPerAltitude( imperial ), 4 ) ).arg( atmosphereUnit( imperial, useAbbreviations, tex ) ).arg( lengthUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
+        QString safetyStop( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( doubleToString( NConstants::safetyStopDepth( imperial ), 1 ) ).arg( depthUnit( imperial, seaWater, useAbbreviations, tex ) );
             return retVal;
         }
 
@@ -383,12 +397,13 @@ namespace NUtilities
         const char *kPSIToBarConstFieldName = "psiToBar";
         const char *kBarToPSIConstFieldName = "barToPSI";
         const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
-        const char *kPressureOffsetConstFieldName = "pressureOffset";
+        const char *kPressureAtSurfaceConstFieldName = "pressureAtSurface";
         const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
         const char *kFillRateAirConstFieldName = "fillRateAir";
         const char *kFillRateO2ConstFieldName = "fillRateO2";
         const char *kCubicFeetToLitersFieldName = "cubicFeetToLiters";
         const char *kLitersToCubicFeetFieldName = "litersToCubicFeet";
+        const char *kSafetyStopDepthConstFieldName = "safetyStopConst";
 
         double absZeroOffset( bool imperial )
         {
@@ -407,9 +422,27 @@ namespace NUtilities
             return retVal;
         }
 
-        double pressureOffset( bool imperial )
+        // psi and atm
+        double pressureAtSurface( bool imperial )
         {
             return imperial ? 14.7 : 1.0;
+        }
+
+        double pressureLossPerAltitude( bool imperial )
+        {
+            auto retVal = 0.1 / 1000.0;   // ata/m
+
+            if ( imperial )
+            {
+                retVal *= pressureAtSurface( imperial );   // psi/m
+                retVal *= metersPerFeet();   // psi/ft
+            }
+            return retVal;
+        }
+
+        double safetyStopDepth( bool imperial )
+        {
+            return imperial ? 15 : NConversions::feetToMeters( 15 );
         }
 
         double depthToSingleAtmosphere( bool imperial, bool seaWater )
@@ -549,10 +582,13 @@ namespace NUtilities
                 return QObject::tr( "Bar to PSI", "descForType" );
             case EVariableType::eAbsZeroOffsetConst:
                 return QObject::tr( "Absolute Zero Offset", "descForType" );
-            case EVariableType::ePressureOffsetConst:
-                return QObject::tr( "Pressure Offset", "descForType" );
+            case EVariableType::ePressureAtSurfaceConst:
+                return QObject::tr( "Pressure at Surface", "descForType" );
+            case EVariableType::eSafetyStopDepthConst:
+                return QObject::tr( "Safety Stop Depth", "descForType" );
             case EVariableType::eBaseMETofSCUBAConst:
                 return QObject::tr( "Base MET Value for SCUBA", "descForType" );
+
             case EVariableType::eFillRateAirConst:
                 return QObject::tr( "Fill Rate for Air", "descForType" );
             case EVariableType::eFillRateO2Const:
@@ -600,8 +636,10 @@ namespace NUtilities
                 return NConstants::kBarToPSIConstFieldName;
             case EVariableType::eAbsZeroOffsetConst:
                 return NConstants::kAbsZeroOffsetConstFieldName;
-            case EVariableType::ePressureOffsetConst:
-                return NConstants::kPressureOffsetConstFieldName;
+            case EVariableType::ePressureAtSurfaceConst:
+                return NConstants::kPressureAtSurfaceConstFieldName;
+            case EVariableType::eSafetyStopDepthConst:
+                return NConstants::kSafetyStopDepthConstFieldName;
             case EVariableType::eBaseMETofSCUBAConst:
                 return NConstants::kBaseMETofSCUBAConstFieldName;
             case EVariableType::eFillRateAirConst:
@@ -833,8 +871,6 @@ namespace NUtilities
             return QString( R"__(<%2>=<%1> \times \frac{<%4>}{<%3>})__" ).arg( rmvFieldName ).arg( sacFieldName ).arg( tankVolumeFieldName ).arg( tankPressureFieldName );
         }
 
-
-
         QString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
         {
             return QString( R"__(<%1> = <%2> \times <%3>)__" ).arg( litersFieldName ).arg( cubicFeetFieldName ).arg( NConstants::kLitersToCubicFeetFieldName );
@@ -856,38 +892,38 @@ namespace NUtilities
         let depth = parseFloat(document.getElementById('depth').value);
         let temperature = parseFloat(document.getElementById('temperature').value);
         const activityFactor = parseFloat(document.getElementById('activity').value);
-            
+
         // Convert units if necessary
         if (weightUnit === 'lbs') {
             weight = weight * 0.453592; // Convert lbs to kg
         }
-            
+
         if (depthUnit === 'ft') {
             depth = depth * 0.3048; // Convert feet to meters
         }
-            
+
         if (tempUnit === 'f') {
             temperature = (temperature - 32) * 5/9; // Convert F to C
         }
-            
+
         // Base MET value for scuba diving (Metabolic Equivalent of Task)
         let metValue = 7.0;
-            
+
         // Adjust for depth - approximately 2% increase per 10 meters
         metValue *= (1 + (depth * 0.002));
-            
+
         // Adjust for temperature - approximately 1.5% increase per degree below 25°C
         if (temperature < 25) {
             metValue *= (1 + ((25 - temperature) * 0.015));
         }
-            
+
         // Apply activity factor
         metValue *= activityFactor;
-            
+
         // Calculate calories burned: MET * weight in kg * time in hours
         const hours = duration / 60;
         const calories = metValue * weight * hours;
-            
+
         return Math.round(calories);
     }*/
 
@@ -966,7 +1002,7 @@ namespace NUtilities
                               .arg( durationFieldName );
 
                 formulas.push_back( retVal );
-                return joinFormulas( formulas );
+                return joinFormulas( formulas ).value();
             }
 
             double computeDuration( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier )
@@ -1045,13 +1081,46 @@ namespace NUtilities
                               .arg( actualWeightFieldName );
 
                 formulas.push_back( retVal );
-                return joinFormulas( formulas );
+                return joinFormulas( formulas ).value();
             }
+        }
+
+        double surfacePressureAtAltitude( bool imperial, double altitude )
+        {
+            return NConstants::pressureAtSurface( imperial ) - ( altitude * NConstants::pressureLossPerAltitude( imperial ) );
+        }
+
+        QString surfacePressureAtAltitudeFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName )
+        {
+            auto retVal = QString( R"__(<%1> = %2 - ( <%3> \times %4 ))__" )   //
+                              .arg( surfacePressureFieldName )
+                              .arg( NUnitStrings::pressureAtSurface( imperial, true, true ) )
+                              .arg( altitudeFieldName )
+                              .arg( NUnitStrings::pressureLossPerAltitude( imperial, true, true ) );
+            return retVal;
+        }
+
+        double altitudeForSurfacePressure( bool imperial, double surfacePressure )
+        {
+            return ( surfacePressure - NConstants::pressureAtSurface( imperial ) ) / NConstants::pressureLossPerAltitude( imperial );
+        }
+
+        QString altitudeForSurfacePressureFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName )
+        {
+            auto retVal = QString( R"__(<%3> = \frac{<%1> - %2}{%4})__" )   //
+                              .arg( surfacePressureFieldName )
+                              .arg( NUnitStrings::pressureAtSurface( imperial, true, true ) )
+                              .arg( altitudeFieldName )
+                              .arg( NUnitStrings::pressureLossPerAltitude( imperial, true, true ) );
+            return retVal;
         }
     }
 
-    QString joinFormulas( const QStringList &formulas )
+    std::optional< QString > joinFormulas( const QStringList &formulas )
     {
+        if ( formulas.isEmpty() )
+            return {};
+
         auto retVal = formulas.join( R"( \newline )" );
         if ( formulas.size() > 1 )
         {

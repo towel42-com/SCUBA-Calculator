@@ -426,9 +426,15 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = "%1";
                 }
                 break;
-            case EVariableType::ePressureOffsetConst:
+            case EVariableType::ePressureAtSurfaceConst:
                 {
-                    value = NUtilities::NUnitStrings::pressureOffset( imperial, true, true );
+                    value = NUtilities::NUnitStrings::pressureAtSurface( imperial, true, true );
+                    format = "%1";
+                }
+                break;
+            case EVariableType::eSafetyStopDepthConst:
+                {
+                    value = NUtilities::NUnitStrings::safetyStop( imperial, seaWater, true, true );
                     format = "%1";
                 }
                 break;
