@@ -1,4 +1,5 @@
 #include "Calculator.h"
+#include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
@@ -12,8 +13,12 @@ public:
 
     virtual bool isReversible() const override { return true; }
     virtual std::pair< QString, QString > fromToLabels() const override;
+
     virtual QString myCalculatorName() const override;
     virtual QString myReversedCalculatorName() const override;
+
+    virtual QString calculatorProjectName() const override { return kProjectName; }
+    virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual QStringList myCalculatorPath() const override;
 

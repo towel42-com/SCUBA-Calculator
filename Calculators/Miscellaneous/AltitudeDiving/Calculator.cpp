@@ -1,4 +1,5 @@
 #include "Calculator.h"
+#include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
@@ -10,11 +11,14 @@ public:
     CCalculator() { setObjectName( "AltitudeDiving" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isWaterTypeBased() const override { return true; }
-
     virtual QString myCalculatorName() const override;
     virtual QStringList myCalculatorPath() const override;
 
+    virtual QString calculatorProjectName() const override { return kProjectName; }
+    virtual QString calculatorGroupName() const override { return kGroupName; }
+
+    virtual bool isWaterTypeBased() const override { return true; }
+    
     virtual TVariableInfoList getMyVariables() const override;
 
     virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
