@@ -1,24 +1,26 @@
 #include "Formula.h"
 #include "Utilities.h"
+#include "VariableInfo.h"
+
 #include "T42-MathJaxQt6/include/MathJaxQt6.h"
 
 #include <QString>
 
 namespace NUtilities
 {
-    SFormula::SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalNameValuePair &nameValuePair /*= {} */ ) :
+    SFormula::SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
         fName( name ),
         fFormula( formula ),
         fImperial( imperial ),
         fSeaWater( seaWater ),
-        fNameValuePair( nameValuePair )
+        fNameValuePairs( nameValuePair )
     {
     }
 
-    SFormula::SFormula( const SFormula &rhs, const TOptionalNameValuePair &nameValuePair ) :
+    SFormula::SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePair ) :
         SFormula( rhs )
     {
-        fNameValuePair = nameValuePair;
+        fNameValuePairs = nameValuePair;
     }
 
     SFormula::SFormula()
@@ -42,9 +44,13 @@ namespace NUtilities
         else
             retVal += "-water=fresh";
 
-        if ( fNameValuePair.has_value() )
-            retVal += "-" + fNameValuePair.value().first + "=" + NUtilities::doubleToString( fNameValuePair.value().second, 2 );
-
+        if ( fNameValuePairs.has_value() )
+        {
+            for ( auto &&ii : fNameValuePairs.value() )
+            {
+                retVal += "-" + ii.first->name() + "=" + NUtilities::doubleToString( ii.second, 2 );
+            }
+        }
         return retVal;
     }
 
@@ -64,21 +70,28 @@ namespace NUtilities
         if ( fSeaWater != rhs.fSeaWater )
             return false;
 
-        if ( fNameValuePair.has_value() != rhs.fNameValuePair.has_value() )
+        if ( fNameValuePairs.has_value() != rhs.fNameValuePairs.has_value() )
             return false;
 
-        if ( fNameValuePair.has_value() /* && rhs.fNameValuePair.has_value() */ )
+        if ( fNameValuePairs.has_value() /* && rhs.fNameValuePair.has_value() */ )
         {
-            if ( fNameValuePair.value().first != rhs.fNameValuePair.value().first )
+            if ( fNameValuePairs.value().size() != rhs.fNameValuePairs.value().size() )
                 return false;
 
-            if ( fNameValuePair.value().second.has_value() != rhs.fNameValuePair.value().second.has_value() )
-                return false;
-
-            if ( fNameValuePair.value().second.has_value() )
+            auto ii = fNameValuePairs.value().begin();
+            auto jj = rhs.fNameValuePairs.value().begin();
+            for ( ; ii != fNameValuePairs.value().end() && jj != rhs.fNameValuePairs.value().end(); ++ii, ++jj )
             {
-                if ( fNameValuePair.value().second.value() != rhs.fNameValuePair.value().second.value() )
+                if ( ( *ii ).first != ( *jj ).first )
                     return false;
+
+                if ( ( *ii ).second.has_value() != ( *jj ).second.has_value() )
+                    return false;
+
+                if ( (*ii).second != (*jj).second )
+                {
+                    return false;
+                }
             }
         }
         return true;

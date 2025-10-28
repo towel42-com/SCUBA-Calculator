@@ -30,8 +30,8 @@ namespace NUtilities
     struct CALCULATORS_EXPORT SFormula
     {
         SFormula();
-        SFormula( const SFormula &rhs, const TOptionalNameValuePair &nameValuePair );
-        SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalNameValuePair &nameValuePair = {} );
+        SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePairs );
+        SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
         virtual ~SFormula() = default;
 
         virtual bool operator<( const SFormula &rhs ) const;
@@ -51,7 +51,7 @@ namespace NUtilities
         QString fFormula;
         bool fImperial{ false };
         bool fSeaWater{ false };
-        TOptionalNameValuePair fNameValuePair;
+        TOptionalVariableValuePairVector fNameValuePairs;
     };
 };
 
