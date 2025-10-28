@@ -2,6 +2,8 @@
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
+#include <memory>
+
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
@@ -19,7 +21,7 @@ public:
     virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -42,7 +44,7 @@ TVariableInfoList CCalculator::getMyVariables() const
     auto retVal = TVariableInfoList(   //
         {
             std::make_shared< CVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS, SRange( { 0.21, 2.0, 1.4, 0.1 } ) ),   //
+            std::make_shared< CVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { 0.21, 2.0, 1.4, 0.1 } ) ) ),   //
             std::make_shared< CVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
@@ -87,7 +89,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto mod = getVariable( "mod" );
     auto maxPO2 = getVariable( "maxPO2" );

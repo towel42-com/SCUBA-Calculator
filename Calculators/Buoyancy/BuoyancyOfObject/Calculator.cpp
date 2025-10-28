@@ -2,6 +2,8 @@
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
+#include <memory>
+
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:

@@ -2,6 +2,8 @@
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
+#include <memory>
+
 ////https://swimmingcalculators.com/scuba-diving-calculator/
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
@@ -54,15 +56,17 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "depthC", tr( "Depth (%1)" ).arg( NUtilities::NUnitStrings::depthUnit( false, true, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "tempC", tr( "Temperature (%1)" ).arg( NUtilities::NUnitStrings::tempUnit( false, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >(
-                "activityLevel", tr( "Activity Level Adjustment" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS,
-                TNamedValueItemList( {
-                    //
-                    std::make_pair( tr( "Leisurely (minimal effort)" ), 1.0 ),   //
-                    std::make_pair( tr( "Recreational (moderate effort)" ), 1.2 ),   //
-                    std::make_pair( tr( "Active (strong currents)" ), 1.5 ),   //
-                    std::make_pair( tr( "Intensive (rescue, heavy gear)" ), 1.8 ),   //
-                    std::make_pair( tr( "Custom" ), TOptionalDouble() )   //
-                } ) ),   //
+                "activityLevel", tr( "Activity Level Adjustment" ), EUnit::ePercent, EVariableLoc::eRHS,
+                SBaseInfo< TNamedValueItemList >(
+                    {}, {},
+                    TNamedValueItemList( {
+                        //
+                        std::make_pair( tr( "Leisurely (minimal effort)" ), 1.0 ),   //
+                        std::make_pair( tr( "Recreational (moderate effort)" ), 1.2 ),   //
+                        std::make_pair( tr( "Active (strong currents)" ), 1.5 ),   //
+                        std::make_pair( tr( "Intensive (rescue, heavy gear)" ), 1.8 ),   //
+                        std::make_pair( tr( "Custom" ), TOptionalDouble() )   //
+                    } ) ) ),   //
         } );
     return retVal;
 }

@@ -2,6 +2,8 @@
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
+#include <memory>
+
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
 public:
@@ -43,13 +45,16 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eIntermediate, EUnit::ePressure, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS,
-                TNamedValueItemList( {
-                    //
-                    std::make_pair( tr( "Oxygen" ), NUtilities::NConstants::percentO2AtSurface() ),   //
-                    std::make_pair( tr( "Nitrogen" ), NUtilities::NConstants::percentN2AtSurface() ),   //
-                    std::make_pair( tr( "Other" ), TOptionalDouble() )   //
-                } ) ),   //
+            std::make_shared< CVariableInfo >(
+                "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EUnit::ePercent, EVariableLoc::eRHS,
+                SBaseInfo< TNamedValueItemList >(
+                    {}, {},
+                    TNamedValueItemList( {
+                        //
+                        std::make_pair( tr( "Oxygen" ), NUtilities::NConstants::percentO2AtSurface() ),   //
+                        std::make_pair( tr( "Nitrogen" ), NUtilities::NConstants::percentN2AtSurface() ),   //
+                        std::make_pair( tr( "Other" ), TOptionalDouble() )   //
+                    } ) ) ),   //
             std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
 

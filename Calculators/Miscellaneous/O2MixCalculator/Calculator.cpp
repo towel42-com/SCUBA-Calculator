@@ -2,7 +2,7 @@
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
-#include <cmath>
+#include <memory>
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -40,10 +40,10 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "mix1", tr( "Starting Mix" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ),   //
-            std::make_shared< CVariableInfo >( "p1", tr( "Starting Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS, SRange( { 0.0, 4000, {}, 10 } ) ),   //
-            std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ),   //
-            std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS, SRange( { 0.0, 4000, {}, 10 } ) ),   //
+            std::make_shared< CVariableInfo >( "mix1", tr( "Starting Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
+            std::make_shared< CVariableInfo >( "p1", tr( "Starting Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
+            std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
+            std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
             std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "o2_t", tr( "Approximate Time to fill with 100% O2" ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
@@ -53,10 +53,10 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( EVariableType::eFillRateAirConst ),   //
         } );
     auto pos = std::next( retVal.begin() );
-    ( *pos )->setRange( false, {}, SRange( { 0.0, NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
+    ( *pos )->addRange( false, {}, SRange( { 0.0, NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
     pos++;
     pos++;
-    ( *pos )->setRange( false, {}, SRange( { NUtilities::NConversions::psiToBar( 1000 ), NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
+    ( *pos )->addRange( false, {}, SRange( { NUtilities::NConversions::psiToBar( 1000 ), NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
     return retVal;
 }
 
