@@ -55,7 +55,7 @@ function(AddToCalculatorList calculator)
     )
 
     foreach( jsonFile ${_JSON_FILES} )
-        string(REGEX MATCH "formulas([^.]*).json" MATCHIT "${jsonFile}")
+        string(REGEX MATCH "formulas([^./]*).json" MATCHIT "${jsonFile}")
         
         if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
             SET( _FN_SUFFIX ${CMAKE_MATCH_1} )
