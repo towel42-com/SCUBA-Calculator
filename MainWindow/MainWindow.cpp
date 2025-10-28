@@ -556,6 +556,8 @@ std::size_t CMainWindow::generateSVGs( QProgressDialog *progress, const TFormula
     int formulaNum = 0;
     for ( auto &&currFormulaData : allFormulas )
     {
+        if ( progress->wasCanceled() )
+            break;
         for ( auto &&ii : currFormulaData.second->formulaList() )
         {
             if ( progress->wasCanceled() )
@@ -708,17 +710,21 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     progress->setAutoReset( false );
     progress->setMinimumDuration( 0 );
 
-    auto && [ totalFormulas, numToBeRendered ] = computeTotals( progress.get(), allFormulas );
+    auto &&[ totalFormulas, numToBeRendered ] = computeTotals( progress.get(), allFormulas );
     if ( progress->wasCanceled() )
         return;
 
     auto numErrors = generateSVGs( progress.get(), allFormulas, totalFormulas, numToBeRendered );
-    if ( progress->wasCanceled() )
-        return;
-
-    if(numErrors != 0)
+    if ( !progress->wasCanceled() && ( numErrors != 0 ) )
     {
         auto retVal = QMessageBox::warning( this, tr( "Errors while Generating SVGs" ), tr( "There were %1 errors while generating the SVGs, would you like to save the non-error formulas?" ).arg( numErrors ), QMessageBox::Yes, QMessageBox::No );
+        if ( retVal == QMessageBox::No )
+            return;
+    }
+
+    if ( progress->wasCanceled() )
+    {
+        auto retVal = QMessageBox::warning( this, tr( "Generation of SVGs Cancelled" ), tr( "Would you like to save the JSON files that finished?" ), QMessageBox::Yes, QMessageBox::No );
         if ( retVal == QMessageBox::No )
             return;
     }
