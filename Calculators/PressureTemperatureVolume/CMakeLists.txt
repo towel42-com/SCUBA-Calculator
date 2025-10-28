@@ -1,6 +1,6 @@
 add_subdirectory( CombinedGasLaw )
 add_subdirectory( IdealGasLaw )
 add_subdirectory( PressureChangeInTemp )
-add_subdirectory( VolumeChangeInTemp )
 add_subdirectory( PressureChangeInVolume )
 add_subdirectory( VolumeChangeInPressure )
+add_subdirectory( VolumeChangeInTemp )
