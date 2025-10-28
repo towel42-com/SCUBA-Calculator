@@ -44,7 +44,4 @@ target_link_libraries( ${PROJECT_NAME}
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators/${_GROUP_NAME} )
-set_target_properties( ${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX d )
-
-AddToCalculatorList( "${PROJECT_NAME}" )
+AddToCalculatorList( "${PROJECT_NAME}" "${_GROUP_NAME}" )

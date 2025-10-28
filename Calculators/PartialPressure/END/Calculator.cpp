@@ -1,4 +1,5 @@
 #include "Calculator.h"
+#include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
 
@@ -13,6 +14,9 @@ public:
 
     virtual QString myCalculatorName() const override;
     virtual QStringList myCalculatorPath() const override;
+
+    virtual QString calculatorProjectName() const override { return kProjectName; }
+    virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables() const override;
 
