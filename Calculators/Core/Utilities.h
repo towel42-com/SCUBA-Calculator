@@ -69,6 +69,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString pressureLossPerAltitude( bool imperial, bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString safetyStop( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
+        CALCULATORS_EXPORT QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex );
 
         CALCULATORS_EXPORT QString cubicFeetToLiters( bool useAbbreviations, bool tex );
         CALCULATORS_EXPORT QString litersToCubicFeet( bool useAbbreviations, bool tex );
@@ -97,6 +98,7 @@ namespace NUtilities
         extern const char *kCubicFeetToLitersFieldName;
         extern const char *kLitersToCubicFeetFieldName;
         extern const char *kSafetyStopDepthConstFieldName;
+        extern const char *kWaterWeightAdjustmentFieldName;
 
         CALCULATORS_EXPORT double absZeroOffset( bool imperial );
         CALCULATORS_EXPORT double pressureChangePerDegreeChange( bool imperial );
@@ -126,6 +128,7 @@ namespace NUtilities
 
         CALCULATORS_EXPORT double pressureLossPerAltitude( bool imperial );
         CALCULATORS_EXPORT double safetyStopDepth( bool imperial );
+        CALCULATORS_EXPORT double waterWeightAdjustment( bool imperial, bool seaWater );
     }
 
     namespace NConversions

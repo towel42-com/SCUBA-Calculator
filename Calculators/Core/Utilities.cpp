@@ -366,6 +366,13 @@ namespace NUtilities
             return retVal;
         }
 
+        QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        {
+            QString retVal = tex ? "%1%2" : "%1 (%2)";
+            retVal = retVal.arg( doubleToString( NConstants::waterWeightAdjustment( imperial, seaWater ), 1 ) ).arg( weightUnit( imperial, useAbbreviations, tex ) );
+            return retVal;
+        }
+
         QString cubicFeetToLiters( bool useAbbreviations, bool tex )
         {
             QString retVal = tex ? R"__(%1\frac{%2}{%3})__" : "%1 (%2/%3)";
@@ -404,6 +411,7 @@ namespace NUtilities
         const char *kCubicFeetToLitersFieldName = "cubicFeetToLiters";
         const char *kLitersToCubicFeetFieldName = "litersToCubicFeet";
         const char *kSafetyStopDepthConstFieldName = "safetyStopConst";
+        const char *kWaterWeightAdjustmentFieldName = "waterWeightAdjustment";
 
         double absZeroOffset( bool imperial )
         {
@@ -443,6 +451,14 @@ namespace NUtilities
         double safetyStopDepth( bool imperial )
         {
             return imperial ? 15 : NConversions::feetToMeters( 15 );
+        }
+
+        double waterWeightAdjustment( bool imperial, bool seaWater )
+        {
+            double retVal = seaWater ? 3.0 : 0.0;
+            if ( imperial )
+                retVal = NConversions::kgsToLbs( retVal );
+            return retVal;
         }
 
         double depthToSingleAtmosphere( bool imperial, bool seaWater )
@@ -586,9 +602,10 @@ namespace NUtilities
                 return QObject::tr( "Pressure at Surface", "descForType" );
             case EVariableType::eSafetyStopDepthConst:
                 return QObject::tr( "Safety Stop Depth", "descForType" );
+            case EVariableType::eWaterWeightAdjustmentConst:
+                return QObject::tr( "Water Weight Adjustment", "descForType" );
             case EVariableType::eBaseMETofSCUBAConst:
                 return QObject::tr( "Base MET Value for SCUBA", "descForType" );
-
             case EVariableType::eFillRateAirConst:
                 return QObject::tr( "Fill Rate for Air", "descForType" );
             case EVariableType::eFillRateO2Const:
@@ -640,6 +657,8 @@ namespace NUtilities
                 return NConstants::kPressureAtSurfaceConstFieldName;
             case EVariableType::eSafetyStopDepthConst:
                 return NConstants::kSafetyStopDepthConstFieldName;
+            case EVariableType::eWaterWeightAdjustmentConst:
+                return NConstants::kWaterWeightAdjustmentFieldName;
             case EVariableType::eBaseMETofSCUBAConst:
                 return NConstants::kBaseMETofSCUBAConstFieldName;
             case EVariableType::eFillRateAirConst:
