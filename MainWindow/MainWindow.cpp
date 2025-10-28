@@ -194,7 +194,7 @@ void CMainWindow::loadCalculators()
     fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
 
     slotSelectCalculator( nullptr );
-    QTimer::singleShot( 100, [ = ] { loadCache(); } );
+    //QTimer::singleShot( 100, [ = ] { loadCache(); } );
 }
 
 void CMainWindow::addCalculator( CSCUBACalculator *calculator )
@@ -368,7 +368,8 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *p
     }
     else
     {
-        fImpl->stackedWidget->setCurrentWidget( page );
+        if ( !initPage )
+            fImpl->stackedWidget->setCurrentWidget( page );
         showUnits = page->property( "showUnits" ).toBool();
         isWaterTypeBased = page->property( "isWaterTypeBased" ).toBool();
     }
@@ -378,6 +379,8 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *p
         auto calc = getCalculator( item );
         if ( !calc )
             return;
+        loadCacheForCalc( calc );
+        fImpl->stackedWidget->setCurrentWidget( page );
         calc->init( fImpl->imperial->isChecked(), fImpl->seaWater->isChecked() );
     }
 
@@ -684,6 +687,8 @@ void CMainWindow::saveJSONFiles( QProgressDialog *progress, const QDir &dir, con
 
 void CMainWindow::generateFormulas( bool needUpdatingOnly )
 {
+    loadCache();
+
     bool first = true;
     if ( first )
     {
@@ -736,115 +741,153 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     QMessageBox::information( this, tr( "Finished generating SVGs" ), tr( "Total Number of Formulas: %1<br/>Number needing Rendering: %2<br/>Number of Errors: %3" ).arg( totalFormulas ).arg( numToBeRendered ).arg( numErrors ) );
 }
 
-void CMainWindow::loadCache()
+void CMainWindow::loadCacheForCalc( CSCUBACalculator *calc )
 {
+    if ( !calc )
+        return;
+
+    auto wildCard = QString( "%1*.json" ).arg( calc->calculatorProjectName() );
+    loadCache( wildCard );
+}
+
+void CMainWindow::loadCache( std::optional< QString > wildCard )
+{
+    if ( !wildCard.has_value() )
+        wildCard = "*.json";
+
     QStringList fileNames;
-    QDirIterator ii( ":/formulas", QStringList() << "*.json" );
+    QDirIterator ii( ":/formulas", QStringList() << wildCard.value() );
     while ( ii.hasNext() )
     {
         fileNames << ii.next();
     }
-
     fileNames.sort();
+    if ( fileNames.empty() )
+    {
+        auto files = NSABUtils::NFileUtils::dumpResources( true );
+        qDebug() << "Could not find JSON file:" << wildCard.value();
+        for ( auto &&ii : files )
+        {
+            //qCDebug( ScubaCalculator ) << ii;
+            qDebug() << ii;
+        }
+    }
+
+    loadCacheFiles( fileNames );
+}
+
+void CMainWindow::loadCacheFiles( const QStringList &fileNames )
+{
+    if ( fileNames.isEmpty() )
+        return;
 
     auto progress = std::make_unique< QProgressDialog >( tr( "Loading SVG Cache" ), tr( "Abort Cache Load" ), 0, fileNames.size(), this );
     progress->setAutoClose( false );
     progress->setAutoReset( false );
     progress->setMinimumDuration( 0 );
-    int currSVGNum = 0;
-    int totalKnownSVG = 0;
+    std::size_t currSVGNum = 0;
+    std::size_t totalKnownSVG = 0;
     for ( auto &&fileName : fileNames )
     {
-        if ( progress->wasCanceled() )
-            break;
-        qDebug() << "Loading into Cache: " << fileName;
-        QFile fi( fileName );
-        if ( !fi.open( QFile::Text | QFile::ReadOnly ) )
-        {
-            QMessageBox::critical( this, tr( "Could not open cache" ), tr( "Error: Problem opening cache file<br/>%1" ).arg( fi.errorString() ) );
-            return;
-        }
-
-        auto label = QString( "Loading Cache:<br/>%1<br/>Cache File %2 of %3<br/>SVG %4 of %5" ).arg( fileName ).arg( progress->value() + 1 ).arg( fileNames.size() ).arg( currSVGNum ).arg( totalKnownSVG );
-        progress->setLabelText( label );
-        progress->setValue( progress->value() + 1 );
-        qApp->processEvents();
-
-        QJsonParseError parseError;
-        auto doc = QJsonDocument::fromJson( fi.readAll(), &parseError );
-        if ( ( parseError.error != QJsonParseError::NoError ) || doc.isNull() )
-        {
-            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Error in Cache File @%1:<br/> %2" ).arg( parseError.offset ).arg( parseError.errorString() ) );
-            return;
-        }
-
-        if ( !doc.isArray() )
-        {
-            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected Array" ) );
-            return;
-        }
-
-        auto svgCacheArray = doc.array();
-
-        totalKnownSVG += svgCacheArray.count();
-
-        for ( auto &&svgItem : svgCacheArray )
-        {
-            if ( progress->wasCanceled() )
-                break;
-
-            if ( !svgItem.isObject() )
-                continue;
-
-            currSVGNum++;
-
-            auto label = QString( "Loading Cache:<br/>%1<br/>Cache File %2 of %3<br/>SVG %4 of %5" ).arg( fileName ).arg( progress->value() + 1 ).arg( fileNames.size() ).arg( currSVGNum ).arg( totalKnownSVG );
-            progress->setLabelText( label );
-            qApp->processEvents();
-
-            auto svgCacheObject = svgItem.toObject();
-
-            if ( !svgCacheObject.contains( "formula" ) || !svgCacheObject.contains( "name" ) )
-            {
-                QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected 'formula' and 'name' fields" ) );
-                return;
-            }
-
-            if ( !svgCacheObject.contains( "svg" ) && !svgCacheObject.contains( "error" ) )
-            {
-                QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected svg or error fields" ) );
-                return;
-            }
-
-            auto name = svgCacheObject[ "name" ].toString();
-            auto formula = svgCacheObject[ "formula" ].toString();
-            auto num = svgCacheObject[ "num" ].toInt();
-            auto renderDate = svgCacheObject[ "renderDate" ].toVariant().toDateTime();
-            std::optional< QString > cleanedFormula;
-            if ( svgCacheObject.contains( "cleanedFormula" ) )
-                cleanedFormula = svgCacheObject[ "cleanedFormula" ].toString();
-
-            qDebug() << "Loading cache item" << name;
-            if ( svgCacheObject.contains( "error" ) )
-            {
-                //qCDebug( ScubaCalculator ).noquote().nospace() << "Skipping cache item: name '" << name << "' tex '" << formula << "'";
-                continue;
-            }
-
-            auto svg = svgCacheObject[ "svg" ].toString().toUtf8();
-            if ( auto result = QByteArray::fromBase64Encoding( svg ) )
-            {
-                fRenderingEngine->addToCache( formula, cleanedFormula, renderDate, *result );
-            }
-            else
-            {
-                QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid SVG base 64" ) );
-                return;
-            }
-        }
+        if ( fLoadedCacheFiles.find( fileName ) != fLoadedCacheFiles.end() )
+            continue;
+        fLoadedCacheFiles.insert( fileName );
+        currSVGNum = ( totalKnownSVG += loadCacheFile( progress.get(), fileName, fileNames.size(), currSVGNum, totalKnownSVG ) );
     }
 
     qDebug() << "Total SVG Loaded:" << currSVGNum;
+}
+
+std::size_t CMainWindow::loadCacheFile( QProgressDialog *progress, const QString &fileName, std::size_t numFiles, std::size_t currSVGNum, std::size_t currTotal )
+{
+    if ( progress->wasCanceled() )
+        return 0;
+    qDebug() << "Loading into Cache: " << fileName;
+    QFile fi( fileName );
+    if ( !fi.open( QFile::Text | QFile::ReadOnly ) )
+    {
+        QMessageBox::critical( this, tr( "Could not open cache" ), tr( "Error: Problem opening cache file<br/>%1" ).arg( fi.errorString() ) );
+        return 0;
+    }
+
+    QJsonParseError parseError;
+    auto doc = QJsonDocument::fromJson( fi.readAll(), &parseError );
+    if ( ( parseError.error != QJsonParseError::NoError ) || doc.isNull() )
+    {
+        QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Error in Cache File @%1:<br/> %2" ).arg( parseError.offset ).arg( parseError.errorString() ) );
+        return 0;
+    }
+
+    if ( !doc.isArray() )
+    {
+        QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected Array" ) );
+        return 0;
+    }
+
+    progress->setValue( progress->value() + 1 );
+    qApp->processEvents();
+
+    auto svgCacheArray = doc.array();
+
+    currTotal += svgCacheArray.count();
+    std::size_t numLoaded = 0;
+
+    for ( auto &&svgItem : svgCacheArray )
+    {
+        if ( progress->wasCanceled() )
+            break;
+
+        if ( !svgItem.isObject() )
+            continue;
+
+        currSVGNum++;
+        numLoaded++;
+
+        auto label = QString( "Loading Cache:<br/>%1<br/>Cache File %2 of %3<br/>SVG %4 of %5" ).arg( fileName ).arg( progress->value() + 1 ).arg( numFiles ).arg( currSVGNum ).arg( currTotal );
+        progress->setLabelText( label );
+        qApp->processEvents();
+
+        auto svgCacheObject = svgItem.toObject();
+
+        if ( !svgCacheObject.contains( "formula" ) || !svgCacheObject.contains( "name" ) )
+        {
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected 'formula' and 'name' fields" ) );
+            return numLoaded;
+        }
+
+        if ( !svgCacheObject.contains( "svg" ) && !svgCacheObject.contains( "error" ) )
+        {
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid Format expected svg or error fields" ) );
+            return numLoaded;
+        }
+
+        auto name = svgCacheObject[ "name" ].toString();
+        auto formula = svgCacheObject[ "formula" ].toString();
+        auto num = svgCacheObject[ "num" ].toInt();
+        auto renderDate = svgCacheObject[ "renderDate" ].toVariant().toDateTime();
+        std::optional< QString > cleanedFormula;
+        if ( svgCacheObject.contains( "cleanedFormula" ) )
+            cleanedFormula = svgCacheObject[ "cleanedFormula" ].toString();
+
+        qDebug() << "Loading cache item" << name;
+        if ( svgCacheObject.contains( "error" ) )
+        {
+            //qCDebug( ScubaCalculator ).noquote().nospace() << "Skipping cache item: name '" << name << "' tex '" << formula << "'";
+            continue;
+        }
+
+        auto svg = svgCacheObject[ "svg" ].toString().toUtf8();
+        if ( auto result = QByteArray::fromBase64Encoding( svg ) )
+        {
+            fRenderingEngine->addToCache( formula, cleanedFormula, renderDate, *result );
+        }
+        else
+        {
+            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid SVG base 64" ) );
+            return numLoaded;
+        }
+    }
+    return numLoaded;
 }
 
 std::optional< QString > SFormulas::formula( EFormulaType formulaType ) const

@@ -66,7 +66,10 @@ private:
     void loadSettings();
     void saveSettings();
 
-    void loadCache();
+    void loadCache( std::optional< QString > wildCard = {} );
+    void loadCacheForCalc( CSCUBACalculator *calc );
+    void loadCacheFiles( const QStringList &fileNames );
+    std::size_t loadCacheFile( QProgressDialog *progress, const QString &fileName, std::size_t numFiles, std::size_t currSVGNum, std::size_t currTotal );
 
     void showUnits( bool show );
     void showWaterType( bool show );
@@ -99,6 +102,7 @@ private:
     std::unordered_map< QWidget *, SFormulas > fPageToFormulasMap;
 
     std::shared_ptr< NTowel42::CMathJaxQt6 > fRenderingEngine;
+    std::unordered_set< QString > fLoadedCacheFiles;
 };
 
 #endif
