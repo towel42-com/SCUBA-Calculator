@@ -26,6 +26,7 @@
 
 #include <set>
 #include <libloaderapi.h>
+#include "SABUtils/FileUtils.h"
 
 static QString toString( EFormulaType formulaType )
 {
@@ -517,31 +518,10 @@ void CMainWindow::slotGenerateUpdatedFormulas()
 
 static constexpr int kMAX_TO_GENERATE = -1;
 
-void CMainWindow::generateFormulas( bool needUpdatingOnly )
+std::pair< std::size_t, std::size_t > CMainWindow::computeTotals( QProgressDialog *progress, TFormulaMap &allFormulas ) const
 {
-    bool first = true;
-    if ( first )
-    {
-        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators)";
-        if ( QDir::current() != QDir( defaultDir ) )
-            QDir::setCurrent( defaultDir );
-        first = false;
-    }
-
-    auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Target Directory:" ) );
-    if ( dir.isEmpty() )
-        return;
-
-    using TFormulaMap = std::unordered_map< CSCUBACalculator *, std::shared_ptr< CGeneratedFormulaData > >;
-    TFormulaMap allFormulas;
-
-    int numToBeRendered = 0;
-    int totalFormulas = 0;
-
-    auto progress = std::make_unique< QProgressDialog >( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)fCalculators.size(), this );
-    progress->setAutoClose( false );
-    progress->setAutoReset( false );
-    progress->setMinimumDuration( 0 );
+    std::size_t numToBeRendered{ 0 };
+    std::size_t totalFormulas{ 0 };
     for ( auto &&ii : fCalculators )
     {
         if ( progress->wasCanceled() )
@@ -558,20 +538,20 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
 
         allFormulas[ ii.second ] = formulaData;
 
-        auto &&[ lclNumTotal, lclToRender ] = formulaData->formulaCounts();
-
-        numToBeRendered += lclToRender;
-        totalFormulas += lclNumTotal;
-    }
-    if ( progress->wasCanceled() )
-    {
-        return;
+        numToBeRendered += formulaData->numToRender();
+        totalFormulas += formulaData->numTotal();
     }
 
+    return { totalFormulas, numToBeRendered };
+}
+
+std::size_t CMainWindow::generateSVGs( QProgressDialog *progress, const TFormulaMap &allFormulas, std::size_t totalFormulas, std::size_t numToBeRendered ) const
+{
     progress->setLabelText( tr( "Generating SVGs" ) );
     progress->setValue( 0 );
-    progress->setMaximum( numToBeRendered );
+    progress->setMaximum( (int)numToBeRendered );
 
+    std::size_t numErrors = 0;
     fRenderingEngine->blockSignals( true );
     int formulaNum = 0;
     for ( auto &&currFormulaData : allFormulas )
@@ -596,7 +576,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
             if ( cleanedFormula != ii->formula() )
                 obj.insert( "cleanedFormula", QJsonValue::fromVariant( cleanedFormula ) );
 
-            auto label = QString( "Generating SVG for formula:<br/>%1<br/>Rendering Formula %2 of %3<br/>Total Formulas: %4 of %5" ).arg( ii->name() ).arg( progress->value() ).arg( numToBeRendered ).arg( ++formulaNum ).arg( totalFormulas );
+            auto label = QString( "Generating SVG for formula:<br/>%1<br/>Rendering Formula %2 of %3<br/>Current Formula: %4 of %5<br/>Number of Errors: %6" ).arg( ii->name() ).arg( progress->value() ).arg( numToBeRendered ).arg( ++formulaNum ).arg( totalFormulas ).arg( numErrors );
             progress->setLabelText( label );
 
             obj.insert( "num", QJsonValue::fromVariant( formulaNum ) );
@@ -605,6 +585,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
 
             if ( ( kMAX_TO_GENERATE == -1 ) || progress->value() <= kMAX_TO_GENERATE )
             {
+                bool hasError = false;
                 fRenderingEngine->renderSVG(
                     ii->formula(),   //
                     [ =, &obj, &objSVG ]( const QString &texCode, const std::optional< QByteArray > &svg )   //
@@ -620,26 +601,26 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
 
                         objSVG = svg;
                     },   //
-                    [ =, &obj ]( const QString &errorMessage )
+                    [ =, &obj, &hasError ]( const QString &errorMessage )
                     {
                         //qCDebug( ScubaCalculator ).noquote().nospace() << tr( "Error Generating SVG: %1: %2" ).arg( ii->name() ).arg( errorMessage );
                         obj.insert( "error", QJsonValue::fromVariant( "ERROR: " + errorMessage ) );
+                        hasError = true;
                     }   //
                 );
-                if ( objSVG.has_value() )
-                {
-                    auto renderedDate = fRenderingEngine->renderedDate( ii->formula() ).value();
-                    currFormulaData.second->addSVG( obj, objSVG.value(), renderedDate );
-                }
+                if ( hasError )
+                    numErrors++;
+
+                currFormulaData.second->addSVG( obj, objSVG, fRenderingEngine->renderedDate( ii->formula() ) );
             }
         }
     }
     fRenderingEngine->blockSignals( false );
-    if ( progress->wasCanceled() )
-    {
-        return;
-    }
+    return numErrors;
+}
 
+void CMainWindow::saveJSONFiles( QProgressDialog *progress, const QDir &dir, const TFormulaMap &allFormulas, bool needUpdatingOnly ) const
+{
     auto regExp = QRegularExpression( R"__([\/\\\?\*\:\"\<\>\|])__" );
     std::size_t numFiles = 0;
     for ( auto &&ii : allFormulas )
@@ -656,7 +637,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
         }
     }
 
-    progress->setLabelText( tr( "Generating SVGs" ) );
+    progress->setLabelText( tr( "Generating JSON Files" ) );
     progress->setValue( 0 );
     progress->setMaximum( (int)numFiles );
     for ( auto &&ii : allFormulas )
@@ -687,7 +668,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
             QFile jsonFile( jsonFileName );
             if ( !jsonFile.open( QFile::WriteOnly | QFile::Text | QFile::Truncate ) )
             {
-                QMessageBox::critical( this, tr( "Could not open file" ), tr( "Error opening file: %1<br/>%2" ).arg( jsonFileName ).arg( jsonFile.errorString() ) );
+                QMessageBox::critical( const_cast< CMainWindow * >( this ), tr( "Could not open file" ), tr( "Error opening file: %1<br/>%2" ).arg( jsonFileName ).arg( jsonFile.errorString() ) );
                 return;
             }
             QJsonDocument doc;
@@ -697,8 +678,56 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
             jsonFile.close();
         }
     }
+}
 
-    QMessageBox::information( this, tr( "Finished generating SVGs" ), tr( "Total Number of Formulas: %1<br>Number needing Rendering: %2" ).arg( totalFormulas ).arg( numToBeRendered ) );
+void CMainWindow::generateFormulas( bool needUpdatingOnly )
+{
+    bool first = true;
+    if ( first )
+    {
+        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators\formulaDump)";
+        if ( !QDir( defaultDir ).exists() )
+        {
+            QDir( defaultDir ).mkpath( "." );
+        }
+        if ( QDir::current() != QDir( defaultDir ) )
+        {
+            QDir::setCurrent( defaultDir );
+        }
+        first = false;
+    }
+
+    auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Target Directory:" ) );
+    if ( dir.isEmpty() )
+        return;
+
+    TFormulaMap allFormulas;
+
+    auto progress = std::make_unique< QProgressDialog >( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)fCalculators.size(), this );
+    progress->setAutoClose( false );
+    progress->setAutoReset( false );
+    progress->setMinimumDuration( 0 );
+
+    auto && [ totalFormulas, numToBeRendered ] = computeTotals( progress.get(), allFormulas );
+    if ( progress->wasCanceled() )
+        return;
+
+    auto numErrors = generateSVGs( progress.get(), allFormulas, totalFormulas, numToBeRendered );
+    if ( progress->wasCanceled() )
+        return;
+
+    if(numErrors != 0)
+    {
+        auto retVal = QMessageBox::warning( this, tr( "Errors while Generating SVGs" ), tr( "There were %1 errors while generating the SVGs, would you like to save the non-error formulas?" ).arg( numErrors ), QMessageBox::Yes, QMessageBox::No );
+        if ( retVal == QMessageBox::No )
+            return;
+    }
+
+    saveJSONFiles( progress.get(), dir, allFormulas, needUpdatingOnly );
+    if ( progress->wasCanceled() )
+        return;
+
+    QMessageBox::information( this, tr( "Finished generating SVGs" ), tr( "Total Number of Formulas: %1<br/>Number needing Rendering: %2<br/>Number of Errors: %3" ).arg( totalFormulas ).arg( numToBeRendered ).arg( numErrors ) );
 }
 
 void CMainWindow::loadCache()

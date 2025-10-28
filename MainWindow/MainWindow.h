@@ -6,6 +6,9 @@
 #include <memory>
 #include <optional>
 
+class QDir;
+class QProgressDialog;
+
 #include "Calculators/Core/ScubaCalculatorFwd.h"
 namespace Ui
 {
@@ -40,7 +43,6 @@ public:
     void loadCalculators();
 
 private:
-
 Q_SIGNALS:
 
 public Q_SLOTS:
@@ -53,6 +55,9 @@ public Q_SLOTS:
 
 private:
     void generateFormulas( bool updatedOnly );
+    std::size_t generateSVGs( QProgressDialog *progress, const TFormulaMap &allFormulas, std::size_t numToBeRendered, std::size_t totalFormulas ) const;
+    std::pair< std::size_t, std::size_t > computeTotals( QProgressDialog *progress, TFormulaMap &allFormulas ) const;   // returns total, numToBeRendered
+    void saveJSONFiles( QProgressDialog *progress, const QDir &dir, const TFormulaMap &allFormulas, bool needUpdatingOnly ) const;
 
     CSCUBACalculator *currentCalculator() const;
     CSCUBACalculatorPage *currentCalculatorPage() const;
