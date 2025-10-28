@@ -755,6 +755,8 @@ void CMainWindow::loadCache()
     int totalKnownSVG = 0;
     for ( auto &&fileName : fileNames )
     {
+        if ( progress->wasCanceled() )
+            break;
         qDebug() << "Loading into Cache: " << fileName;
         QFile fi( fileName );
         if ( !fi.open( QFile::Text | QFile::ReadOnly ) )
