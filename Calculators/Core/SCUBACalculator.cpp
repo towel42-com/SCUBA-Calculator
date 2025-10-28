@@ -746,9 +746,11 @@ QJsonArray &CGeneratedFormulaData::jsonArray()
 
 bool CGeneratedFormulaData::operator==( const CGeneratedFormulaData &rhs ) const
 {
-    if ( fUpdated != rhs.fUpdated )
+    if ( fNumErrors != rhs.fNumErrors )
         return false;
-    if ( fFormulaCounts != rhs.fFormulaCounts )
+    if ( fNumToRender != rhs.fNumToRender )
+        return false;
+    if ( fNumTotal != rhs.fNumTotal )
         return false;
 
     if ( fAllFormulas != rhs.fAllFormulas )
@@ -776,24 +778,25 @@ void CGeneratedFormulaData::addFormula( const TFormula &formula, const std::func
 
     fAllFormulas.insert( tex );
     fByNameList.emplace_back( formula );
-    fFormulaCounts.first++;
+    fNumTotal++;
     if ( !beenCreated( formula->formula() ) )
     {
-        fFormulaCounts.second++;
-        fUpdated = true;
+        fNumToRender++;
     }
 }
 
-void CGeneratedFormulaData::addSVG( QJsonObject &obj, const QByteArray &svg, const std::optional< QDateTime > & renderedDate )
+void CGeneratedFormulaData::addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime > & renderedDate )
 {
-    if ( svg.isEmpty() )
+    if ( !svg.has_value() || svg.value().isEmpty() )
         return;
 
-    auto base64 = svg.toBase64();
+    auto base64 = svg.value().toBase64();
     obj.insert( "svg", QJsonValue::fromVariant( base64 ) );
     auto dt = renderedDate.has_value() ? renderedDate.value() : QDateTime::currentDateTime();
     obj.insert( "renderDate", QJsonValue::fromVariant( dt ) );
 
+    if ( obj.contains( "error" ) )
+        fNumErrors++;
     jsonArray().append( obj );
 
     if ( ( fJSONSize.first % 9 ) == 0 )

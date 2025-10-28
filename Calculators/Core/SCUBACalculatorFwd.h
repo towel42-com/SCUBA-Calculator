@@ -37,11 +37,13 @@
 #include <functional>
 #include <vector>
 #include <memory>
-#include <QString>
-#include <QLoggingCategory>
 #include <unordered_set>
 #include <tuple>
 #include <optional>
+#include <unordered_map>
+
+#include <QString>
+#include <QLoggingCategory>
 
 class CSCUBACalculatorPage;
 class CSCUBACalculator;
@@ -149,6 +151,7 @@ using TOptionalNameValuePair = std::optional< TNameValuePair >;
 
 class CGeneratedFormulaData;
 using TGeneratedFormulaData = std::shared_ptr< CGeneratedFormulaData >;
+using TFormulaMap = std::unordered_map< CSCUBACalculator *, TGeneratedFormulaData >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
 

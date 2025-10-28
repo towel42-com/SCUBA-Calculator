@@ -44,13 +44,18 @@ class CALCULATORS_EXPORT CGeneratedFormulaData
 {
 public:
     CGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated );
-    virtual std::pair< int, int > formulaCounts() const { return fFormulaCounts; };
+    //virtual std::pair< int, int > formulaCounts() const { return fFormulaCounts; };
 
     virtual const TFormulaList &formulaList() const { return fByNameList; }
 
-    virtual void addSVG( QJsonObject &obj, const QByteArray &svg, const std::optional< QDateTime >& renderedDate );
+    virtual void addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime >& renderedDate );
     virtual const std::list< QJsonArray > &jsonArrays() const { return fJsonArrays; }
-    virtual bool updated() const { return fFormulaCounts.second != 0; }
+    virtual bool updated() const { return fNumToRender != 0; }
+    virtual bool hasError() const { return fNumErrors != 0; }
+
+    virtual std::size_t numTotal() const { return fNumTotal; }
+    virtual std::size_t numToRender() const { return fNumToRender; }
+    virtual std::size_t numErrors() const { return fNumErrors; }
 
     virtual bool operator==( const CGeneratedFormulaData &rhs ) const;
 
@@ -62,11 +67,12 @@ private:
     TFormulaList fByNameList;
     std::list< QJsonArray > fJsonArrays;
     std::pair< std::size_t, std ::size_t > fJSONSize{ 0, 0 }; // num, size
-    bool fUpdated{ false };
 
     void sortByName();
     void addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated );
-    std::pair< int, int > fFormulaCounts;
+    std::size_t fNumErrors{ 0 };
+    std::size_t fNumToRender{ 0 };
+    std::size_t fNumTotal{ 0 };
 };
 
 class CALCULATORS_EXPORT CSCUBACalculator : public QObject
