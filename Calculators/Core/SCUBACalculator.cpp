@@ -5,39 +5,35 @@
 #include "Formula.h"
 
 #include <QFrame>
+#include <QRegularExpression>
 
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QByteArray>
+#include <QJsonDocument>
 #include <iterator>
 #include <tuple>
 #include <list>
 #include <memory>
 #include <unordered_set>
-#include <QJsonArray>
-#include <QRegularExpression>
 
 // https://scuba.garykessler.net/EANcalculator/EAN_psi.html
-// mixing O2 + Air for proper Nitrox
+// mixing O2 + Air for proper Nitrox - done
 
 //https://allthingsdiving.com/dive-calculators/
-// SAC
-// END
-// tank gas volume
+// SAC - done
+// END - done
+// tank gas volume - done
 
 //https://www.divebuddy.com/calculator/
-// altitude
-// calories burned
+// altitude - done
+// calories burned - done
 // Dive weight calculator
-// tank air volume
-// SAC
-
-//https://www.deepbluescubanm.com/pages/tools.aspx
-// calorie burn estimator
-//
 
 //https://swimmingcalculators.com/scuba-diving-calculator/
 // Dive weight
 // buoyancy
-// sac
-// calories burned
 
 Q_LOGGING_CATEGORY( ScubaCalculator, "Towel42.ScubaCalculator", QtMsgType::QtInfoMsg )
 
@@ -320,75 +316,10 @@ TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateF
     return {};
 }
 
-std::pair< TFormulaList, TValuesForVariablePairVector > CSCUBACalculator::getFormulaListAndValues() const
-{
-    TFormulaList namedFormulas;
-
-    for ( auto imperial : { true, false } )
-    {
-        for ( auto seaWater : { true, false } )
-        {
-            auto baseFormula = myBaseFormula( imperial, seaWater );
-            if ( baseFormula.has_value() )
-                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-baseFormula", baseFormula.value(), imperial, seaWater ) );
-
-            auto reverseBase = myReversedBaseFormula( imperial, seaWater );
-            if ( reverseBase.has_value() && ( baseFormula != reverseBase ) )
-            {
-                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-reverseBaseFormula", reverseBase.value(), imperial, seaWater ) );
-            }
-        }
-    }
-    TValuesForVariablePairVector variablesWithValues;
-    for ( auto &&ii : fVariables )
-    {
-        if ( !ii->isVariable() )
-            continue;
-
-        auto values = ii->validValues( imperial(), seaWater() );
-        if ( !values.has_value() )
-            continue;
-
-        variablesWithValues.emplace_back( ii, values.value() );
-    }
-    std::sort(
-        variablesWithValues.begin(), variablesWithValues.end(),   //
-        []( const TValuesForVariablePair &lhs, const TValuesForVariablePair &rhs )   //
-        {   //
-            return lhs.first->name() < rhs.first->name();
-        } );
-
-    // first get all the formulas without variables that have "values" without a custom value
-    // custom means we need the formula blank for that variable
-    for ( auto imperial : { true, false } )
-    {
-        for ( auto seaWater : { true, false } )
-        {
-            for ( auto &&ii : fVariables )
-            {
-                if ( !ii->isVariable() )
-                    continue;
-
-                if ( ii->hasValues() && !ii->hasCustomValue() )
-                    continue;
-
-                auto currFormula = getFormulaForVar( ii, imperial, seaWater );
-                if ( !currFormula.has_value() || currFormula.value().isEmpty() )
-                    continue;
-
-                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( calculatorName() + "-" + ii->name(), currFormula.value(), imperial, seaWater ) );
-            }
-        }
-    }
-
-    return { namedFormulas, variablesWithValues };
-}
-
 TFormulaList CSCUBACalculator::getFormulaList() const
 {
-    auto &&[ allFormulas, valuesForVariables ] = getFormulaListAndValues();
-
-    Q_ASSERT( valuesForVariables.size() <= 1 );
+    auto allFormulas = getNamedFormulas();
+    auto valuesForVariableVectors = getAllVariableValueCombinations();
 
     TFormulaList retVal;
     std::unordered_set< QString > existingFormulas;
@@ -413,29 +344,28 @@ TFormulaList CSCUBACalculator::getFormulaList() const
             retVal.push_back( newFormula );
         }
 
-        for ( auto &&ii : valuesForVariables )
+        // TVariableValuePairVectorVector
+        for ( auto &&currValues : valuesForVariableVectors )
         {
-            auto var = ii.first;
-            Q_ASSERT( var );
-            if ( !var )
-                continue;
-
-            for ( auto &&jj : ii.second )
+            for ( auto &&currVarValuePair : currValues )
             {
-                if ( !jj.has_value() )
+                auto var = currVarValuePair.first;
+                Q_ASSERT( var );
+                if ( !var )
                     continue;
 
-                ii.first->setValue( jj );
+                auto currValue = currVarValuePair.second;
+                var->setValue( currValue );
+            }
 
-                formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), currFormula->formula(), EFormulaType::eCurrentValueFormula );
-                auto pos = existingFormulas.find( formula );
-                if ( pos == existingFormulas.end() )
-                {
-                    auto newFormula = std::make_shared< NUtilities::SFormula >( *currFormula, TNameValuePair( ii.first->name(), jj ) );
-                    newFormula->setFormula( formula );
-                    existingFormulas.insert( formula );
-                    retVal.emplace_back( newFormula );
-                }
+            formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), currFormula->formula(), EFormulaType::eCurrentValueFormula );
+            auto pos = existingFormulas.find( formula );
+            if ( pos == existingFormulas.end() )
+            {
+                auto newFormula = std::make_shared< NUtilities::SFormula >( *currFormula, currValues );
+                newFormula->setFormula( formula );
+                existingFormulas.insert( formula );
+                retVal.emplace_back( newFormula );
             }
         }
     }
@@ -448,10 +378,106 @@ TFormulaList CSCUBACalculator::getFormulaList() const
     return retVal;
 }
 
-std::shared_ptr< SGeneratedFormulaData > CSCUBACalculator::getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const
+TFormulaList CSCUBACalculator::getNamedFormulas() const
+{
+    TFormulaList namedFormulas;
+
+    for ( auto imperial : { true, false } )
+    {
+        for ( auto seaWater : { true, false } )
+        {
+            auto baseFormula = myBaseFormula( imperial, seaWater );
+            if ( baseFormula.has_value() )
+                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-baseFormula", baseFormula.value(), imperial, seaWater ) );
+
+            auto reverseBase = myReversedBaseFormula( imperial, seaWater );
+            if ( reverseBase.has_value() && ( baseFormula != reverseBase ) )
+            {
+                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( this->calculatorName() + "-reverseBaseFormula", reverseBase.value(), imperial, seaWater ) );
+            }
+        }
+    }
+
+    // first get all the formulas without variables that have "values" without a custom value
+    // custom means we need the formula blank for that variable
+    for ( auto imperial : { true, false } )
+    {
+        for ( auto seaWater : { true, false } )
+        {
+            for ( auto &&ii : fVariables )
+            {
+                if ( !ii->isVariable() )
+                    continue;
+
+                if ( ii->hasValues() && !ii->hasCustomValue() )
+                    continue;
+
+                auto currFormula = getFormulaForVar( ii, imperial, seaWater );
+                if ( !currFormula.has_value() || currFormula.value().isEmpty() )
+                    continue;
+
+                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( calculatorName() + "-" + ii->name(), currFormula.value(), imperial, seaWater ) );
+            }
+        }
+    }
+    return namedFormulas;
+}
+
+void generateCombinations( const TValuesForVariablePairVector &allValues, std::size_t pos, TVariableValuePairVector &currCombo, TVariableValuePairVectorVector &allCombos )
+{
+    if ( pos == allValues.size() )
+    {
+        if ( !currCombo.empty() )
+            allCombos.push_back( currCombo );
+        return;
+    }
+
+    auto &&currVar = allValues[ pos ].first;
+    auto &&currValues = allValues[ pos ].second;
+    for ( const auto &element : currValues )
+    {
+        currCombo.emplace_back( currVar, element );
+        generateCombinations( allValues, pos + 1, currCombo, allCombos );
+        currCombo.pop_back();   // Backtrack
+    }
+}
+
+TVariableValuePairVectorVector CSCUBACalculator::getAllVariableValueCombinations() const
+{
+    TValuesForVariablePairVector variablesWithValues;
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+
+        auto values = ii->validValues( imperial(), seaWater() );   // values are sorted
+        if ( !values.has_value() )
+            continue;
+
+        variablesWithValues.emplace_back( ii, values.value() );
+    }
+
+    TVariableValuePairVector currCombo;
+    TVariableValuePairVectorVector retVal;
+    generateCombinations( variablesWithValues, 0, currCombo, retVal );
+    for ( auto &&currCombo : retVal )
+    {
+        QString curr;
+        for ( auto &&currPair : currCombo )
+        {
+            if ( !curr.isEmpty() )
+                curr += " ";
+            curr += QString( "%1 = %2" ).arg( currPair.first->name() ).arg( NUtilities::doubleToString( currPair.second, 3 ) );
+        }
+        qDebug() << curr;
+    }
+    return retVal;
+}
+
+std::shared_ptr< CGeneratedFormulaData > CSCUBACalculator::getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const
 {
     qCDebug( ScubaCalculator ).noquote().nospace() << "Getting Formulas from: " << calculatorName();
-    auto retVal = std::make_shared< SGeneratedFormulaData >( getFormulaList(), beenCreated );
+    auto retVal = std::make_shared< CGeneratedFormulaData >( getFormulaList(), beenCreated );
     if ( isReversed() )
     {
         auto nonReversed = fReversed.first->getAllFormulas( beenCreated );
@@ -554,10 +580,12 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
 void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
     auto &&variables = getVariables();
+    bool imperial = this->imperial();
+    bool seaWater = this->seaWater();
     for ( auto &&curr : variables )
     {
-        curr->updateValuesAndRanges( imperial(), seaWater() );
-        curr->updateLabels( imperial(), seaWater() );
+        curr->updateValuesAndRanges( imperial, seaWater );
+        curr->updateLabels( imperial, seaWater );
         curr->updateValueFromField();
     }
 
@@ -683,7 +711,7 @@ QString CSCUBACalculator::finalizeFormula( const QString &formula, EFormulaType 
     return finalizeFormula( imperial(), seaWater(), formula, formulaType );
 }
 
-void SGeneratedFormulaData::sortByName()
+void CGeneratedFormulaData::sortByName()
 {
     fByNameList.sort(   //
         []( const TFormula &lhs, const TFormula &rhs )   //
@@ -692,30 +720,31 @@ void SGeneratedFormulaData::sortByName()
         } );
 }
 
-void SGeneratedFormulaData::computeFormulaCounts( const std::function< bool( const QString &formula ) > &beenCreated )
-{
-    fFormulaCounts = { 0, 0 };
-
-    for ( auto &&curr : fByNameList )
-    {
-        fFormulaCounts.first++;
-        if ( !beenCreated( curr->formula() ) )
-            fFormulaCounts.second++;
-    }
-    fUpdated = fFormulaCounts.second != 0;
-};
-
-SGeneratedFormulaData::SGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated )
+CGeneratedFormulaData::CGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated )
 {
     for ( auto &&jj : formulas )
     {
-        addFormula( jj );
+        addFormula( jj, beenCreated );
     }
     sortByName();
-    computeFormulaCounts( beenCreated );
 }
 
-bool SGeneratedFormulaData::operator==( const SGeneratedFormulaData &rhs ) const
+void CGeneratedFormulaData::newArray()
+{
+    fJsonArrays.push_back( {} );
+    fJSONSize = { 0, 0 };
+}
+
+QJsonArray &CGeneratedFormulaData::jsonArray()
+{
+    if ( fJsonArrays.empty() )
+    {
+        newArray();
+    }
+    return fJsonArrays.back();
+}
+
+bool CGeneratedFormulaData::operator==( const CGeneratedFormulaData &rhs ) const
 {
     if ( fUpdated != rhs.fUpdated )
         return false;
@@ -738,7 +767,7 @@ bool SGeneratedFormulaData::operator==( const SGeneratedFormulaData &rhs ) const
     return true;
 }
 
-void SGeneratedFormulaData::addFormula( const TFormula &formula )
+void CGeneratedFormulaData::addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated )
 {
     auto tex = formula->formula();
     auto pos = fAllFormulas.find( tex );
@@ -747,4 +776,36 @@ void SGeneratedFormulaData::addFormula( const TFormula &formula )
 
     fAllFormulas.insert( tex );
     fByNameList.emplace_back( formula );
+    fFormulaCounts.first++;
+    if ( !beenCreated( formula->formula() ) )
+    {
+        fFormulaCounts.second++;
+        fUpdated = true;
+    }
+}
+
+void CGeneratedFormulaData::addSVG( QJsonObject &obj, const QByteArray &svg, const std::optional< QDateTime > & renderedDate )
+{
+    if ( svg.isEmpty() )
+        return;
+
+    auto base64 = svg.toBase64();
+    obj.insert( "svg", QJsonValue::fromVariant( base64 ) );
+    auto dt = renderedDate.has_value() ? renderedDate.value() : QDateTime::currentDateTime();
+    obj.insert( "renderDate", QJsonValue::fromVariant( dt ) );
+
+    jsonArray().append( obj );
+
+    if ( ( fJSONSize.first % 9 ) == 0 )
+    {
+        QJsonDocument doc;
+        doc.setArray( jsonArray() );
+        fJSONSize.second = doc.toJson( QJsonDocument::Indented ).length();   // will be slightly off, but close enough
+
+        if ( fJSONSize.second >= ( 45ULL * 1024ULL * 1024ULL ) )
+        {
+            newArray();
+        }
+    }
+    fJSONSize.first++;
 }

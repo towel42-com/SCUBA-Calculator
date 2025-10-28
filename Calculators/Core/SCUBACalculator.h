@@ -40,28 +40,32 @@ namespace NTowel42
 class QWidget;
 class QFrame;
 
-struct CALCULATORS_EXPORT SGeneratedFormulaData
+class CALCULATORS_EXPORT CGeneratedFormulaData
 {
-    SGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated );
+public:
+    CGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated );
     virtual std::pair< int, int > formulaCounts() const { return fFormulaCounts; };
 
     virtual const TFormulaList &formulaList() const { return fByNameList; }
 
-    virtual QJsonArray &jsonArray() { return fJsonArray; }
+    virtual void addSVG( QJsonObject &obj, const QByteArray &svg, const std::optional< QDateTime >& renderedDate );
+    virtual const std::list< QJsonArray > &jsonArrays() const { return fJsonArrays; }
     virtual bool updated() const { return fFormulaCounts.second != 0; }
 
-    virtual bool operator==( const SGeneratedFormulaData &rhs ) const;
+    virtual bool operator==( const CGeneratedFormulaData &rhs ) const;
 
 private:
+    virtual QJsonArray &jsonArray();
+    virtual void newArray();
     std::unordered_set< QString > fAllFormulas;
 
     TFormulaList fByNameList;
-    QJsonArray fJsonArray;
+    std::list< QJsonArray > fJsonArrays;
+    std::pair< std::size_t, std ::size_t > fJSONSize{ 0, 0 }; // num, size
     bool fUpdated{ false };
 
-    void computeFormulaCounts( const std::function< bool( const QString &formula ) > &beenCreated );
     void sortByName();
-    void addFormula( const TFormula &formula );
+    void addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated );
     std::pair< int, int > fFormulaCounts;
 };
 
@@ -99,7 +103,7 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual std::shared_ptr< SGeneratedFormulaData > getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const /*final*/;
+    virtual std::shared_ptr< CGeneratedFormulaData > getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const /*final*/;
 
     virtual void initResources() const /*final*/;
 
@@ -123,7 +127,9 @@ protected:
     virtual const TVariableInfoList &getRHSVariables() const final;
 
     TFormulaList getFormulaList() const;
-    virtual std::pair< TFormulaList, TValuesForVariablePairVector > getFormulaListAndValues() const;
+
+    TFormulaList getNamedFormulas() const;
+    TVariableValuePairVectorVector getAllVariableValueCombinations() const;
 
     virtual std::pair< QString, QString > fromToLabels() const { return {}; }
 

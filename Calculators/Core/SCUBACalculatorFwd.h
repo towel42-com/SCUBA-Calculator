@@ -41,6 +41,7 @@
 #include <QLoggingCategory>
 #include <unordered_set>
 #include <tuple>
+#include <optional>
 
 class CSCUBACalculatorPage;
 class CSCUBACalculator;
@@ -102,7 +103,8 @@ enum class EVariableType
     eFillRateAirConst,
     eCubicFeetToLitersConst,
     eLitersToCubicFeetConst,
-    eSafetyStopDepthConst
+    eSafetyStopDepthConst,
+    eWaterWeightAdjustmentConst
 };
 
 enum class EVariableLoc
@@ -136,12 +138,17 @@ using TFormulaList = std::list< TFormula >;
 using TStringList = std::list< QString >;
 using TValuesForVariablePair = std::pair< TVariableInfo, TOptionalDoubleVector >;
 using TValuesForVariablePairVector = std::vector< TValuesForVariablePair >;
+using TVariableValuePair = std::pair< TVariableInfo, TOptionalDouble >;
+using TVariableValuePairVector = std::vector< TVariableValuePair >;
+using TOptionalVariableValuePairVector = std::optional< TVariableValuePairVector >;
+using TVariableValuePairVectorVector = std::vector< TVariableValuePairVector >;
+
 
 using TNameValuePair = std::pair< QString, TOptionalDouble >;
 using TOptionalNameValuePair = std::optional< TNameValuePair >;
 
-struct SGeneratedFormulaData;
-using TGeneratedFormulaData = std::shared_ptr< SGeneratedFormulaData >;
+class CGeneratedFormulaData;
+using TGeneratedFormulaData = std::shared_ptr< CGeneratedFormulaData >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
 
