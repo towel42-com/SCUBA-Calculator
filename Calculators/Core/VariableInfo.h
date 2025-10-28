@@ -27,6 +27,7 @@
 #include <QString>
 #include <QStringList>
 #include <list>
+#include <optional>
 #include <functional>
 #include <unordered_map>
 
@@ -49,6 +50,20 @@ struct SRange
 
     bool operator==( const SRange &rhs );
     bool operator!=( const SRange &rhs ) { return !operator==( rhs ); }
+};
+
+template< typename T >
+struct SBaseInfo
+{
+    SBaseInfo( const std::optional< bool > &imperial, const std::optional< bool > &seaWater, const T &range ) :
+        fImperial( imperial ),
+        fSeaWater( seaWater ),
+        fValue( range )
+    {
+    }
+    std::optional< bool > fImperial;
+    std::optional< bool > fSeaWater;
+    T fValue;
 };
 
 template<>
@@ -74,7 +89,8 @@ struct SVariableValue
     std::unordered_map< std::pair< bool, bool >, T > fValues;
 
     void setDefault( const T &value ) { fDefaultValue = value; }
-    void setValue( std::optional< bool > imperial, std::optional< bool > seaWater, const T &value )
+    void addValue( const SBaseInfo< T > &value ) { addValue( value.fImperial, value.fSeaWater, value.fValue ); }
+    void addValue( std::optional< bool > imperial, std::optional< bool > seaWater, const T &value )
     {
         if ( !imperial.has_value() && !seaWater.has_value() )
             setDefault( value );
@@ -124,8 +140,8 @@ class CALCULATORS_EXPORT CVariableInfo
 {
 public:
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation );
-    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range );
-    CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values );
+    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &range );
+    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &values );
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitLabel, bool imperial );
     CVariableInfo( EVariableType type );   // for use with constants
     ~CVariableInfo() {}
@@ -159,9 +175,11 @@ public:
     bool isWidget( QWidget *widget ) const;
 
     void setDefaultRange( const SRange &range );
-    void setRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range );
+    void addRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range );
+    void addRange( const SBaseInfo< SRange > &range );
     void setDefaultValues( const TNamedValueItemList &values );
-    void setValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values );
+    void addValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values );
+    void addValues( const SBaseInfo< TNamedValueItemList > &valueInfo );
     void setUnitOverride( EUnit unit, bool imperial ) { fUnitOverride = { unit, imperial }; }   // overrides default behavior and always uses this string for the label
 
     QLineEdit *lineEdit() const;

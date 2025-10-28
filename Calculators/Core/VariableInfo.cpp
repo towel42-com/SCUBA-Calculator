@@ -11,6 +11,8 @@
 #include <QComboBox>
 
 #include <optional>
+#include <algorithm>
+
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation ) :
     fName( name ),
     fDescription( desc ),
@@ -26,16 +28,16 @@ CVariableInfo::CVariableInfo( EVariableType type ) :
     Q_ASSERT( ( fType != EVariableType::eIntermediate ) && ( fType != EVariableType::eVariable ) );
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const SRange &range ) :
-    CVariableInfo( name, desc, type, unitType, variableLocation )
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo ) :
+    CVariableInfo( name, desc, EVariableType::eVariable, unitType, variableLocation )
 {
-    setRange( false, false, range );
+    addRange( rangeInfo );
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation, const TNamedValueItemList &values ) :
-    CVariableInfo( name, desc, type, unitType, variableLocation )
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &valuesInfo ) :
+    CVariableInfo( name, desc, EVariableType::eVariable, unitType, variableLocation )
 {
-    setValues( false, false, values );
+    addValues( valuesInfo );
 }
 
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitType, bool imperial ) :
@@ -222,9 +224,23 @@ void CVariableInfo::reverseVariableLoc()
 
 bool CVariableInfo::needsFieldUpdate( QWidget *triggerWidget )
 {
-    if ( !isWidget( triggerWidget ) || !optValue().has_value() )
+    if ( !isWidget( triggerWidget ) )
         return true;
 
+    auto currValue = optValue();
+    if ( !currValue.has_value() )
+        return true;
+
+    if ( comboBox() )
+    {
+        auto le = fExtraInputWidgets.empty() ? nullptr : ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) );
+        if ( le )
+        {
+            auto leValue = valueForString( le->text() );
+            if ( currValue != leValue )
+                return true;
+        }
+    }
     return false;
 }
 
@@ -253,6 +269,7 @@ std::optional< TOptionalDoubleVector > CVariableInfo::validValues( bool imperial
         if ( ii.second.has_value() )
             retVal.push_back( ii.second );
     }
+    std::sort( retVal.begin(), retVal.end() );
     if ( retVal.empty() )
         return {};
     return retVal;
@@ -438,6 +455,12 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = "%1";
                 }
                 break;
+            case EVariableType::eWaterWeightAdjustmentConst:
+                {
+                    value = NUtilities::NUnitStrings::waterWeightAdjustment( imperial, seaWater, true, true );
+                    format = "%1";
+                }
+                break;
             case EVariableType::eBaseMETofSCUBAConst:
                 {
                     value = NUtilities::NUnitStrings::scubaMET( true, true );
@@ -531,9 +554,16 @@ void CVariableInfo::setDefaultRange( const SRange &range )
     fRanges.setDefault( range );
 }
 
-void CVariableInfo::setRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range )
+void CVariableInfo::addRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range )
 {
-    fRanges.setValue( imperial, seaWater, range );
+    Q_ASSERT( fType == EVariableType::eVariable );
+    fRanges.addValue( imperial, seaWater, range );
+}
+
+void CVariableInfo::addRange( const SBaseInfo< SRange > &rangeInfo )
+{
+    Q_ASSERT( fType == EVariableType::eVariable );
+    fRanges.addValue( rangeInfo );
 }
 
 void CVariableInfo::setDefaultValues( const TNamedValueItemList &values )
@@ -541,9 +571,16 @@ void CVariableInfo::setDefaultValues( const TNamedValueItemList &values )
     fValues.setDefault( values );
 }
 
-void CVariableInfo::setValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values )
+void CVariableInfo::addValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values )
 {
-    fValues.setValue( imperial, seaWater, values );
+    Q_ASSERT( fType == EVariableType::eVariable );
+    fValues.addValue( imperial, seaWater, values );
+}
+
+void CVariableInfo::addValues( const SBaseInfo< TNamedValueItemList > &valueInfo )
+{
+    Q_ASSERT( fType == EVariableType::eVariable );
+    fValues.addValue( valueInfo );
 }
 
 double CVariableInfo::formulaValue() const
