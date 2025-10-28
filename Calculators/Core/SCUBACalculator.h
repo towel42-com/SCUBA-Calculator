@@ -100,6 +100,9 @@ public:
     virtual QStringList calculatorPath() const /*final*/;
     virtual QString calculatorName() const /*final*/;
 
+    virtual QString calculatorProjectName() const = 0;
+    virtual QString calculatorGroupName() const = 0;
+
     virtual QWidget *getPage( QWidget *parent ) /*final*/;
     virtual QWidget *getPage() const /*final*/;
 
