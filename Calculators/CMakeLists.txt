@@ -21,13 +21,17 @@
 # SOFTWARE.
 
 
-function(AddToCalculatorList calculator)
+function(AddToCalculatorList calculator groupName)
     get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
     list(APPEND _CURR "${calculator}")
     set_property(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "${_CURR}")
     
     INSTALL( TARGETS ${calculator} RUNTIME DESTINATION Calculators )
     INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
+
+    set( GROUP_NAME ${groupName} )
+    set_target_properties( ${calculator} PROPERTIES FOLDER Calculators/${GROUP_NAME} )
+    set_target_properties( ${calculator} PROPERTIES DEBUG_POSTFIX d )
 
     set( ROOT_TARGET "SCUBA-Calculator" )
     set( CALC_DIR "Calculators" )
@@ -39,6 +43,12 @@ function(AddToCalculatorList calculator)
     SET( PDB_NAME "$<TARGET_FILE_NAME:${calculator}>" )
     SET( PDB_SRC_PATH "$<TARGET_PDB_FILE:${calculator}>" )
     SET( PDB_DEST_PATH "${DEST_DIR}/$<TARGET_FILE_BASE_NAME:${calculator}>.pdb" )
+    
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/Calculators/CalculatorDef.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CalculatorDef.h"
+        @ONLY
+    )
     
     add_custom_command(TARGET ${calculator} POST_BUILD
 #        COMMAND "${CMAKE_COMMAND}" -E echo "Making Directory '${DEST_DIR}' for '${ROOT_TARGET}'"

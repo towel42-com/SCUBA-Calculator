@@ -1,0 +1,8 @@
+#ifndef __CALCULATORDEF_@PROJECT_NAME@_H
+#define __CALCULATORDEF_@PROJECT_NAME@_H
+
+constexpr const char * kProjectName = "@PROJECT_NAME@";
+constexpr const char * kGroupName = "@GROUP_NAME@";
+
+#endif
+
