@@ -603,13 +603,7 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
 std::optional< QString > CSCUBACalculator::getCurrentFormula() const
 {
-    if ( !valuesSetProperly() )
-        return {};
-
     auto unsetVar = getFirstUnsetVariable();
-    if ( !unsetVar )
-        return {};
-
     return getFormulaForVar( unsetVar );
 }
 
