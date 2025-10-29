@@ -19,21 +19,11 @@
 #include <unordered_set>
 
 // https://scuba.garykessler.net/EANcalculator/EAN_psi.html
-// mixing O2 + Air for proper Nitrox - done
+// https://allthingsdiving.com/dive-calculators/
+// https://www.divebuddy.com/calculator/
+// https://swimmingcalculators.com/scuba-diving-calculator/
+// https://swimmingcalculators.com/scuba-diving-weight-calculator/
 
-//https://allthingsdiving.com/dive-calculators/
-// SAC - done
-// END - done
-// tank gas volume - done
-
-//https://www.divebuddy.com/calculator/
-// altitude - done
-// calories burned - done
-// Dive weight calculator
-
-//https://swimmingcalculators.com/scuba-diving-calculator/
-// Dive weight
-// buoyancy
 
 Q_LOGGING_CATEGORY( ScubaCalculator, "Towel42.ScubaCalculator", QtMsgType::QtInfoMsg )
 
