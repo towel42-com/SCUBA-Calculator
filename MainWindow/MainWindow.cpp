@@ -876,16 +876,17 @@ std::size_t CMainWindow::loadCacheFile( QProgressDialog *progress, const QString
             continue;
         }
 
-        auto svg = svgCacheObject[ "svg" ].toString().toUtf8();
-        if ( auto result = QByteArray::fromBase64Encoding( svg ) )
-        {
-            fRenderingEngine->addToCache( formula, cleanedFormula, renderDate, *result );
-        }
-        else
-        {
-            QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid SVG base 64" ) );
-            return numLoaded;
-        }
+        fRenderingEngine->addToCache( formula, cleanedFormula, renderDate, svgCacheObject[ "svg" ].toString().toUtf8(), true );
+        //auto svg = svgCacheObject[ "svg" ].toString().toUtf8();
+        //if ( auto result = QByteArray::fromBase64Encoding( svg ) )
+        //{
+        //    fRenderingEngine->addToCache( formula, cleanedFormula, renderDate, *result );
+        //}
+        //else
+        //{
+        //    QMessageBox::critical( this, tr( "Error Reading JSON" ), tr( "Error: Invalid SVG base 64" ) );
+        //    return numLoaded;
+        //}
     }
     return numLoaded;
 }

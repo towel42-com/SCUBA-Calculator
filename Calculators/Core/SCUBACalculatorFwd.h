@@ -145,7 +145,6 @@ using TVariableValuePairVector = std::vector< TVariableValuePair >;
 using TOptionalVariableValuePairVector = std::optional< TVariableValuePairVector >;
 using TVariableValuePairVectorVector = std::vector< TVariableValuePairVector >;
 
-
 using TNameValuePair = std::pair< QString, TOptionalDouble >;
 using TOptionalNameValuePair = std::optional< TNameValuePair >;
 

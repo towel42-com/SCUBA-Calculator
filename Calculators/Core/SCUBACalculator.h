@@ -48,7 +48,7 @@ public:
 
     virtual const TFormulaList &formulaList() const { return fByNameList; }
 
-    virtual void addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime >& renderedDate );
+    virtual void addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime > &renderedDate );
     virtual const std::list< QJsonArray > &jsonArrays() const { return fJsonArrays; }
     virtual bool updated() const { return fNumToRender != 0; }
     virtual bool hasError() const { return fNumErrors != 0; }
@@ -66,7 +66,7 @@ private:
 
     TFormulaList fByNameList;
     std::list< QJsonArray > fJsonArrays;
-    std::pair< std::size_t, std ::size_t > fJSONSize{ 0, 0 }; // num, size
+    std::pair< std::size_t, std ::size_t > fJSONSize{ 0, 0 };   // num, size
 
     void sortByName();
     void addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated );
