@@ -261,7 +261,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
     else if ( unsetVar->name() == "yourWeight" )
     {
         formulas << QString( R"__(<adjustments> = <%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) );
-        formulas << R"__(<baseLeadWeight> = <adjustments> - <lead>)__";
+        formulas << R"__(<baseLeadWeight> = <lead> - <adjustments>)__";
         formulas << R"__(<yourWeight> = \frac{<baseLeadWeight>}{0.1})__";
     }
 
@@ -299,7 +299,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
         }
         else
         {
-            baseLeadWeight->setValue( adjustments->value() - lead->value() );
+            baseLeadWeight->setValue( lead->value() - adjustments->value() );
             yourWeight->setValue( baseLeadWeight->value() / 0.1 );
         }
     }
