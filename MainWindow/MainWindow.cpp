@@ -194,7 +194,6 @@ void CMainWindow::loadCalculators()
     fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
 
     slotSelectCalculator( nullptr );
-    //QTimer::singleShot( 100, [ = ] { loadCache(); } );
 }
 
 void CMainWindow::addCalculator( CSCUBACalculator *calculator )
@@ -663,7 +662,17 @@ void CMainWindow::saveJSONFiles( QProgressDialog *progress, const QDir &dir, con
 
             jsonFileNameBase.replace( regExp, "_" );
 
-            auto jsonFileName = QDir( dir ).absoluteFilePath( jsonFileNameBase );
+            auto subDir = QDir( QDir( dir ).absoluteFilePath( QString( "%1/%2/formulas" ).arg( ii.first->calculatorGroupName() ).arg( ii.first->calculatorProjectName() ) ) );
+            if ( !subDir.exists() )
+            {
+                if ( !subDir.mkpath( "." ) )
+                {
+                    QMessageBox::critical( const_cast< CMainWindow * >( this ), tr( "Could not create Directory" ), tr( "Could not create directory %1" ).arg( subDir.absolutePath() ) );
+                    return;
+                }
+            }
+
+            auto jsonFileName = subDir.absoluteFilePath( jsonFileNameBase );
 
             auto label = QString( "Generating JSON file:<br/>%1<br/>Generating file %2 of %3" ).arg( jsonFileName ).arg( progress->value() + 1 ).arg( numFiles );
             progress->setLabelText( label );
@@ -692,7 +701,7 @@ void CMainWindow::generateFormulas( bool needUpdatingOnly )
     bool first = true;
     if ( first )
     {
-        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators\formulaDump)";
+        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators)";
         if ( !QDir( defaultDir ).exists() )
         {
             QDir( defaultDir ).mkpath( "." );
@@ -768,7 +777,6 @@ void CMainWindow::loadCache( std::optional< QString > wildCard )
         qDebug() << "Could not find JSON file:" << wildCard.value();
         for ( auto &&ii : files )
         {
-            //qCDebug( ScubaCalculator ) << ii;
             qDebug() << ii;
         }
     }

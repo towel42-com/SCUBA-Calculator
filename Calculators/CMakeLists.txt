@@ -61,7 +61,7 @@ function(AddToCalculatorList calculator groupName)
     
     file( GLOB 
         _JSON_FILES  
-        ${CMAKE_CURRENT_SOURCE_DIR}/formulas/formulas*.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json
     )
 
     foreach( jsonFile ${_JSON_FILES} )
