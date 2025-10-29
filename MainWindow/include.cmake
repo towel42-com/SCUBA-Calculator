@@ -44,6 +44,7 @@ SET( project_pub_DEPS
     Qt6::Widgets
     Qt6::Gui
     Qt6::Svg
+    MathJaxQt6
     ${project_pub_DEPS}
 )
 
