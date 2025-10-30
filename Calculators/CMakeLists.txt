@@ -80,14 +80,14 @@ function(AddToCalculatorList calculator groupName)
         )
     endforeach()
     
-    qt6_add_resources(${PROJECT_NAME} "calculator"
-        PREFIX
-            "/formulas"
-        FILES
-            ${_JSON_FILES}
-        OUTPUT_TARGETS 
-            QRC_OTHER_TARGETS    
-    )
+#    qt6_add_resources(${PROJECT_NAME} "calculator"
+#        PREFIX
+#            "/formulas"
+#        FILES
+#            ${_JSON_FILES}
+#        OUTPUT_TARGETS 
+#            QRC_OTHER_TARGETS    
+#    )
 endfunction()
 
 add_subdirectory( Core )
