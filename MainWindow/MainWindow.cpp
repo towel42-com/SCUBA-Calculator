@@ -771,15 +771,15 @@ void CMainWindow::loadCache( std::optional< QString > wildCard )
         fileNames << ii.next();
     }
     fileNames.sort();
-    if ( fileNames.empty() )
-    {
-        auto files = NSABUtils::NFileUtils::dumpResources( true );
-        qDebug() << "Could not find JSON file:" << wildCard.value();
-        for ( auto &&ii : files )
-        {
-            qDebug() << ii;
-        }
-    }
+    //if ( fileNames.empty() )
+    //{
+    //    auto files = NSABUtils::NFileUtils::dumpResources( true );
+    //    qDebug() << "Could not find JSON file:" << wildCard.value();
+    //    for ( auto &&ii : files )
+    //    {
+    //        qDebug() << ii;
+    //    }
+    //}
 
     loadCacheFiles( fileNames );
 }
