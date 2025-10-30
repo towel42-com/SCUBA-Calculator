@@ -94,6 +94,8 @@ bool CVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *form
 
     formLayout->addRow( fLabel, hLayout );
     page->addWidget( fVariableLocation, fField );
+    for ( auto &&ii : fExtraInputWidgets )
+        page->addWidget( fVariableLocation, ii );
 
     updateLabels( page->imperial(), page->seaWater() );
     return true;
@@ -163,6 +165,7 @@ QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
                     return NUtilities::NUnitStrings::tempUnit( imperial, true, false );
             }
         case EUnit::ePercent:
+        case EUnit::eLargePercent:
             return NUtilities::NUnitStrings::percentUnit( imperial, true, tex );
         case EUnit::eTime:
             return NUtilities::NUnitStrings::timeUnit( imperial, true, tex );
@@ -182,7 +185,7 @@ void CVariableInfo::resetValue( bool imperial, bool seaWater, bool updateUI, boo
 TOptionalDouble CVariableInfo::optValue() const
 {
     TOptionalDouble currValue;
-    if ( lineEdit() )
+    if ( lineEdit() && !lineEdit()->text().isEmpty() )
         currValue = valueForString( lineEdit()->text() );
     else if ( doubleSpinBox() )
         currValue = doubleSpinBox()->value();
@@ -191,7 +194,7 @@ TOptionalDouble CVariableInfo::optValue() const
         auto le = fExtraInputWidgets.empty() ? nullptr : ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) );
         if ( !comboBox()->currentData().isNull() )
             currValue = comboBox()->currentData().toDouble();
-        else if ( le )
+        else if ( le && !le->text().isEmpty() )
             currValue = valueForString( le->text() );
     }
     return currValue;
@@ -228,7 +231,7 @@ bool CVariableInfo::needsFieldUpdate( QWidget *triggerWidget )
         return true;
 
     auto currValue = optValue();
-    if ( !currValue.has_value() )
+    if ( !comboBox() && !currValue.has_value() )
         return true;
 
     if ( comboBox() )

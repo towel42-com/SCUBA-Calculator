@@ -160,6 +160,8 @@ protected:
     void initVariables();
     TVariableInfoList unsetVariables() const;
     std::size_t numUnsetVariables() const;
+    bool allVariablesUnset() const;
+
     TConstVariableInfo getVariable( const QString &varName ) const;
     TVariableInfo getVariable( const QString &varName );
 

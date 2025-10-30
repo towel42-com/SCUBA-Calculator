@@ -24,7 +24,6 @@
 // https://swimmingcalculators.com/scuba-diving-calculator/
 // https://swimmingcalculators.com/scuba-diving-weight-calculator/
 
-
 Q_LOGGING_CATEGORY( ScubaCalculator, "Towel42.ScubaCalculator", QtMsgType::QtInfoMsg )
 
 CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
@@ -279,6 +278,20 @@ std::size_t CSCUBACalculator::numUnsetVariables() const
     return retVal;
 }
 
+bool CSCUBACalculator::allVariablesUnset() const
+{
+    for ( auto &&ii : fVariables )
+    {
+        if ( !ii->isVariable() )
+            continue;
+        if ( ii->hasValues() && ii->has_value() )
+            return false;
+        if ( ii->has_value() )
+            return false;
+    }
+    return true;
+}
+
 TConstVariableInfo CSCUBACalculator::getVariable( const QString &varName ) const
 {
     auto pos = fVariableMap.find( varName );
@@ -480,7 +493,7 @@ std::shared_ptr< CGeneratedFormulaData > CSCUBACalculator::getAllFormulas( const
 
 void CSCUBACalculator::initResources() const
 {
-    Q_INIT_RESOURCE( calculator );
+    //Q_INIT_RESOURCE( calculator );
 }
 
 TVariableInfo CSCUBACalculator::getLastVariable( EVariableLoc side ) const
@@ -603,6 +616,9 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
 std::optional< QString > CSCUBACalculator::getCurrentFormula() const
 {
+    if ( allVariablesUnset() )
+        return getBaseFormula();
+
     auto unsetVar = getFirstUnsetVariable();
     return getFormulaForVar( unsetVar );
 }
@@ -769,7 +785,7 @@ void CGeneratedFormulaData::addFormula( const TFormula &formula, const std::func
     }
 }
 
-void CGeneratedFormulaData::addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime > & renderedDate )
+void CGeneratedFormulaData::addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime > &renderedDate )
 {
     if ( !svg.has_value() || svg.value().isEmpty() )
         return;

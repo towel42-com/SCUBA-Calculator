@@ -163,7 +163,7 @@ public:
     void updateValueFromField();   // updates fValue from fField
     void updateFormula( bool imperial, bool seaWater, QString &newFormula, EFormulaType formulaType ) const;
 
-    int numDecimals() const { return ( fUnit == EUnit::ePercent ) ? 0 : 2; }
+    int numDecimals() const {return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2; }
     double formulaValue() const;   // user responsible for calling has_value first
     double value() const;   // user responsible for calling has_value first
     TOptionalDouble optValue() const;
