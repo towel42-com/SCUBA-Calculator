@@ -30,7 +30,7 @@ function(AddToCalculatorList calculator groupName)
     INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
 
     set( GROUP_NAME ${groupName} )
-    set_target_properties( ${calculator} PROPERTIES FOLDER Calculators/${GROUP_NAME} )
+    set_target_properties( ${calculator} PROPERTIES FOLDER Libs/Calculators/${GROUP_NAME} )
     set_target_properties( ${calculator} PROPERTIES DEBUG_POSTFIX d )
 
     set( ROOT_TARGET "SCUBA-Calculator" )

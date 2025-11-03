@@ -38,4 +38,4 @@ target_link_libraries( ${PROJECT_NAME}
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Calculators )
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Libs/Calculators )
