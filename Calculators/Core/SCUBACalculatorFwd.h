@@ -74,8 +74,8 @@ enum class EUnit
     eAtmospheres,
     eTemperature,
     eAbsZeroTemperature,
-    ePercent, // values expected to be below 100%
-    eLargePercent, // values expected to be above 100%
+    ePercent,   // values expected to be below 100%
+    eLargePercent,   // values expected to be above 100%
     eTime,
     eCalories,
     eVolumePerMinute,

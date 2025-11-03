@@ -3,6 +3,7 @@
 #include "VariableInfo.h"
 #include "SABUtils/WidgetChanged.h"
 
+#include <QVBoxLayout>
 #include <QFormLayout>
 #include <QFrame>
 #include <QGroupBox>
@@ -98,19 +99,19 @@ std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::construc
     std::size_t numVariables = 0;
 
     auto retVal = new CSCUBACalculatorPage( calculator, parent );
-    auto formLayout = new QFormLayout( retVal );
+    auto formLayout = new QVBoxLayout( retVal );
     formLayout->setSpacing( 0 );
     formLayout->setContentsMargins( 0, 0, 0, 0 );
 
     auto &&[ groupBox, currNumVariables ] = loadVariables( tr( "LHS" ), calculator->getLHSVariables(), retVal );
     numVariables += currNumVariables;
     if ( groupBox )
-        formLayout->addRow( groupBox );
+        formLayout->addWidget( groupBox );
 
     std::tie( groupBox, currNumVariables ) = loadVariables( tr( "RHS" ), calculator->getRHSVariables(), retVal );
     numVariables += currNumVariables;
     if ( groupBox )
-        formLayout->addRow( groupBox );
+        formLayout->addWidget( groupBox );
 
     return { retVal, numVariables };
 }
