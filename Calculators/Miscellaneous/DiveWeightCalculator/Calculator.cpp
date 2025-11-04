@@ -21,8 +21,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -90,7 +90,6 @@ TVariableInfoList CCalculator::getMyVariables() const
                     } ) ) ),   //
             std::make_shared< CVariableInfo >( "baseLeadWeight", tr( "Base Lead Weight" ), EVariableType::eIntermediate, EUnit::eWeight, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "adjustments", tr( "Total Adjustments" ), EVariableType::eIntermediate, EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eWaterWeightAdjustmentConst ),   //
         } );
 
     auto pos = std::next( std::next( retVal.begin() ) );
@@ -242,7 +241,7 @@ function calculateWeight() {
     weightChart.update();
 }
 */
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     QStringList formulas;
 
@@ -250,14 +249,14 @@ std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*s
     formulas << QString( R"__(<adjustments> = <%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) );
     formulas << R"__(<lead> = <baseLeadWeight> + <adjustments>)__";
 
-    return NUtilities::joinFormulas( formulas );
+    return formulas;
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     QStringList formulas;
     if ( unsetVar->name() == "lead" )
-        return myBaseFormula( imperial, seaWater );
+        return myBaseFormulas( imperial, seaWater );
     else if ( unsetVar->name() == "yourWeight" )
     {
         formulas << QString( R"__(<adjustments> = <%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) );
@@ -265,7 +264,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
         formulas << R"__(<yourWeight> = \frac{<baseLeadWeight>}{0.1})__";
     }
 
-    return NUtilities::joinFormulas( formulas );
+    return formulas;
 }
 
 void CCalculator::computeValueForVar( TVariableInfo &unsetVar )

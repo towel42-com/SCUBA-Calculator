@@ -79,7 +79,7 @@ enum class EUnit
     eTime,
     eCalories,
     eVolumePerMinute,
-    eFlowRate
+    ePressurePerMinute
 };
 
 enum class EVariableType
@@ -87,7 +87,8 @@ enum class EVariableType
     eIntermediate,
     eVariable,
     ePressurePerDegreeConst,
-    eWeightOfWaterConst,
+    eWeightPerVolumeOfWaterConst,
+    eVolumePerWeightOfWaterConst,
     eIdealGasConst,
     eFN2AtSurfaceConst,
     eFO2AtSurfaceConst,
@@ -97,6 +98,7 @@ enum class EVariableType
     eLbsPerKgsConst,
     eKgsPerLbsConst,
     eFreshWaterToSeaWaterConst,
+    eSeaWaterToFreshWaterConst,
     ePSIToBarConst,
     eBarToPSIConst,
     eAbsZeroOffsetConst,

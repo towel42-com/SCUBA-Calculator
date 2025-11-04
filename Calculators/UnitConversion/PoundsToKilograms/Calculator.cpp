@@ -24,9 +24,9 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > myReversedBaseFormula() const override;
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -57,32 +57,30 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "pounds", tr( "Weight" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::eWeight, true ),   //
             std::make_shared< CVariableInfo >( "kiloGrams", tr( "Weight" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::eWeight, false ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eLbsPerKgsConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eKgsPerLbsConst )   //
         } );
 
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return NUtilities::NConversions::lbsToKGsFormula( "pounds", "kiloGrams" );
+    return QStringList() << NUtilities::NConversions::lbsToKGsFormula( "pounds", "kiloGrams" );
 }
 
-std::optional< QString > CCalculator::myReversedBaseFormula() const
+std::optional< QStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return NUtilities::NConversions::kgsToLbsFormula( "pounds", "kiloGrams" );
+    return QStringList() << NUtilities::NConversions::kgsToLbsFormula( "pounds", "kiloGrams" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "kiloGrams" )
     {
-        return NUtilities::NConversions::lbsToKGsFormula( "pounds", "kiloGrams" );
+        return myBaseFormulas( imperial, seaWater );
     }
     else if ( unsetVar->name() == "pounds" )
     {
-        return NUtilities::NConversions::kgsToLbsFormula( "pounds", "kiloGrams" );
+        return myReversedBaseFormulas( imperial, seaWater );
     }
     return {};
 }

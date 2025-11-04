@@ -24,9 +24,9 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > myReversedBaseFormula() const override;
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -57,32 +57,30 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "cubicfeet", tr( "Volume" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::eVolume, true ),   //
             std::make_shared< CVariableInfo >( "liters", tr( "Volume" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::eVolume, false ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eCubicFeetToLitersConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eLitersToCubicFeetConst ),   //
         } );
 
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return NUtilities::NConversions::cubicFeetToLitersFormula( "cubicfeet", "liters" );
+    return QStringList() << NUtilities::NConversions::cubicFeetToLitersFormula( "cubicfeet", "liters" );
 }
 
-std::optional< QString > CCalculator::myReversedBaseFormula() const
+std::optional< QStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return NUtilities::NConversions::litersToCubicFeetFormula( "cubicfeet", "liters" );
+    return QStringList() << NUtilities::NConversions::litersToCubicFeetFormula( "cubicfeet", "liters" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "liters" )
     {
-        return NUtilities::NConversions::cubicFeetToLitersFormula( "cubicfeet", "liters" );
+        return myBaseFormulas( imperial, seaWater );
     }
     else if ( unsetVar->name() == "cubicfeet" )
     {
-        return NUtilities::NConversions::litersToCubicFeetFormula( "cubicfeet", "liters" );
+        return myReversedBaseFormulas( imperial, seaWater );
     }
     return {};
 }

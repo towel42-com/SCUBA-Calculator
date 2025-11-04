@@ -19,8 +19,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -52,21 +52,21 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return R"__(<gasVolume> = <tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__";
+    return QStringList() << R"__(<gasVolume> = <tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__";
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "gasVolume" )
-        return myBaseFormula( false, false );
+        return myBaseFormulas( false, false );
     else if ( unsetVar->name() == "currTankPressure" )
-        return R"__(<currTankPressure> = <ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__";
+        return QStringList() << R"__(<currTankPressure> = <ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__";
     else if ( unsetVar->name() == "ratedTankPressure" )
-        return R"__(<ratedTankPressure> = <currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__";
+        return QStringList() << R"__(<ratedTankPressure> = <currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__";
     else if ( unsetVar->name() == "tankVolume" )
-        return R"__(<tankVolume> = <gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__";
+        return QStringList() << R"__(<tankVolume> = <gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__";
     return {};
 }
 

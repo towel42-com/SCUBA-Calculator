@@ -20,8 +20,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -48,24 +48,23 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "fhe", tr( "Helium Percentage" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "end", tr( "Equivalent Narcotic Depth (END)" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QString( R"__(<end> = [(<depth> + <%1>) \times ( 1.0 - <fhe> ) ] - <%1> )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
+    return QStringList() << QString( R"__(<end> = [(<depth> + <%1>) \times ( 1.0 - <fhe> ) ] - <%1> )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "end" )
-        return myBaseFormula( false, false );
+        return myBaseFormulas( false, false );
     else if ( unsetVar->name() == "fhe" )
-        return QString( R"__(<fhe> =1.0 - \frac{<end> + %1}{<depth> + <%1>} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
+        return QStringList() << QString( R"__(<fhe> =1.0 - \frac{<end> + %1}{<depth> + <%1>} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
     else if ( unsetVar->name() == "depth" )
-        return QString( R"__(<depth> = \frac{<end> + %1}{1.0 - <fhe>} - <%1>))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
+        return QStringList() << QString( R"__(<depth> = \frac{<end> + %1}{1.0 - <fhe>} - <%1>))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
     return {};
 }
 

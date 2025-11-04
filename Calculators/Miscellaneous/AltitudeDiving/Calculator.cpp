@@ -18,11 +18,11 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual bool isWaterTypeBased() const override { return true; }
-    
+
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -51,14 +51,11 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "theoreticalDepth", tr( "Theoretical Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "safetyStop", tr( "Safety Stop" ), EVariableType::eIntermediate, EUnit::eDepth, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "surfacePressure", tr( "Surface Air Pressure @ Altitude" ), EVariableType::eIntermediate, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::ePressureAtSurfaceConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eSafetyStopDepthConst ),   //
         } );
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool imperial, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool imperial, bool /*seaWater*/ ) const
 {
     QStringList formulas;
 
@@ -66,20 +63,22 @@ std::optional< QString > CCalculator::myBaseFormula( bool imperial, bool /*seaWa
     formulas << QString( R"__(<theoreticalDepth> = [(<depth> + <%1>) * \frac{<%2>}{<surfacePressure>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) );
     formulas << QString( R"__(<safetyStop> = [(<%3> + <%1>) * \frac{<%2>}{<surfacePressure>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eSafetyStopDepthConst ) );
 
-    return NUtilities::joinFormulas( formulas );
+    return formulas;
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "theoreticalDepth" )
-        return myBaseFormula( imperial, seaWater );
-
-    if ( unsetVar->name() == "altitude" )
-        return NUtilities::NConversions::altitudeForSurfacePressureFormula( imperial, "surfacePressure", "altitude" );
-
-    if ( unsetVar->name() == "depth" )
     {
-        return QString( R"__(<depth> = [(<theoreticalDepth> + <%1>) \times \frac{<surfacePressure>}{<%2>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) );
+        return myBaseFormulas( imperial, seaWater );
+    }
+    else if ( unsetVar->name() == "altitude" )
+    {
+        return QStringList() << NUtilities::NConversions::altitudeForSurfacePressureFormula( imperial, "surfacePressure", "altitude" );
+    }
+    else if ( unsetVar->name() == "depth" )
+    {
+        return QStringList() << QString( R"__(<depth> = [(<theoreticalDepth> + <%1>) \times \frac{<surfacePressure>}{<%2>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) );
     }
     return {};
 }
@@ -95,7 +94,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     {
         surfacePressure->setValue( NUtilities::NConversions::surfacePressureAtAltitude( imperial(), altitude->value() ) );
         theoreticalDepth->setValue( ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
-        getVariable( "safetyStop" )->setValue( ( NUtilities::NConstants::safetyStopDepth( imperial() ) + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        getVariable( "safetyStop" )->setValue( ( NUtilities::NConstants::safetyStopDepth( imperial(), seaWater() ) + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
     }
     else if ( unsetVar == altitude )
     {

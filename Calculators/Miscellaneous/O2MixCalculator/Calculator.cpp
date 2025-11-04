@@ -19,8 +19,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -51,10 +51,6 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "o2_t", tr( "Approximate Time to fill with 100% O2" ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eFO2AtSurfaceConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eFN2AtSurfaceConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eFillRateO2Const ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eFillRateAirConst ),   //
         } );
     auto pos = std::next( retVal.begin() );
     ( *pos )->addRange( false, {}, SRange( { 0.0, NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
@@ -64,23 +60,23 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     QStringList formulas;
 
-    formulas << QString( R"__(<o2_p> = \frac{( <p2> \times (<mix2> - <%1>) ) - ( <p1> \times ( <mix1> - <%1> ) )}{<%2>} - <p1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+    formulas << QString( R"__(<o2_p> = \frac{(<p2> \times (<mix2> - <%1>) ) - ( <p1> \times ( <mix1> - <%1> ) )}{<%2>} - <p1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
     formulas << QString( R"__(<o2_t> = \frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) );
     formulas << QString( R"__(<air_t> = \frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) );
 
-    return NUtilities::joinFormulas( formulas );
+    return formulas;
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     QStringList formulas;
     if ( unsetVar->name() == "o2_p" )
     {
-        return getBaseFormula();
+        return myBaseFormulas( imperial, seaWater );
     }
     else if ( unsetVar->name() == "mix1" )
     {
@@ -103,7 +99,7 @@ std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo
         formulas << QString( R"__(<o2_t> = \frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) );
         formulas << QString( R"__(<air_t> = \frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) );
     }
-    return NUtilities::joinFormulas( formulas );
+    return formulas;
 }
 
 /**

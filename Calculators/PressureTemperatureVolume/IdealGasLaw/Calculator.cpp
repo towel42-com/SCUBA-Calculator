@@ -19,8 +19,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -48,37 +48,35 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "v", tr( "Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "numMoles", tr( "Number of Moles" ), EVariableType::eVariable, EUnit::eNone, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "t", tr( "Temperature" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eIdealGasConst ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eAbsZeroOffsetConst ),   //
         };
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return R"__(<p> \times <v> = <numMoles> \times <idealGasConstant> \times <t>)__";
+    return QStringList() << QString( R"__(<p> \times <v> = <numMoles> \times <%1> \times <t>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "p" )
     {
         // p = nrt/v
-        return R"__(<p> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<v>})__";
+        return QStringList() << QString( R"__(<p> = \frac{<numMoles> \times <%1> \times (<t> + <%2>)}{<v>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) );
     }
     else if ( unsetVar->name() == "v" )
     {
         // v = nrt/p
-        return R"__(<v> = \frac{<numMoles> \times <idealGasConstant> \times (<t> + <absOffset>)}{<p>})__";
+        return QStringList() << QString( R"__(<v> = \frac{<numMoles> \times <%1> \times (<t> + <%2>)}{<p>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) );
     }
     else if ( unsetVar->name() == "numMoles" )
     {
         // n = pv/rt
-        return R"__(<numMoles> = \frac{<p> \times <v>}{<idealGasConstant> \times (<t> + <absOffset>)})__";
+        return QStringList() << QString( R"__(<numMoles> = \frac{<p> \times <v>}{<%1> \times (<t> + <%2>)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) );
     }
     else if ( unsetVar->name() == "t" )
     {
         // t = pv/nr
-        return R"__(<t> = (\frac{<p> \times <v>}{<idealGasConstant> \times <numMoles>}) - <absOffset>)__";
+        return QStringList() << QString( R"__(<t> = (\frac{<p> \times <v>}{<%1> \times <numMoles>}) - <%2>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) );
     }
 
     return {};

@@ -32,6 +32,7 @@ namespace NUtilities
         SFormula();
         SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePairs );
         SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
+        SFormula( const QString &name, const QStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
         virtual ~SFormula() = default;
 
         virtual bool operator<( const SFormula &rhs ) const;

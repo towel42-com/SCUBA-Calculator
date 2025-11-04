@@ -20,8 +20,8 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -49,7 +49,6 @@ TVariableInfoList CCalculator::getMyVariables() const
             std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eAbsZeroOffsetConst ),   //
         };
 }
 
@@ -76,32 +75,32 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QString( R"__(<v2> = <v1> \times \frac{<t2>}{<t1>})__" );
+    return QStringList() << QString( R"__(<v2> = <v1> \times \frac{<t2>}{<t1>})__" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "v1" )
-    {
-        // V1 = V2 * ( t1/t2 );
-        return QString( R"__(<v1> = <v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
-    }
-    else if ( unsetVar->name() == "v2" )
+    if ( unsetVar->name() == "v2" )
     {
         // V2 = V1 * ( t2/t1 );
-        return QString( R"__(<v2> = <v1> \times \frac{<t2> + <%1>}{<t1> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
+        return myBaseFormulas( imperial, seaWater );
+    }
+    else if ( unsetVar->name() == "v1" )
+    {
+        // V1 = V2 * ( t1/t2 );
+        return QStringList() << QString( R"__(<v1> = <v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(V1/v2)
-        return QString( R"__(<t1> = [(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
+        return QStringList() << QString( R"__(<t1> = [(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(V2/v1)
-        return QString( R"__(<t2> = [(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
+        return QStringList() << QString( R"__(<t2> = [(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
     }
 
     return {};

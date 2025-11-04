@@ -20,8 +20,8 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -75,29 +75,29 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return R"__(<p2> = <p1> \times \frac{<v1>}{<v2>})__";
+    return QStringList() << R"__(<p2> = <p1> \times \frac{<v1>}{<v2>})__";
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "p1" )
+    if ( unsetVar->name() == "p2" )
+    {
+        return myBaseFormulas( imperial, seaWater );
+    }
+    else if ( unsetVar->name() == "p1" )
     {
         // p1 = p2 * (v2/v1);
-        return R"__(<p1> = <p2> \times \frac{<v2>}{<v1>})__";
-    }
-    else if ( unsetVar->name() == "p2" )
-    {
-        return R"__(<p2> = <p1> \times \frac{<v1>}{<v2>})__";
-    }
-    else if ( unsetVar->name() == "v1" )
-    {
-        return R"__(<v1> = <v2> \times \frac{<p2>}{<p1>})__";
+        return QStringList() << R"__(<p1> = <p2> \times \frac{<v2>}{<v1>})__";
     }
     else if ( unsetVar->name() == "v2" )
     {
-        return R"__(<v2> = <v1> \times \frac{<p1>}{<p2>})__";
+        return QStringList() << R"__(<v2> = <v1> \times \frac{<p1>}{<p2>})__";
+    }
+    else if ( unsetVar->name() == "v1" )
+    {
+        return QStringList() << R"__(<v1> = <v2> \times \frac{<p2>}{<p1>})__";
     }
 
     return {};

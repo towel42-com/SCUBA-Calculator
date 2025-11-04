@@ -21,11 +21,15 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
+    Constants.cpp
+    Conversions.cpp
+    GeneratedFormulaData.cpp
     SCUBACalculator.cpp
     SCUBACalculatorPage.cpp
     Utilities.cpp
     VariableInfo.cpp
     Formula.cpp
+    Units.cpp
 )
 
 set(qtproject_H
@@ -34,6 +38,7 @@ set(qtproject_H
 )
 
 set(project_H
+    GeneratedFormulaData.h
     SCUBACalculatorFwd.h
     VariableInfo.h
     Utilities.h

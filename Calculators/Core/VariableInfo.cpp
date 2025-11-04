@@ -22,11 +22,11 @@ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariabl
 {
 }
 
-CVariableInfo::CVariableInfo( EVariableType type ) :
-    CVariableInfo( NUtilities::fieldNameForType( type ), NUtilities::descForType( type ), type, EUnit::eNone, EVariableLoc::eRHS )
-{
-    Q_ASSERT( ( fType != EVariableType::eIntermediate ) && ( fType != EVariableType::eVariable ) );
-}
+//CVariableInfo::CVariableInfo( EVariableType type ) :
+//    CVariableInfo( NUtilities::fieldNameForType( type ), NUtilities::descForType( type ), type, EUnit::eNone, EVariableLoc::eRHS )
+//{
+//    Q_ASSERT( ( fType != EVariableType::eIntermediate ) && ( fType != EVariableType::eVariable ) );
+//}
 
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo ) :
     CVariableInfo( name, desc, EVariableType::eVariable, unitType, variableLocation )
@@ -143,8 +143,8 @@ QString CVariableInfo::unitText( bool imperial, bool seaWater, bool tex, EFormul
             return NUtilities::NUnitStrings::energyUnit( imperial, true, tex );
         case EUnit::eVolumePerMinute:
             return NUtilities::NUnitStrings::volumePerMinuteUnit( imperial, true, tex );
-        case EUnit::eFlowRate:
-            return NUtilities::NUnitStrings::flowRateUnit( imperial, true, tex );
+        case EUnit::ePressurePerMinute:
+            return NUtilities::NUnitStrings::pressurePerMinuteUnit( imperial, true, tex );
         case EUnit::eWeight:
             return NUtilities::NUnitStrings::weightUnit( imperial, true, tex );
         case EUnit::eLength:
@@ -344,6 +344,9 @@ TOptionalDouble CVariableInfo::valueForString( const QString &text ) const
 
 void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EFormulaType formulaType ) const
 {
+    if ( NUtilities::isConstantVariable( fType ) )
+        return updateFormula( imperial, seaWater, formula, fType );
+
     QString value;
     QString format;
     if ( ( formulaType == EFormulaType::eCurrentValueFormula ) && has_value() )
@@ -362,137 +365,7 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
                     format = QString( "%1 (%2)" );
                     break;
                 }
-            case EVariableType::ePressurePerDegreeConst:
-                {
-                    value = NUtilities::NUnitStrings::pressureChangePerDegreeChange( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eWeightOfWaterConst:
-                {
-                    value = NUtilities::NUnitStrings::weightOfWater( imperial, seaWater, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eIdealGasConst:
-                {
-                    value = NUtilities::NUnitStrings::idealGasConstant( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eFN2AtSurfaceConst:
-                {
-                    value = NUtilities::NUnitStrings::percentN2AtSurface( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eFO2AtSurfaceConst:
-                {
-                    value = NUtilities::NUnitStrings::percentO2AtSurface( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eDepthToSingleATMConst:
-                {
-                    value = NUtilities::NUnitStrings::depthToSingleAtmosphere( imperial, seaWater, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eFeetToMetersConst:
-                {
-                    value = NUtilities::NUnitStrings::feetToMeters( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eMetersToFeetConst:
-                {
-                    value = NUtilities::NUnitStrings::metersToFeet( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eLbsPerKgsConst:
-                {
-                    value = NUtilities::NUnitStrings::lbsPerKgs( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eKgsPerLbsConst:
-                {
-                    value = NUtilities::NUnitStrings::kgsPerLbs( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eFreshWaterToSeaWaterConst:
-                {
-                    value = NUtilities::NUnitStrings::freshWaterToSeaWater( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::ePSIToBarConst:
-                {
-                    value = NUtilities::NUnitStrings::psiToBar( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eBarToPSIConst:
-                {
-                    value = NUtilities::NUnitStrings::barToPSI( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eAbsZeroOffsetConst:
-                {
-                    value = NUtilities::NUnitStrings::absZeroOffset( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::ePressureAtSurfaceConst:
-                {
-                    value = NUtilities::NUnitStrings::pressureAtSurface( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eSafetyStopDepthConst:
-                {
-                    value = NUtilities::NUnitStrings::safetyStop( imperial, seaWater, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eWaterWeightAdjustmentConst:
-                {
-                    value = NUtilities::NUnitStrings::waterWeightAdjustment( imperial, seaWater, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eBaseMETofSCUBAConst:
-                {
-                    value = NUtilities::NUnitStrings::scubaMET( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eFillRateO2Const:
-                {
-                    value = NUtilities::NUnitStrings::fillRateO2( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eFillRateAirConst:
-                {
-                    value = NUtilities::NUnitStrings::fillRateAir( imperial, true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eCubicFeetToLitersConst:
-                {
-                    value = NUtilities::NUnitStrings::cubicFeetToLiters( true, true );
-                    format = "%1";
-                }
-                break;
-            case EVariableType::eLitersToCubicFeetConst:
-                {
-                    value = NUtilities::NUnitStrings::litersToCubicFeet( true, true );
-                    format = "%1";
-                }
+            default:
                 break;
         };
     }
@@ -504,7 +377,7 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
 
         if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eCurrentValueFormula ) )
         {
-            newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NUnitStrings::absZeroOffset( imperial, true, true ) );
+            newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true ) );
         }
         else
         {
@@ -529,6 +402,13 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
     }
 
     formula = formula.replace( token, newString );
+}
+
+void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EVariableType varType )
+{
+    QString constantString = NUtilities::NConstants::constantString( imperial, seaWater, varType );
+    auto token = QString( "<%1>" ).arg( NUtilities::fieldNameForType( varType ) );
+    formula = formula.replace( token, constantString );
 }
 
 double CVariableInfo::value() const

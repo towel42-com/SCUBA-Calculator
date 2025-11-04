@@ -17,6 +17,17 @@ namespace NUtilities
     {
     }
 
+    SFormula::SFormula( const QString &name, const QStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
+        fName( name ),
+        fImperial( imperial ),
+        fSeaWater( seaWater ),
+        fNameValuePairs( nameValuePair )
+    {
+        auto tmp = NUtilities::joinFormulas( formulas );
+        if ( tmp.has_value() )
+            fFormula = tmp.value();
+    }
+
     SFormula::SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePair ) :
         SFormula( rhs )
     {
@@ -88,7 +99,7 @@ namespace NUtilities
                 if ( ( *ii ).second.has_value() != ( *jj ).second.has_value() )
                     return false;
 
-                if ( (*ii).second != (*jj).second )
+                if ( ( *ii ).second != ( *jj ).second )
                 {
                     return false;
                 }

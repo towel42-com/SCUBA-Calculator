@@ -40,41 +40,6 @@ namespace NTowel42
 class QWidget;
 class QFrame;
 
-class CALCULATORS_EXPORT CGeneratedFormulaData
-{
-public:
-    CGeneratedFormulaData( const TFormulaList &formulas, const std::function< bool( const QString &formula ) > &beenCreated );
-    //virtual std::pair< int, int > formulaCounts() const { return fFormulaCounts; };
-
-    virtual const TFormulaList &formulaList() const { return fByNameList; }
-
-    virtual void addSVG( QJsonObject &obj, const std::optional< QByteArray > &svg, const std::optional< QDateTime > &renderedDate );
-    virtual const std::list< QJsonArray > &jsonArrays() const { return fJsonArrays; }
-    virtual bool updated() const { return fNumToRender != 0; }
-    virtual bool hasError() const { return fNumErrors != 0; }
-
-    virtual std::size_t numTotal() const { return fNumTotal; }
-    virtual std::size_t numToRender() const { return fNumToRender; }
-    virtual std::size_t numErrors() const { return fNumErrors; }
-
-    virtual bool operator==( const CGeneratedFormulaData &rhs ) const;
-
-private:
-    virtual QJsonArray &jsonArray();
-    virtual void newArray();
-    std::unordered_set< QString > fAllFormulas;
-
-    TFormulaList fByNameList;
-    std::list< QJsonArray > fJsonArrays;
-    std::pair< std::size_t, std ::size_t > fJSONSize{ 0, 0 };   // num, size
-
-    void sortByName();
-    void addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated );
-    std::size_t fNumErrors{ 0 };
-    std::size_t fNumToRender{ 0 };
-    std::size_t fNumTotal{ 0 };
-};
-
 class CALCULATORS_EXPORT CSCUBACalculator : public QObject
 {
     Q_OBJECT;
@@ -136,7 +101,6 @@ protected:
     virtual const TVariableInfoList &getRHSVariables() const final;
 
     TFormulaList getFormulaList() const;
-
     TFormulaList getNamedFormulas() const;
     TVariableValuePairVectorVector getAllVariableValueCombinations() const;
 
@@ -148,14 +112,11 @@ protected:
     virtual QString myCalculatorName() const;
     virtual QString myReversedCalculatorName() const;
 
-    virtual QString getBaseFormula() const final;   // for descriptive purposes
-    virtual std::optional< QString > getCurrentFormula() const final;   // returns the current formula in use
+    virtual QStringList getBaseFormulas() const final;   // for descriptive purposes
+    virtual std::optional< QStringList > getCurrentFormulas() const final;   // returns the current formula in use
 
-    virtual std::optional< QString > myBaseFormula() const;
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
-
-    virtual std::optional< QString > myReversedBaseFormula() const;
-    virtual std::optional< QString > myReversedBaseFormula( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< QStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
     TVariableInfoList unsetVariables() const;
@@ -167,8 +128,8 @@ protected:
 
     virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType, bool finished ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
-    virtual QString finalizeFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const final;
-    virtual QString finalizeFormula( const QString &formula, EFormulaType formulaType ) const final;
+    virtual QString finalizeFormula( bool imperial, bool seaWater, const QStringList &formulas, EFormulaType formulaType ) const final;
+    virtual QString finalizeFormula( const QStringList &formulas, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const;
@@ -186,8 +147,8 @@ protected:
 
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
     virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;

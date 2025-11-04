@@ -4,6 +4,7 @@
 #include "Calculators/Core/SCUBACalculator.h"
 #include "Calculators/Core/SCUBACalculatorPage.h"
 #include "Calculators/Core/Formula.h"
+#include "Calculators/Core/GeneratedFormulaData.h"
 
 #include "T42-MathJaxQt6/include/MathJaxQt6.h"
 #include "SABUtils/utils.h"

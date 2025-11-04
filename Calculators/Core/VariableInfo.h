@@ -143,7 +143,6 @@ public:
     CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &range );
     CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &values );
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitLabel, bool imperial );
-    CVariableInfo( EVariableType type );   // for use with constants
     ~CVariableInfo() {}
 
     QString name() const { return fName; }
@@ -162,6 +161,7 @@ public:
     void updateFieldFromValue( bool imperial, bool seaWater, bool notifyUI = false );   // updates fField from fValue
     void updateValueFromField();   // updates fValue from fField
     void updateFormula( bool imperial, bool seaWater, QString &newFormula, EFormulaType formulaType ) const;
+    static void updateFormula( bool imperial, bool seaWater, QString &newFormula, EVariableType constant );
 
     int numDecimals() const { return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2; }
     double formulaValue() const;   // user responsible for calling has_value first

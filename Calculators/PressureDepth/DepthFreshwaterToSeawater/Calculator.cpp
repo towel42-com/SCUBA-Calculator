@@ -21,9 +21,9 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > myReversedBaseFormula() const override;
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -47,33 +47,32 @@ TVariableInfoList CCalculator::getMyVariables() const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eFreshWaterToSeaWaterConst ),   //
+            std::make_shared< CVariableInfo >( "seaWater", tr( "Seawater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "freshWater", tr( "Freshwater" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
         } );
 
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return NUtilities::NConversions::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
+    return QStringList() << NUtilities::NConversions::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
 }
 
-std::optional< QString > CCalculator::myReversedBaseFormula() const
+std::optional< QStringList > CCalculator::myReversedBaseFormulas( bool imperial, bool seaWater ) const
 {
-    return NUtilities::NConversions::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
+    return QStringList() << NUtilities::NConversions::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "seaWater" )
     {
-        return NUtilities::NConversions::depthFreshwaterToSeawaterFormula( "freshWater", "seaWater" );
+        return myBaseFormulas( imperial, seaWater );
     }
     else if ( unsetVar->name() == "freshWater" )
     {
-        return NUtilities::NConversions::depthSeawaterToFreshwaterFormula( "freshWater", "seaWater" );
+        return myReversedBaseFormulas( imperial, seaWater );
     }
     return {};
 }

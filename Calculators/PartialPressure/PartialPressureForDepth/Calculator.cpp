@@ -21,8 +21,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QString > myBaseFormula( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QString > getFormulaForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -48,7 +48,7 @@ TVariableInfoList CCalculator::getMyVariables() const
         {
             std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eIntermediate, EUnit::ePressure, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eLength, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >(
                 "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EUnit::ePercent, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
@@ -59,36 +59,35 @@ TVariableInfoList CCalculator::getMyVariables() const
                         std::make_pair( tr( "Nitrogen" ), NUtilities::NConstants::percentN2AtSurface() ),   //
                         std::make_pair( tr( "Other" ), TOptionalDouble() )   //
                     } ) ) ),   //
-            std::make_shared< CVariableInfo >( EVariableType::eDepthToSingleATMConst ),   //
         } );
 
     return retVal;
 }
 
-std::optional< QString > CCalculator::myBaseFormula( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     QStringList formulas;
     formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
     formulas << R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__";
-    return NUtilities::joinFormulas( formulas );
+    return formulas;
 }
 
-std::optional< QString > CCalculator::getFormulaForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "partialPressureAtDepth" )
     {
-        return getBaseFormula();
+        return myBaseFormulas( imperial, seaWater );
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QString( R"__(<depth> = <%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
+        return QStringList() << QString( R"__(<depth> = <%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
     }
     else if ( unsetVar->name() == "partialPressureAtSurface" )
     {
         QStringList formulas;
         formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
         formulas << R"__(<partialPressureAtSurface> = \frac{<partialPressureAtDepth>}{<ata_value>})__";
-        return NUtilities::joinFormulas( formulas );
+        return formulas;
     }
 
     return {};
