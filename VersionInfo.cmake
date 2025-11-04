@@ -33,7 +33,7 @@ SET( PRODUCT_HOMEPAGE "github.com/towel42-com/SCUBA-Calculator" )
 SET( EMAIL            "support@towel42.com" )
 
 CreateVersion( ${CMAKE_SOURCE_DIR} 
-	MAJOR ${MAJOR_VERSION} 
+    MAJOR ${MAJOR_VERSION} 
     MINOR ${MINOR_VERSION} 
     PATCH ${GIT_VERSION_INFO_REV}
     DIFF  ${GIT_VERSION_INFO_DIFF}
