@@ -31,8 +31,8 @@ namespace NUtilities
     {
         SFormula();
         SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePairs );
-        SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
-        SFormula( const QString &name, const QStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
+        SFormula( const QString &name, const TFormulaString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
+        SFormula( const QString &name, const TFormulaStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
         virtual ~SFormula() = default;
 
         virtual bool operator<( const SFormula &rhs ) const;
@@ -40,16 +40,17 @@ namespace NUtilities
 
         virtual bool imperial() const { return fImperial; }
         virtual bool seaWater() const { return fSeaWater; }
-        virtual QString formula() const { return fFormula; }
-        virtual QString cleanedFormula() const;
+        virtual QString formula() const;
+        virtual TFormulaStringList formulas() const { return fFormulas; }
+        virtual TFormulaStringList cleanedFormulas() const;
 
-        virtual void setFormula( const QString &formula ) { fFormula = formula; }
+        virtual void setFormula( const QString &formula );
         virtual bool operator==( const SFormula &rhs ) const;
         virtual bool operator!=( const SFormula &rhs ) const { return !operator==( rhs ); }
 
     private:
         QString fName;
-        QString fFormula;
+        TFormulaStringList fFormulas;
         bool fImperial{ false };
         bool fSeaWater{ false };
         TOptionalVariableValuePairVector fNameValuePairs;

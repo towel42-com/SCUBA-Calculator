@@ -21,8 +21,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -52,13 +52,12 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << QString( R"__(<buoyancy>=<weightOfObject> - [<volumeDisplaced> \times <%1>])__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) );
-    ;
+    return TFormulaStringList( { TFormulaString( R"__(<buoyancy>)__", QString( R"__(<weightOfObject> - [<volumeDisplaced> \times <%1>])__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "buoyancy" )
     {
@@ -66,11 +65,11 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     }
     if ( unsetVar->name() == "weightOfObject" )
     {
-        return QStringList() << QString( R"__(<weightOfObject>=<buoyancy> + <volumeDisplaced> \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) );
+        return TFormulaStringList( { TFormulaString( R"__(<weightOfObject>)__", QString( R"__(<buoyancy> + <volumeDisplaced> \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
     }
     if ( unsetVar->name() == "volumeDisplaced" )
     {
-        return QStringList() << QString( R"__(<volumeDisplaced>=(<weightOfObject> - <buoyancy>) \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) );
+        return TFormulaStringList( { TFormulaString( R"__(<volumeDisplaced>)__", QString( R"__((<weightOfObject> - <buoyancy>) \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
     }
     return {};
 }

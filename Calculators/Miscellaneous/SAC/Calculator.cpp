@@ -41,8 +41,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
@@ -93,20 +93,18 @@ TVariableInfoList CCalculator::getMyVariables() const
         rmv->setValue( NUtilities::NConversions::sacToRMV( sacValue, tankVolume->value(), tankPressure->value() ) );
     }
 */
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    QStringList formulas;
-
-    formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
-    formulas << R"__(<psiPerMin> = \frac{<pressureUsed>}{<time>})__";
-    formulas << R"__(<sac> = \frac{<psiPerMin>}{<ata>})__";
-    formulas << NUtilities::NConversions::sacToRMVFormula( "sac", "rmv", "tankVolume", "tankPressure" );
-    formulas << R"__(<gasConsumed> = <pressureUsed> \times \frac{<tankVolume>}{<tankPressure>})__";
+    TFormulaStringList formulas = { NUtilities::NConversions::depthToATAFormula( "ata", "depth" ) };
+    formulas.emplace_back( R"__(<psiPerMin>)__", QString( R"__(\frac{<pressureUsed>}{<time>})__" ) );
+    formulas.emplace_back( R"__(<sac>)__", QString( R"__(\frac{<psiPerMin>}{<ata>})__" ) );
+    formulas.emplace_back( NUtilities::NConversions::sacToRMVFormula( "sac", "rmv", "tankVolume", "tankPressure" ) );
+    formulas.emplace_back( R"__(<gasConsumed>)__", QString( R"__(<pressureUsed> \times \frac{<tankVolume>}{<tankPressure>})__" ) );
 
     return formulas;
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     auto depth = getVariable( "depth" );
     auto time = getVariable( "time" );
@@ -117,14 +115,12 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     auto rmv = getVariable( "rmv" );
     auto gasConsumed = getVariable( "gasConsumed" );
 
-    QStringList formulas;
-
     if ( ( unsetVar == sac ) || ( unsetVar == rmv ) )
     {
         return myBaseFormulas( imperial, seaWater );
     }
 
-    return formulas;
+    return {};
 }
 
 void CCalculator::computeValueForVar( TVariableInfo & /*unsetVar*/ )

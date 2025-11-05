@@ -112,11 +112,11 @@ protected:
     virtual QString myCalculatorName() const;
     virtual QString myReversedCalculatorName() const;
 
-    virtual QStringList getBaseFormulas() const final;   // for descriptive purposes
-    virtual std::optional< QStringList > getCurrentFormulas() const final;   // returns the current formula in use
+    virtual TFormulaStringList getBaseFormulas() const final;   // for descriptive purposes
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
-    virtual std::optional< QStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< TFormulaStringList > getCurrentFormulas() const final;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
     TVariableInfoList unsetVariables() const;
@@ -128,8 +128,8 @@ protected:
 
     virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType, bool finished ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
-    virtual QString finalizeFormula( bool imperial, bool seaWater, const QStringList &formulas, EFormulaType formulaType ) const final;
-    virtual QString finalizeFormula( const QStringList &formulas, EFormulaType formulaType ) const final;
+    virtual QString finalizeFormula( bool imperial, bool seaWater, const TFormulaStringList &formulas, EFormulaType formulaType ) const final;
+    virtual QString finalizeFormula( const TFormulaStringList &formulas, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const;
@@ -147,8 +147,8 @@ protected:
 
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
     virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;

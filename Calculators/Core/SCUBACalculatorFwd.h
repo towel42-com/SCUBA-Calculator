@@ -36,6 +36,7 @@
 #include <optional>
 #include <functional>
 #include <vector>
+#include <list>
 #include <memory>
 #include <unordered_set>
 #include <tuple>
@@ -154,6 +155,9 @@ using TOptionalNameValuePair = std::optional< TNameValuePair >;
 class CGeneratedFormulaData;
 using TGeneratedFormulaData = std::shared_ptr< CGeneratedFormulaData >;
 using TFormulaMap = std::unordered_map< CSCUBACalculator *, TGeneratedFormulaData >;
+
+using TFormulaString = std::pair< QString, QString >;
+using TFormulaStringList = std::list< TFormulaString >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
 

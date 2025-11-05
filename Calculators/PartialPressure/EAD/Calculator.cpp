@@ -21,8 +21,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -52,12 +52,12 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << QString( R"__(<ead> = [(\frac{<fn2>}{<%2>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName );
+    return TFormulaStringList( { TFormulaString( R"__(<ead>)__", QString( R"__([(\frac{<fn2>}{<%2>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "ead" )
     {
@@ -65,11 +65,11 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     }
     else if ( unsetVar->name() == "fn2" )
     {
-        return QStringList() << QString( R"__(<fn2> = \frac{[<%2> \times (<ead>+<%1>)]}{(<depth>+<%1>)})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<fn2>)__", QString( R"__(\frac{[<%2> \times (<ead>+<%1>)]}{(<depth>+<%1>)})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName ) ) } );
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QStringList() << QString( R"__(<depth> = [\frac{<ead>+<%1>}{\frac{<fn2>}{<%2>}}]-<%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<depth>)__", QString( R"__([\frac{<ead>+<%1>}{\frac{<fn2>}{<%2>}}]-<%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName ) ) } );
     }
     return {};
 }

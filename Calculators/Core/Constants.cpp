@@ -369,6 +369,8 @@ namespace NUtilities
                     return NUtilities::NConstants::kgsPerLbs( true, true );
                 case EVariableType::eFreshWaterToSeaWaterConst:
                     return NUtilities::NConstants::freshWaterToSeaWater( imperial, true, true );
+                case EVariableType::eSeaWaterToFreshWaterConst:
+                    return NUtilities::NConstants::seaWaterToFreshWater( imperial, true, true );
                 case EVariableType::ePSIToBarConst:
                     return NUtilities::NConstants::psiToBar( true, true );
                 case EVariableType::eBarToPSIConst:

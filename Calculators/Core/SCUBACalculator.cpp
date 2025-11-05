@@ -36,12 +36,12 @@ QString CSCUBACalculator::myReversedCalculatorName() const
     return {};
 }
 
-std::optional< QStringList > CSCUBACalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CSCUBACalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return {};
 }
 
-QStringList CSCUBACalculator::getBaseFormulas() const
+TFormulaStringList CSCUBACalculator::getBaseFormulas() const
 {
     auto retVal = ( isReversed() ) ? myReversedBaseFormulas( imperial(), seaWater() ) : myBaseFormulas( imperial(), seaWater() );
     if ( retVal.has_value() )
@@ -315,7 +315,7 @@ TFormulaList CSCUBACalculator::getFormulaList() const
 
     for ( auto &&currFormula : allFormulas )
     {
-        auto formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), { currFormula->formula() }, EFormulaType::eBaseFormula );
+        auto formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), currFormula->formulas(), EFormulaType::eBaseFormula );
         auto pos = existingFormulas.find( formula );
         if ( pos == existingFormulas.end() )
         {
@@ -340,12 +340,12 @@ TFormulaList CSCUBACalculator::getFormulaList() const
                 var->setValue( currValue );
             }
 
-            formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), { currFormula->formula() }, EFormulaType::eCurrentValueFormula );
+            formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), currFormula->formulas(), EFormulaType::eCurrentValueFormula );
             auto pos = existingFormulas.find( formula );
             if ( pos == existingFormulas.end() )
             {
                 auto newFormula = std::make_shared< NUtilities::SFormula >( *currFormula, currValues );
-                newFormula->setFormula( formula );
+                newFormula->setFormula( { formula } );
                 existingFormulas.insert( formula );
                 retVal.emplace_back( newFormula );
             }
@@ -395,7 +395,7 @@ TFormulaList CSCUBACalculator::getNamedFormulas() const
                     continue;
 
                 auto currFormula = getFormulasForVar( ii, imperial, seaWater );
-                if ( !currFormula.has_value() || currFormula.value().isEmpty() )
+                if ( !currFormula.has_value() || currFormula.value().empty() )
                     continue;
 
                 namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( calculatorName() + "-" + ii->name(), currFormula.value(), imperial, seaWater ) );
@@ -593,7 +593,7 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
 }
 
-std::optional< QStringList > CSCUBACalculator::getCurrentFormulas() const
+std::optional< TFormulaStringList > CSCUBACalculator::getCurrentFormulas() const
 {
     if ( allVariablesUnset() )
         return getBaseFormulas();
@@ -643,7 +643,7 @@ TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
     return unset.front();
 }
 
-std::optional< QStringList > CSCUBACalculator::getFormulasForVar( const TConstVariableInfo &unsetVar ) const
+std::optional< TFormulaStringList > CSCUBACalculator::getFormulasForVar( const TConstVariableInfo &unsetVar ) const
 {
     return getFormulasForVar( unsetVar, imperial(), seaWater() );
 }
@@ -659,7 +659,7 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
     }
 }
 
-QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const QStringList &formulas, EFormulaType formulaType ) const
+QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const TFormulaStringList &formulas, EFormulaType formulaType ) const
 {
     auto tmp = NUtilities::joinFormulas( formulas );
     if ( !tmp.has_value() )
@@ -696,7 +696,8 @@ QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const Q
     return retVal;
 }
 
-QString CSCUBACalculator::finalizeFormula( const QStringList &formulas, EFormulaType formulaType ) const
+QString CSCUBACalculator::finalizeFormula( const TFormulaStringList &formulas, EFormulaType formulaType ) const
 {
     return finalizeFormula( imperial(), seaWater(), formulas, formulaType );
 }
+

@@ -19,10 +19,10 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -40,7 +40,6 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Pressure and Volume Conversions" ) };
 }
 
-
 TVariableInfoList CCalculator::getMyVariables() const
 {
     return   //
@@ -51,12 +50,12 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << R"__(<relChange> = \frac{<p2>}{<p1>})__";
+    return TFormulaStringList( { TFormulaString( "<relChange>", QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "relChange" )
     {
@@ -64,16 +63,16 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     }
     else if ( unsetVar->name() == "p1" )
     {
-        return QStringList() << R"__(<p1> = \frac{<p2>}{<relChange>})__";
+        TFormulaStringList( { TFormulaString( "<p1>", QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
     }
     else if ( unsetVar->name() == "p2" )
     {
-        return QStringList() << R"__(<p2> = <p2> \times <relChange>)__";
+        TFormulaStringList( { TFormulaString( "<p2>", QString( R"__(<p2> \times <relChange>)__" ) ) } );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto relChange = getVariable( "relChange" );
     auto p1 = getVariable( "p1" );

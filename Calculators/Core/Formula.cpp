@@ -8,24 +8,22 @@
 
 namespace NUtilities
 {
-    SFormula::SFormula( const QString &name, const QString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
+    SFormula::SFormula( const QString &name, const TFormulaString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
         fName( name ),
-        fFormula( formula ),
+        fFormulas( { formula } ),
         fImperial( imperial ),
         fSeaWater( seaWater ),
         fNameValuePairs( nameValuePair )
     {
     }
 
-    SFormula::SFormula( const QString &name, const QStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
+    SFormula::SFormula( const QString &name, const TFormulaStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
         fName( name ),
+        fFormulas( formulas ),
         fImperial( imperial ),
         fSeaWater( seaWater ),
         fNameValuePairs( nameValuePair )
     {
-        auto tmp = NUtilities::joinFormulas( formulas );
-        if ( tmp.has_value() )
-            fFormula = tmp.value();
     }
 
     SFormula::SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePair ) :
@@ -65,16 +63,35 @@ namespace NUtilities
         return retVal;
     }
 
-    QString SFormula::cleanedFormula() const
+    QString SFormula::formula() const
     {
-        return NTowel42::cleanupFormula( formula() );
+        auto retVal = NUtilities::joinFormulas( cleanedFormulas() );
+        if ( !retVal.has_value() )
+            return {};
+        return retVal.value();
+    }
+
+    TFormulaStringList SFormula::cleanedFormulas() const
+    {
+        auto retVal = this->formulas();
+        for ( auto &&ii : retVal )
+        {
+            ii.first = NTowel42::cleanupFormula( ii.first );
+            ii.second = NTowel42::cleanupFormula( ii.second );
+        }
+        return retVal;
+    }
+
+    void SFormula::setFormula( const QString &formula )
+    {
+        fFormulas.clear(), fFormulas.emplace_back( formula, QString() );
     }
 
     bool SFormula::operator==( const SFormula &rhs ) const
     {
         //if ( fName != rhs.fName )
         //    return false;
-        if ( fFormula != rhs.fFormula )
+        if ( fFormulas != rhs.fFormulas )
             return false;
         if ( fImperial != rhs.fImperial )
             return false;

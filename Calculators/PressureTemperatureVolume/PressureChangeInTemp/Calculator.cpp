@@ -20,10 +20,10 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -75,12 +75,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << QString( R"__(<p2> = [(<t2> + <%1>) \times \frac{<p1> + <%2>}{(<t1> + <%1>}] - <%2>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName );
+    return TFormulaStringList( { TFormulaString( R"__(<p2>)__", QString( R"__([(<t2> + <%1>) \times \frac{<p1> + <%2>}{(<t1> + <%1>}] - <%2>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "p2" )
     {
@@ -90,23 +90,23 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(t2/t1)
-        return QStringList() << QString( R"__(<t2> = [\frac{(<p2> + <%2>) \times (<t1> + <%1>)}{<p1> + <%2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<t2>)__", QString( R"__([\frac{(<p2> + <%2>) \times (<t1> + <%1>)}{<p1> + <%2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "p1" )
     {
         // p1 = p2 * ( t1/t2 );
-        return QStringList() << QString( R"__(<p1> = [(<t1> + <%1>) \times \frac{<p2> + <%2>}{(<t2> + <%1>}] - <%2>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<p1>)__", QString( R"__([(<t1> + <%1>) \times \frac{<p2> + <%2>}{(<t2> + <%1>}] - <%2>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(t1/t2)
-        return QStringList() << QString( R"__(<t1> = [\frac{(<p1> + <%2>) \times (<t2> + <%1>)}{<p2> + <%2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<t1>)__", QString( R"__([\frac{(<p1> + <%2>) \times (<t2> + <%1>)}{<p2> + <%2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ).arg( NUtilities::NConstants::kPressureAtSurfaceConstFieldName ) ) } );
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto p1 = getVariable( "p1" );
     auto t1 = getVariable( "t1" );

@@ -20,8 +20,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -52,19 +52,19 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << QString( R"__(<end> = [(<depth> + <%1>) \times ( 1.0 - <fhe> ) ] - <%1> )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
+    return TFormulaStringList( { TFormulaString( R"__(<end>)__", QString( R"__([(<depth> + <%1>) \times ( 1.0 - <fhe> ) ] - <%1> )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar->name() == "end" )
         return myBaseFormulas( false, false );
     else if ( unsetVar->name() == "fhe" )
-        return QStringList() << QString( R"__(<fhe> =1.0 - \frac{<end> + %1}{<depth> + <%1>} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
+        return TFormulaStringList( { TFormulaString( R"__(<fhe>)__", QString( R"__(1.0 - \frac{<end> + %1}{<depth> + <%1>} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     else if ( unsetVar->name() == "depth" )
-        return QStringList() << QString( R"__(<depth> = \frac{<end> + %1}{1.0 - <fhe>} - <%1>))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) );
+        return TFormulaStringList( { TFormulaString( R"__(<depth>)__", QString( R"__(\frac{<end> + %1}{1.0 - <fhe>} - <%1>))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     return {};
 }
 

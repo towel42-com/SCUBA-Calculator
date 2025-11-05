@@ -19,8 +19,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -60,44 +60,44 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    QStringList formulas;
+    TFormulaStringList formulas;
 
-    formulas << QString( R"__(<o2_p> = \frac{(<p2> \times (<mix2> - <%1>) ) - ( <p1> \times ( <mix1> - <%1> ) )}{<%2>} - <p1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
-    formulas << QString( R"__(<o2_t> = \frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) );
-    formulas << QString( R"__(<air_t> = \frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) );
+    formulas.emplace_back( R"__(<o2_p>)__", QString( R"__(\frac{(<p2> \times (<mix2> - <%1>) ) - ( <p1> \times ( <mix1> - <%1> ) )}{<%2>} - <p1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) );
+    formulas.emplace_back( R"__(<o2_t>)__", QString( R"__(\frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) ) );
+    formulas.emplace_back( R"__(<air_t>)__", QString( R"__(\frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) ) );
 
     return formulas;
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
-    QStringList formulas;
+    TFormulaStringList formulas;
     if ( unsetVar->name() == "o2_p" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
     else if ( unsetVar->name() == "mix1" )
     {
-        formulas << QString( R"__(<mix1> = \frac{( <p2> \times (<mix2> - <%1>) ) - ((<o2_p> + <p1>) \times <%2>)}{<p1>} + <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+        formulas.emplace_back( R"__(<mix1>)__", QString( R"__(\frac{( <p2> \times (<mix2> - <%1>) ) - ((<o2_p> + <p1>) \times <%2>)}{<p1>} + <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) );
     }
     else if ( unsetVar->name() == "p1" )
     {
-        formulas << QString( R"__(<p1> = \frac{<p2>(<mix2> - <%1>) - <%2> \times <o2_p>}{(<mix1> - <%1>) + <%2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+        formulas.emplace_back( R"__(<p1>)__", QString( R"__(\frac{<p2>(<mix2> - <%1>) - <%2> \times <o2_p>}{(<mix1> - <%1>) + <%2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) );
     }
     else if ( unsetVar->name() == "mix2" )
     {
-        formulas << QString( R"__(<mix2> = \frac{((<o2_p> + <p1>) \times <%2>) + ( <p1> \times ( <mix1> - <%1> ) )}{<p2>} + <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+        formulas.emplace_back( R"__(<mix2>)__", QString( R"__(\frac{((<o2_p> + <p1>) \times <%2>) + ( <p1> \times ( <mix1> - <%1> ) )}{<p2>} + <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) );
     }
     else if ( unsetVar->name() == "p2" )
     {
-        formulas << QString( R"__(<p2> = \frac{((<o2_p> + <p1>) \times <%2>) + ( <p1> \times ( <mix1> - <%1> ) )}{<mix2> - <%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) );
+        formulas.emplace_back( R"__(<p2>)__", QString( R"__(\frac{((<o2_p> + <p1>) \times <%2>) + ( <p1> \times ( <mix1> - <%1> ) )}{<mix2> - <%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) );
     }
-    if ( !formulas.isEmpty() )
+    if ( !formulas.empty() )
     {
-        formulas << QString( R"__(<o2_t> = \frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) );
-        formulas << QString( R"__(<air_t> = \frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) );
+        formulas.emplace_back( R"__(<o2_t>)__", QString( R"__(\frac{<o2_p> - <p1>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) ) );
+        formulas.emplace_back( R"__(<air_t>)__", QString( R"__(\frac{<p2>-<o2_p>}{<%1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) ) );
     }
     return formulas;
 }

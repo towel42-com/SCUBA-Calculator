@@ -417,7 +417,7 @@ void CMainWindow::setMathJaxWidgetsVisible( bool visible )
 
 void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType, bool finished )
 {
-    auto regEx = QRegularExpression( R"__(\<[A-Za-z]+\>)__" );
+    auto regEx = QRegularExpression( R"__(\<([A-Za-z]+)|(%\d+)\>)__" );
     Q_ASSERT( !regEx.match( formula ).hasMatch() );
 
     auto widget = mathJaxForFormulaType( formulaType );
@@ -577,9 +577,6 @@ std::size_t CMainWindow::generateSVGs( QProgressDialog *progress, const TFormula
             QJsonObject obj;
             obj.insert( "name", QJsonValue::fromVariant( ii->name() ) );
             obj.insert( "formula", QJsonValue::fromVariant( ii->formula() ) );
-            auto cleanedFormula = ii->cleanedFormula();
-            if ( cleanedFormula != ii->formula() )
-                obj.insert( "cleanedFormula", QJsonValue::fromVariant( cleanedFormula ) );
 
             auto label = QString( "Generating SVG for formula:<br/>%1<br/>Rendering Formula %2 of %3<br/>Current Formula: %4 of %5<br/>Number of Errors: %6" ).arg( ii->name() ).arg( progress->value() ).arg( numToBeRendered ).arg( ++formulaNum ).arg( totalFormulas ).arg( numErrors );
             progress->setLabelText( label );

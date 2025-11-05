@@ -21,8 +21,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -64,15 +64,14 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    QStringList formulas;
-    formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
-    formulas << R"__(<partialPressureAtDepth> = <ata_value> \times <partialPressureAtSurface>)__";
+    auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( "ata", "depth" ) } );
+    formulas.emplace_back( R"__(<partialPressureAtDepth>)__", QString( R"__(<ata_value> \times <partialPressureAtSurface>)__" ) );
     return formulas;
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "partialPressureAtDepth" )
     {
@@ -80,13 +79,12 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QStringList() << QString( R"__(<depth> = <%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<depth>)__", QString( R"__(<%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "partialPressureAtSurface" )
     {
-        QStringList formulas;
-        formulas << NUtilities::NConversions::depthToATAFormula( "ata", "depth" );
-        formulas << R"__(<partialPressureAtSurface> = \frac{<partialPressureAtDepth>}{<ata_value>})__";
+        auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( "ata", "depth" ) } );
+        formulas.emplace_back( R"__(<partialPressureAtSurface>)__", R"__(\frac{< partialPressureAtDepth > } {< ata_value > })__" );
         return formulas;
     }
 

@@ -21,8 +21,8 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -55,18 +55,17 @@ TVariableInfoList CCalculator::getMyVariables() const
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool imperial, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool imperial, bool /*seaWater*/ ) const
 {
-    QStringList formulas;
+    auto formulas = TFormulaStringList( { NUtilities::NConversions::surfacePressureAtAltitudeFormula( imperial, "surfacePressure", "altitude" ) } );
 
-    formulas << NUtilities::NConversions::surfacePressureAtAltitudeFormula( imperial, "surfacePressure", "altitude" );
-    formulas << QString( R"__(<theoreticalDepth> = [(<depth> + <%1>) * \frac{<%2>}{<surfacePressure>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) );
-    formulas << QString( R"__(<safetyStop> = [(<%3> + <%1>) * \frac{<%2>}{<surfacePressure>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eSafetyStopDepthConst ) );
+    formulas.emplace_back( R"__(<theoreticalDepth>)__", QString( R"__([(<depth> + <%1>) * \frac{<%2>}{<surfacePressure>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) );
+    formulas.emplace_back( R"__(<safetyStop>)__", QString( R"__([(<%3> + <%1>) * \frac{<%2>}{<surfacePressure>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eSafetyStopDepthConst ) ) );
 
     return formulas;
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "theoreticalDepth" )
     {
@@ -74,11 +73,11 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     }
     else if ( unsetVar->name() == "altitude" )
     {
-        return QStringList() << NUtilities::NConversions::altitudeForSurfacePressureFormula( imperial, "surfacePressure", "altitude" );
+        return TFormulaStringList( { NUtilities::NConversions::altitudeForSurfacePressureFormula( imperial, "surfacePressure", "altitude" ) } );
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return QStringList() << QString( R"__(<depth> = [(<theoreticalDepth> + <%1>) \times \frac{<surfacePressure>}{<%2>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) );
+        return TFormulaStringList( { TFormulaString( R"__(<depth>)__", QString( R"__([(<theoreticalDepth> + <%1>) \times \frac{<surfacePressure>}{<%2>}] - <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
     }
     return {};
 }

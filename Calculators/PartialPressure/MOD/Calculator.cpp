@@ -22,8 +22,8 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
@@ -69,12 +69,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << QString( R"__(<mod>=[(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
+    return TFormulaStringList( { TFormulaString( R"__(<mod>)__", QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "mod" )
     {
@@ -82,11 +82,11 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     }
     else if ( unsetVar->name() == "maxPO2" )
     {
-        return QStringList() << QString( R"__(<maxPO2>=<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<maxPO2>)__", QString( R"__(<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "fo2" )
     {
-        return QStringList() << QString( R"__(<fo2>=\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<fo2>)__", QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
     }
 
     return {};

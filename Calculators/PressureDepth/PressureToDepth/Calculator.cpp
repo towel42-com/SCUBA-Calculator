@@ -21,9 +21,9 @@ public:
 
     virtual TVariableInfoList getMyVariables() const override;
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
     virtual bool isWaterTypeBased() const override { return true; }
@@ -34,7 +34,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-std::pair< QString,QString > CCalculator::fromToLabels() const
+std::pair< QString, QString > CCalculator::fromToLabels() const
 {
     return { tr( "Pressure" ), tr( "Depth" ) };
 }
@@ -53,17 +53,17 @@ TVariableInfoList CCalculator::getMyVariables() const
         };
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << NUtilities::NConversions::ataToDepthFormula( "pressure", "depth" );
+    return TFormulaStringList( { NUtilities::NConversions::ataToDepthFormula( "pressure", "depth" ) } );
 }
 
-std::optional< QStringList > CCalculator::myReversedBaseFormulas( bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << NUtilities::NConversions::depthToATAFormula( "pressure", "depth" );
+    return TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( "pressure", "depth" ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "depth" )
     {

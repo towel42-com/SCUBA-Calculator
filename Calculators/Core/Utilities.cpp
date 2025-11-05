@@ -11,9 +11,9 @@ namespace NUtilities
         return retVal;
     }
 
-    QString ratioFormula( const QString &resultantFieldName, const QString &numeratorFieldName, const QString &denominatorFieldName )
+    TFormulaString ratioFormula( const QString &resultantFieldName, const QString &numeratorFieldName, const QString &denominatorFieldName )
     {
-        return QString( R"__(<%1>=%2)__" ).arg( resultantFieldName ).arg( ratio( "<" + numeratorFieldName + ">", "<" + denominatorFieldName + ">", true ) );
+        return { QString( "<%1>" ).arg( resultantFieldName ), ratio( "<" + numeratorFieldName + ">", "<" + denominatorFieldName + ">", true ) };
     }
 
     QString ratio( double value, const QString &numerator, const QString &denominator, bool tex, std::optional< int > numDecimal /*= {}*/ )
@@ -203,10 +203,14 @@ namespace NUtilities
         return retVal;
     }
 
-    std::optional< QString > joinFormulas( const QStringList &formulas )
+    std::optional< QString > joinFormulas( const TFormulaStringList &formulaStrings )
     {
-        if ( formulas.isEmpty() )
+        if ( formulaStrings.empty() )
             return {};
+
+        QStringList formulas;
+        for ( auto &&ii : formulaStrings )
+            formulas << NUtilities::createEquation( ii );
 
         auto retVal = formulas.join( R"( \newline )" );
         if ( formulas.size() > 1 )
@@ -216,4 +220,17 @@ namespace NUtilities
         }
         return retVal;
     }
+
+    QString createEquation( const TFormulaString &formula )
+    {
+        if ( !formula.first.isEmpty() && !formula.second.isEmpty() )
+            return QString( "%1 = %2" ).arg( formula.first ).arg( formula.second );
+        if ( !formula.first.isEmpty() && formula.second.isEmpty() )
+            return QString( "%1" ).arg( formula.first );
+        if ( formula.first.isEmpty() && !formula.second.isEmpty() )
+            return QString( "%1" ).arg( formula.second );
+        //if ( formula.first.isEmpty() && formula.second.isEmpty() )
+        return {};
+    }
+
 }

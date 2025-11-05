@@ -1,5 +1,6 @@
 #include "GeneratedFormulaData.h"
 #include "Formula.h"
+#include "Utilities.h"
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -56,15 +57,19 @@ bool CGeneratedFormulaData::operator==( const CGeneratedFormulaData &rhs ) const
 
 void CGeneratedFormulaData::addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated )
 {
-    auto tex = formula->formula();
-    auto pos = fAllFormulas.find( tex );
+    auto tex = formula->formulas();
+    auto formulaString = NUtilities::joinFormulas( tex );
+    if ( !formulaString.has_value() )
+        return;
+
+    auto pos = fAllFormulas.find( formulaString.value() );
     if ( pos != fAllFormulas.end() )
         return;
 
-    fAllFormulas.insert( tex );
+    fAllFormulas.insert( formulaString.value() );
     fByNameList.emplace_back( formula );
     fNumTotal++;
-    if ( !beenCreated( formula->formula() ) )
+    if ( !beenCreated( formulaString.value() ) )
     {
         fNumToRender++;
     }

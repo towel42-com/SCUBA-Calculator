@@ -145,73 +145,75 @@ namespace NUtilities
         CALCULATORS_EXPORT double psiToBar( double psi );
         CALCULATORS_EXPORT double barToPSI( double bar );
 
-        CALCULATORS_EXPORT QString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName );
-        CALCULATORS_EXPORT QString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName );
+        CALCULATORS_EXPORT TFormulaString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName );
+        CALCULATORS_EXPORT TFormulaString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName );
 
         CALCULATORS_EXPORT double depthToATA( bool imperial, bool seaWater, double depth );
         CALCULATORS_EXPORT double ataToDepth( bool imperial, bool seaWater, double pressure );
 
-        CALCULATORS_EXPORT QString depthToATAFormula( const QString &ataFieldName, const QString &depthFieldName );
-        CALCULATORS_EXPORT QString ataToDepthFormula( const QString &ataFieldName, const QString &depthFieldName );
+        CALCULATORS_EXPORT TFormulaString depthToATAFormula( const QString &ataFieldName, const QString &depthFieldName );
+        CALCULATORS_EXPORT TFormulaString ataToDepthFormula( const QString &ataFieldName, const QString &depthFieldName );
 
         CALCULATORS_EXPORT double depthFreshwaterToSeawater( double depthFW );
         CALCULATORS_EXPORT double depthSeawaterToFreshwater( double depthSW );
 
-        CALCULATORS_EXPORT QString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName );
-        CALCULATORS_EXPORT QString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName );
+        CALCULATORS_EXPORT TFormulaString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName );
+        CALCULATORS_EXPORT TFormulaString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName );
 
         CALCULATORS_EXPORT double feetToMeters( double feet );
         CALCULATORS_EXPORT double metersToFeet( double meters );
 
-        CALCULATORS_EXPORT QString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName );
-        CALCULATORS_EXPORT QString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName );
+        CALCULATORS_EXPORT TFormulaString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName );
+        CALCULATORS_EXPORT TFormulaString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName );
 
         CALCULATORS_EXPORT double degreeChangeForPressureChange( bool imperial, double temperature );
         CALCULATORS_EXPORT double pressureChangeForDegreeChange( bool imperial, double pressure );
 
-        CALCULATORS_EXPORT QString degreeChangeForPressureChangeFormula( const QString &tempFieldName, const QString &pressureFieldName );
-        CALCULATORS_EXPORT QString pressureChangeForDegreeChangeFormula( const QString &tempFieldName, const QString &pressureFieldName );
+        CALCULATORS_EXPORT TFormulaString degreeChangeForPressureChangeFormula( const QString &tempFieldName, const QString &pressureFieldName );
+        CALCULATORS_EXPORT TFormulaString pressureChangeForDegreeChangeFormula( const QString &tempFieldName, const QString &pressureFieldName );
 
         CALCULATORS_EXPORT double lbsToKGs( double lbs );
         CALCULATORS_EXPORT double kgsToLbs( double kgs );
 
-        CALCULATORS_EXPORT QString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName );
-        CALCULATORS_EXPORT QString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName );
+        CALCULATORS_EXPORT TFormulaString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName );
+        CALCULATORS_EXPORT TFormulaString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName );
 
         CALCULATORS_EXPORT double farenheightToCelsius( double temp );
         CALCULATORS_EXPORT double celsiusToFarenheight( double temp );
 
-        CALCULATORS_EXPORT QString farenheightToCelsiusFormula( const std::optional< QString > &celsiusFieldName, const QString &farenheightFieldName );
-        CALCULATORS_EXPORT QString celsiusToFarenheightFormula( const QString &celsiusFieldName, const std::optional< QString > &farenheightFieldName );
-
-        CALCULATORS_EXPORT QString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName );
-        CALCULATORS_EXPORT QString litersToCubicFeetFormula( const QString &cubicFeetFieldName, const QString &litersFieldName );
+        CALCULATORS_EXPORT TFormulaString farenheightToCelsiusFormula( const QString &celsiusFieldName, const QString &farenheightFieldName );
+        CALCULATORS_EXPORT TFormulaString celsiusToFarenheightFormula( const QString &celsiusFieldName, const QString &farenheightFieldName );
 
         CALCULATORS_EXPORT double cubicFeetToLiters( double volume );
         CALCULATORS_EXPORT double litersToCubicFeet( double volume );
+        
+        CALCULATORS_EXPORT TFormulaString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName );
+        CALCULATORS_EXPORT TFormulaString litersToCubicFeetFormula( const QString &cubicFeetFieldName, const QString &litersFieldName );
+
 
         CALCULATORS_EXPORT double sacToRMV( double sac, double volume, double pressure );
         CALCULATORS_EXPORT double rmvToSAC( double rmv, double volume, double pressure );
-        CALCULATORS_EXPORT QString sacToRMVFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName );
-        CALCULATORS_EXPORT QString rmvToSACFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName );
+        CALCULATORS_EXPORT TFormulaString sacToRMVFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName );
+        CALCULATORS_EXPORT TFormulaString rmvToSACFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName );
 
         CALCULATORS_EXPORT double surfacePressureAtAltitude( bool imperial, double altitude );
-        CALCULATORS_EXPORT QString surfacePressureAtAltitudeFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName );
+        CALCULATORS_EXPORT TFormulaString surfacePressureAtAltitudeFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName );
 
         CALCULATORS_EXPORT double altitudeForSurfacePressure( bool imperial, double surfacePressure );
-        CALCULATORS_EXPORT QString altitudeForSurfacePressureFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName );
+        CALCULATORS_EXPORT TFormulaString altitudeForSurfacePressureFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName );
 
         namespace NCaloriesComputer
         {
             CALCULATORS_EXPORT double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
             CALCULATORS_EXPORT double computeDuration( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier );
 
-            CALCULATORS_EXPORT QString computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
-            CALCULATORS_EXPORT QString computeDurationFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
+            CALCULATORS_EXPORT TFormulaStringList computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
+            CALCULATORS_EXPORT TFormulaStringList computeDurationFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName );
         }
     }
 
-    CALCULATORS_EXPORT std::optional< QString > joinFormulas( const QStringList &formulas );
+    CALCULATORS_EXPORT std::optional< QString > joinFormulas( const TFormulaStringList &formulas );
+    CALCULATORS_EXPORT QString createEquation( const TFormulaString &formula );
     CALCULATORS_EXPORT QString descForType( EVariableType type );
     CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
     CALCULATORS_EXPORT bool isConstantVariable( EVariableType type );
@@ -220,7 +222,7 @@ namespace NUtilities
     CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
 
     CALCULATORS_EXPORT QString ratio( const QString &numerator, const QString &denominator, bool tex );
-    CALCULATORS_EXPORT QString ratioFormula( const QString &resultantFieldName, const QString &numeratorFieldName, const QString &denominatorFieldName );
+    CALCULATORS_EXPORT TFormulaString ratioFormula( const QString &resultantFieldName, const QString &numeratorFieldName, const QString &denominatorFieldName );
     CALCULATORS_EXPORT QString ratio( double value, const QString &numerator, const QString &denominator, bool tex, std::optional< int > numDecimal = {} );
 };
 

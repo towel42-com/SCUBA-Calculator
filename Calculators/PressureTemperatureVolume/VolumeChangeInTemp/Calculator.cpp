@@ -20,8 +20,8 @@ public:
     virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< QStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< QStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
 };
@@ -75,12 +75,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< QStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return QStringList() << QString( R"__(<v2> = <v1> \times \frac{<t2>}{<t1>})__" );
+    return TFormulaStringList( { TFormulaString( R"__(<v2>)__", QString( R"__(<v1> \times \frac{<t2>}{<t1>})__" ) ) } );
 }
 
-std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar->name() == "v2" )
     {
@@ -90,17 +90,18 @@ std::optional< QStringList > CCalculator::getFormulasForVar( const TConstVariabl
     else if ( unsetVar->name() == "v1" )
     {
         // V1 = V2 * ( t1/t2 );
-        return QStringList() << QString( R"__(<v1> = <v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<v1>)__", QString( R"__(<v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) )
+    } );
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(V1/v2)
-        return QStringList() << QString( R"__(<t1> = [(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<t1>)__", QString( R"__([(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(V2/v1)
-        return QStringList() << QString( R"__(<t2> = [(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName );
+        return TFormulaStringList( { TFormulaString( R"__(<t2>)__", QString( R"__([(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
     }
 
     return {};
