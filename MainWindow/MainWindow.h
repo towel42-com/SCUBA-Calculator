@@ -21,15 +21,6 @@ namespace NTowel42
     class CMathJaxQt6GroupBox;
 }
 
-struct SFormulas
-{
-    std::optional< QString > formula( EFormulaType formulaType ) const;
-    void setFormula( const QString &formula, EFormulaType formulaType );
-    std::optional< QString > fBaseFormula;
-    std::optional< QString > fCurrFormula;
-    std::optional< QString > fCurrValueFormula;
-};
-
 class CSCUBACalculator;
 class QTreeWidgetItem;
 class CMainWindow : public QMainWindow
@@ -78,15 +69,14 @@ private:
     void loadFormulasForPage( CSCUBACalculatorPage *page );
 
     bool renderSVG( const QString &formula );
-    std::optional< QString > formulaForPage( QWidget *page, EFormulaType formulaType );
+    std::optional< QString > formulaForPage( QWidget *page );
 
     void initMathJaxWidgets();
-    std::optional< QString > formulaForFormulaType( EFormulaType formulaType ) const;
-    NTowel42::CMathJaxQt6GroupBox *mathJaxForFormulaType( EFormulaType formulaType ) const;
+    NTowel42::CMathJaxQt6GroupBox *mathJaxGoupBox() const;
     void setMathJaxWidgetsVisible( bool visible );
 
 private:
-    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType, bool finished );
+    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool finished );
 
     CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;
     CSCUBACalculator *getCalculator( QWidget *page ) const;
@@ -99,7 +89,7 @@ private:
 
     std::unordered_map< QTreeWidgetItem *, CSCUBACalculator * > fCalculators;
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
-    std::unordered_map< QWidget *, SFormulas > fPageToFormulasMap;
+    std::unordered_map< QWidget *, std::optional< QString > > fPageToFormulasMap;
 
     std::shared_ptr< NTowel42::CMathJaxQt6 > fRenderingEngine;
     std::unordered_set< QString > fLoadedCacheFiles;

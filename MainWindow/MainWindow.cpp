@@ -55,26 +55,10 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl->stackedWidget->installEventFilter( this );
 
     connect(
-        fImpl->baseFormulaGroupBox, &NTowel42::CMathJaxQt6GroupBox::sigErrorMessage,
+        fImpl->formulaGroupBox, &NTowel42::CMathJaxQt6GroupBox::sigErrorMessage,
         [ = ]( const QString &msg )
         {
-            fImpl->baseFormulaGroupBox->setMathJaxVisible( false );
-            QMessageBox::critical( this, tr( "Error in MathJax Engine" ), msg );
-        } );
-
-    connect(
-        fImpl->currFormulaGroupBox, &NTowel42::CMathJaxQt6GroupBox::sigErrorMessage,
-        [ = ]( const QString &msg )
-        {
-            fImpl->currFormulaGroupBox->setMathJaxVisible( false );
-            QMessageBox::critical( this, tr( "Error in MathJax Engine" ), msg );
-        } );
-
-    connect(
-        fImpl->currFormulaValueGroupBox, &NTowel42::CMathJaxQt6GroupBox::sigErrorMessage,
-        [ = ]( const QString &msg )
-        {
-            fImpl->currFormulaValueGroupBox->setMathJaxVisible( false );
+            fImpl->formulaGroupBox->setMathJaxVisible( false );
             QMessageBox::critical( this, tr( "Error in MathJax Engine" ), msg );
         } );
 
@@ -95,31 +79,13 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
 void CMainWindow::initMathJaxWidgets()
 {
-    fRenderingEngine = fImpl->baseFormulaGroupBox->engine();
-    fImpl->baseFormulaGroupBox->setTitle( tr( "Base Formula" ) );
+    fRenderingEngine = fImpl->formulaGroupBox->engine();
+    fImpl->formulaGroupBox->setTitle( {} );
 
-    fImpl->baseFormulaGroupBox->slotSetAutoUpdateMinimumParentHeight( true );
-    fImpl->baseFormulaGroupBox->slotHideEmptyOrInvalid( true );
-    fImpl->baseFormulaGroupBox->slotSetAutoSizeToParentWidth( true );
-    fImpl->baseFormulaGroupBox->updateMathJaxWidgetName();
-
-    fImpl->currFormulaGroupBox->setEngine( fRenderingEngine );
-    fImpl->currFormulaGroupBox->setSubordinateTo( fImpl->baseFormulaGroupBox );
-    fImpl->currFormulaGroupBox->setTitle( tr( "Current Formula" ) );
-    fImpl->currFormulaGroupBox->updateMathJaxWidgetName();
-
-    fImpl->currFormulaGroupBox->slotSetAutoUpdateMinimumParentHeight( true );
-    fImpl->currFormulaGroupBox->slotHideEmptyOrInvalid( true );
-    fImpl->currFormulaGroupBox->slotSetAutoSizeToParentWidth( true );
-
-    fImpl->currFormulaValueGroupBox->setEngine( fRenderingEngine );
-    fImpl->currFormulaValueGroupBox->setSubordinateTo( std::list< NTowel42::CMathJaxQt6GroupBox * >( { fImpl->baseFormulaGroupBox, fImpl->currFormulaGroupBox } ) );
-    fImpl->currFormulaValueGroupBox->setTitle( tr( "Formula with Values" ) );
-    fImpl->currFormulaValueGroupBox->updateMathJaxWidgetName();
-
-    fImpl->currFormulaValueGroupBox->slotSetAutoUpdateMinimumParentHeight( true );
-    fImpl->currFormulaValueGroupBox->slotHideEmptyOrInvalid( true );
-    fImpl->currFormulaValueGroupBox->slotSetAutoSizeToParentWidth( true );
+    fImpl->formulaGroupBox->slotSetAutoUpdateMinimumParentHeight( true );
+    fImpl->formulaGroupBox->slotHideEmptyOrInvalid( true );
+    fImpl->formulaGroupBox->slotSetAutoSizeToParentWidth( true );
+    fImpl->formulaGroupBox->updateMathJaxWidgetName();
 }
 
 CMainWindow::~CMainWindow()
@@ -220,9 +186,9 @@ void CMainWindow::addCalculator( CSCUBACalculator *calculator )
     fImpl->stackedWidget->addWidget( page );
     fPageToItem[ page ] = leaf;
 
-    calculator->setUpdateFormulaFunc( [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula, EFormulaType formulaType, bool finished )   //
+    calculator->setUpdateFormulaFunc( [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula, bool finished )   //
                                       {   //
-                                          this->setFormulaForPage( calcPage, formula, formulaType, finished );
+                                          this->setFormulaForPage( calcPage, formula, finished );
                                       } );
 }
 
@@ -410,22 +376,19 @@ QTreeWidgetItem *CMainWindow::getItemForPage( QWidget *page ) const
 
 void CMainWindow::setMathJaxWidgetsVisible( bool visible )
 {
-    fImpl->currFormulaValueGroupBox->setMathJaxVisible( visible );
-    fImpl->currFormulaGroupBox->setMathJaxVisible( visible );
-    fImpl->baseFormulaGroupBox->setMathJaxVisible( visible );
+    fImpl->formulaGroupBox->setMathJaxVisible( visible );
 }
 
-void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, EFormulaType formulaType, bool finished )
+void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool finished )
 {
-    auto regEx = QRegularExpression( R"__(\<([A-Za-z]+)|(%\d+)\>)__" );
-    Q_ASSERT( !regEx.match( formula ).hasMatch() );
+    //Q_ASSERT( !NUtilities::hasVariable( formula ) );
 
-    auto widget = mathJaxForFormulaType( formulaType );
+    auto widget = mathJaxGoupBox();
     Q_ASSERT( widget );
     auto pos = this->fPageToFormulasMap.find( page );
     if ( pos != fPageToFormulasMap.end() )
     {
-        if ( ( *pos ).second.formula( formulaType ) == formula )
+        if ( ( *pos ).second == formula )
         {
             if ( finished )
                 loadFormulasForPage( page );
@@ -434,9 +397,9 @@ void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &
     }
     else
     {
-        pos = fPageToFormulasMap.insert( { page, SFormulas() } ).first;
+        pos = fPageToFormulasMap.insert( { page, std::optional< QString >() } ).first;
     }
-    ( *pos ).second.setFormula( formula, formulaType );
+    ( *pos ).second = formula;
     if ( finished )
         loadFormulasForPage( page );
 }
@@ -449,39 +412,19 @@ void CMainWindow::loadFormulasForPage( CSCUBACalculatorPage *page )
         return;
     }
 
-    for ( auto &&formulaType : { EFormulaType::eBaseFormula, EFormulaType::eCurrentFormula, EFormulaType::eCurrentValueFormula } )
+    for ( auto &&formulaType : { EFormulaType::eBaseFormula /*, EFormulaType::eCurrentFormula, EFormulaType::eCurrentValueFormula*/ } )
     {
-        auto formula = formulaForPage( page, formulaType );
-        mathJaxForFormulaType( formulaType )->setFormula( formula );
+        auto formula = formulaForPage( page );
+        mathJaxGoupBox()->setFormula( formula );
     }
 }
 
-std::optional< QString > CMainWindow::formulaForFormulaType( EFormulaType formulaType ) const
+NTowel42::CMathJaxQt6GroupBox *CMainWindow::mathJaxGoupBox() const
 {
-    auto currPage = currentCalculatorPage();
-    if ( !currPage )
-        return {};
-
-    auto pos = fPageToFormulasMap.find( currPage );
-    if ( pos == fPageToFormulasMap.end() )
-        return {};
-
-    return ( *pos ).second.formula( formulaType );
+    return fImpl->formulaGroupBox;
 }
 
-NTowel42::CMathJaxQt6GroupBox *CMainWindow::mathJaxForFormulaType( EFormulaType formulaType ) const
-{
-    if ( formulaType == EFormulaType::eBaseFormula )
-        return fImpl->baseFormulaGroupBox;
-    else if ( formulaType == EFormulaType::eCurrentFormula )
-        return fImpl->currFormulaGroupBox;
-    else if ( formulaType == EFormulaType::eCurrentValueFormula )
-        return fImpl->currFormulaValueGroupBox;
-
-    return nullptr;
-}
-
-std::optional< QString > CMainWindow::formulaForPage( QWidget *page, EFormulaType formulaType )
+std::optional< QString > CMainWindow::formulaForPage( QWidget *page )
 {
     auto pos = fPageToFormulasMap.find( page );
 
@@ -492,7 +435,7 @@ std::optional< QString > CMainWindow::formulaForPage( QWidget *page, EFormulaTyp
         //qCDebug( ScubaCalculator ).noquote().nospace() << "Page: '" << calculator->calculatorName() << "' has no " << toString( formulaType ) << " formula.";
         return {};
     }
-    auto retVal = ( *pos ).second.formula( formulaType );
+    auto retVal = ( *pos ).second;
     //qCDebug( ScubaCalculator ).noquote().nospace() << "Page: '" << calculator->calculatorName() << "' " << toString( formulaType ) << " formula is '" << retVal << "'";
     return retVal;
 }
@@ -694,58 +637,59 @@ void CMainWindow::saveJSONFiles( QProgressDialog *progress, const QDir &dir, con
 
 void CMainWindow::generateFormulas( bool needUpdatingOnly )
 {
-    loadCache();
+    (void)needUpdatingOnly;
+    //loadCache();
 
-    bool first = true;
-    if ( first )
-    {
-        auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators)";
-        if ( !QDir( defaultDir ).exists() )
-        {
-            QDir( defaultDir ).mkpath( "." );
-        }
-        if ( QDir::current() != QDir( defaultDir ) )
-        {
-            QDir::setCurrent( defaultDir );
-        }
-        first = false;
-    }
+    //bool first = true;
+    //if ( first )
+    //{
+    //    auto defaultDir = R"(C:\Users\scott.TOWEL42\Dropbox\home\sb\SCUBA-Calculator\Calculators)";
+    //    if ( !QDir( defaultDir ).exists() )
+    //    {
+    //        QDir( defaultDir ).mkpath( "." );
+    //    }
+    //    if ( QDir::current() != QDir( defaultDir ) )
+    //    {
+    //        QDir::setCurrent( defaultDir );
+    //    }
+    //    first = false;
+    //}
 
-    auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Target Directory:" ) );
-    if ( dir.isEmpty() )
-        return;
+    //auto dir = QFileDialog::getExistingDirectory( this, tr( "Select Target Directory:" ) );
+    //if ( dir.isEmpty() )
+    //    return;
 
-    TFormulaMap allFormulas;
+    //TFormulaMap allFormulas;
 
-    auto progress = std::make_unique< QProgressDialog >( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)fCalculators.size(), this );
-    progress->setAutoClose( false );
-    progress->setAutoReset( false );
-    progress->setMinimumDuration( 0 );
+    //auto progress = std::make_unique< QProgressDialog >( tr( "Generating SVGs" ), tr( "Abort Generation" ), 0, (int)fCalculators.size(), this );
+    //progress->setAutoClose( false );
+    //progress->setAutoReset( false );
+    //progress->setMinimumDuration( 0 );
 
-    auto &&[ totalFormulas, numToBeRendered ] = computeTotals( progress.get(), allFormulas );
-    if ( progress->wasCanceled() )
-        return;
+    //auto &&[ totalFormulas, numToBeRendered ] = computeTotals( progress.get(), allFormulas );
+    //if ( progress->wasCanceled() )
+    //    return;
 
-    auto numErrors = generateSVGs( progress.get(), allFormulas, totalFormulas, numToBeRendered );
-    if ( !progress->wasCanceled() && ( numErrors != 0 ) )
-    {
-        auto retVal = QMessageBox::warning( this, tr( "Errors while Generating SVGs" ), tr( "There were %1 errors while generating the SVGs, would you like to save the non-error formulas?" ).arg( numErrors ), QMessageBox::Yes, QMessageBox::No );
-        if ( retVal == QMessageBox::No )
-            return;
-    }
+    //auto numErrors = generateSVGs( progress.get(), allFormulas, totalFormulas, numToBeRendered );
+    //if ( !progress->wasCanceled() && ( numErrors != 0 ) )
+    //{
+    //    auto retVal = QMessageBox::warning( this, tr( "Errors while Generating SVGs" ), tr( "There were %1 errors while generating the SVGs, would you like to save the non-error formulas?" ).arg( numErrors ), QMessageBox::Yes, QMessageBox::No );
+    //    if ( retVal == QMessageBox::No )
+    //        return;
+    //}
 
-    if ( progress->wasCanceled() )
-    {
-        auto retVal = QMessageBox::warning( this, tr( "Generation of SVGs Cancelled" ), tr( "Would you like to save the JSON files that finished?" ), QMessageBox::Yes, QMessageBox::No );
-        if ( retVal == QMessageBox::No )
-            return;
-    }
+    //if ( progress->wasCanceled() )
+    //{
+    //    auto retVal = QMessageBox::warning( this, tr( "Generation of SVGs Cancelled" ), tr( "Would you like to save the JSON files that finished?" ), QMessageBox::Yes, QMessageBox::No );
+    //    if ( retVal == QMessageBox::No )
+    //        return;
+    //}
 
-    saveJSONFiles( progress.get(), dir, allFormulas, needUpdatingOnly );
-    if ( progress->wasCanceled() )
-        return;
+    //saveJSONFiles( progress.get(), dir, allFormulas, needUpdatingOnly );
+    //if ( progress->wasCanceled() )
+    //    return;
 
-    QMessageBox::information( this, tr( "Finished generating SVGs" ), tr( "Total Number of Formulas: %1<br/>Number needing Rendering: %2<br/>Number of Errors: %3" ).arg( totalFormulas ).arg( numToBeRendered ).arg( numErrors ) );
+    //QMessageBox::information( this, tr( "Finished generating SVGs" ), tr( "Total Number of Formulas: %1<br/>Number needing Rendering: %2<br/>Number of Errors: %3" ).arg( totalFormulas ).arg( numToBeRendered ).arg( numErrors ) );
 }
 
 void CMainWindow::loadCacheForCalc( CSCUBACalculator *calc )
@@ -897,24 +841,3 @@ std::size_t CMainWindow::loadCacheFile( QProgressDialog *progress, const QString
     return numLoaded;
 }
 
-std::optional< QString > SFormulas::formula( EFormulaType formulaType ) const
-{
-    if ( formulaType == EFormulaType::eBaseFormula )
-        return fBaseFormula;
-    else if ( formulaType == EFormulaType::eCurrentFormula )
-        return fCurrFormula;
-    else if ( formulaType == EFormulaType::eCurrentValueFormula )
-        return fCurrValueFormula;
-    else
-        return {};
-}
-
-void SFormulas::setFormula( const QString &formula, EFormulaType formulaType )
-{
-    if ( formulaType == EFormulaType::eBaseFormula )
-        fBaseFormula = formula;
-    else if ( formulaType == EFormulaType::eCurrentFormula )
-        fCurrFormula = formula;
-    else if ( formulaType == EFormulaType::eCurrentValueFormula )
-        fCurrValueFormula = formula;
-}
