@@ -193,151 +193,304 @@ namespace NUtilities
             return retVal;
         }
 
-        QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex )
+        QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::pressureChangePerDegreeChange( imperial ), NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ), NUnitStrings::tempUnit( imperial, useAbbreviations, tex ), tex );
+            if ( description )
+                return ratio( QObject::tr( "Pressure/Degree Change", "pressureChangePerDegreeChange" ), NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ), NUnitStrings::tempUnit( imperial, useAbbreviations, tex ), tex );
+            else
+                return ratio( NConstants::pressureChangePerDegreeChange( imperial ), NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ), NUnitStrings::tempUnit( imperial, useAbbreviations, tex ), tex );
         }
 
-        QString lbsPerKgs( bool useAbbreviations, bool tex )
+        QString ratioConstant(
+            bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description,   //
+            const std::function< double() > &constantFunc,   //
+            const std::function< QString() > &descFunction,   //
+            const std::function< QString( bool imperial, bool seaWater, bool useAbbreviations, bool tex ) > &numeratorUnitFunc,   //
+            const std::function< QString( bool imperial, bool seaWater, bool useAbbreviations, bool tex ) > &denominatorUnitFunc,   //
+            std::optional< int > numDecimal )
         {
-            return ratio( NConstants::lbsPerKGs(), NUnitStrings::weightUnit( true, useAbbreviations, tex ), NUnitStrings::weightUnit( false, useAbbreviations, tex ), tex );
+            auto numUnit = numeratorUnitFunc( imperial, seaWater, useAbbreviations, tex );
+            auto denUnit = denominatorUnitFunc( imperial, seaWater, useAbbreviations, tex );
+            if ( description )
+            {
+                auto desc = descFunction();
+                auto descUnits = ( tex ? QObject::tr( R"__(\frac{%1}{%2})__" ) : QObject::tr( "%1/%2" ) ).arg( numeratorUnitFunc( imperial, seaWater, false, tex ) ).arg( denominatorUnitFunc( imperial, seaWater, false, tex ) );
+                if ( !desc.isEmpty() )
+                    desc = QString( "%1 (%2)" ).arg( desc ).arg( descUnits );
+                else
+                    desc = descUnits;
+
+                return ratio( desc, numUnit, denUnit, tex );
+            }
+            else
+            {
+                auto value = constantFunc();
+                return ratio( value, numUnit, denUnit, tex, numDecimal );
+            }
         }
 
-        QString kgsPerLbs( bool useAbbreviations, bool tex )
+        QString lbsPerKgs( bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::kgsPerLbs(), NUnitStrings::weightUnit( false, useAbbreviations, tex ), NUnitStrings::weightUnit( true, useAbbreviations, tex ), tex );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::lbsPerKGs(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::weightUnit( true, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::weightUnit( false, useAbbreviations, tex ); },   //
+                {} );
         }
 
-        QString scubaMET( bool useAbbreviations, bool tex )
+        QString kgsPerLbs( bool useAbbreviations, bool tex, bool description )
+        {
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::lbsPerKGs(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::weightUnit( false, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::weightUnit( true, useAbbreviations, tex ); },   //
+                {} );
+        }
+
+        QString scubaMET( bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( NConstants::baseMETForScuba() ).arg( NUnitStrings::metUnits( useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Base MET for SCUBA" ) );
+            else
+                retVal = retVal.arg( NConstants::baseMETForScuba() );
+            retVal = retVal.arg( NUnitStrings::metUnits( useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString fillRateO2( bool imperial, bool useAbbreviations, bool tex )
+        QString fillRateO2( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( NConstants::fillRateO2( imperial ) ).arg( NUnitStrings::pressurePerMinuteUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "O2 Fill Rate" ) );
+            else
+                retVal = retVal.arg( NConstants::fillRateO2( imperial ) );
+
+            retVal = retVal.arg( NUnitStrings::pressurePerMinuteUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString fillRateAir( bool imperial, bool useAbbreviations, bool tex )
+        QString fillRateAir( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( NConstants::fillRateAir( imperial ) ).arg( NUnitStrings::pressurePerMinuteUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Air Fill Rate" ) );
+            else
+                retVal = retVal.arg( NConstants::fillRateAir( imperial ) );
+
+            retVal = retVal.arg( NUnitStrings::pressurePerMinuteUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString weightPerVolumeOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        QString weightPerVolumeOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::weightPerVolumeOfWater( imperial, seaWater ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), tex, 2 );
+            if ( description )
+                return ratio( ( tex ? QObject::tr( R"__(\frac{%1 of Water}{%2})__" ) : QObject::tr( "%1 of Water/%2" ) ).arg( NUnitStrings::weightUnit( imperial, false, false ) ).arg( NUnitStrings::volumeUnit( imperial, false, false ) ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), tex );
+            else
+                return ratio( NConstants::weightPerVolumeOfWater( imperial, seaWater ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), tex, 2 );
         }
 
-        QString volumePerWeightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        QString volumePerWeightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::volumePerWeightOfWater( imperial, seaWater ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), tex, 2 );
+            if ( description )
+                return ratio( ( tex ? QObject::tr( R"__(\frac{%1 of Water}{%2})__" ) : QObject::tr( "%1 of Water/%2" ) ).arg( NUnitStrings::volumeUnit( imperial, false, tex ) ).arg( NUnitStrings::weightUnit( imperial, false, tex ) ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), tex );
+            else
+                return ratio( NConstants::volumePerWeightOfWater( imperial, seaWater ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), tex, 2 );
         }
 
-        QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex )
+        QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             // pv = nrt
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::idealGasConstant( imperial ), 5 ) ).arg( NUnitStrings::idealGasConstantUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Ideal Gas Constant" ) );
+            else
+                retVal = retVal.arg( doubleToString( NConstants::idealGasConstant( imperial ), 5 ) );
+
+            retVal = retVal.arg( NUnitStrings::idealGasConstantUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString percentN2AtSurface( bool imperial, bool useAbbreviations, bool tex )
+        QString percentN2AtSurface( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
-            return QObject::tr( R"__(%1%2)__", "percentN2AtSurface" ).arg( NConstants::percentN2AtSurface() ).arg( NUnitStrings::percentUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                return QObject::tr( "% of N2 at Surface" );
+            else
+                return QObject::tr( R"__(%1%2)__", "percentN2AtSurface" ).arg( NConstants::percentN2AtSurface() ).arg( NUnitStrings::percentUnit( imperial, useAbbreviations, tex ) );
         }
 
-        QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex )
+        QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
-            return QObject::tr( R"__(%1%2)__", "percentO2AtSurface" ).arg( NConstants::percentO2AtSurface() ).arg( NUnitStrings::percentUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                return QObject::tr( "% of O2 at Surface" );
+            else
+                return QObject::tr( R"__(%1%2)__", "percentO2AtSurface" ).arg( NConstants::percentO2AtSurface() ).arg( NUnitStrings::percentUnit( imperial, useAbbreviations, tex ) );
         }
 
-        QString depthToSingleAtmosphere( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        QString depthToSingleAtmosphere( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::depthToSingleAtmosphere( imperial, seaWater ), 2 ) ).arg( NUnitStrings::lengthUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Depth of a Single Atmosphere" ) );
+            else
+                retVal = retVal.arg( doubleToString( NConstants::depthToSingleAtmosphere( imperial, seaWater ), 2 ) );
+
+            retVal = retVal.arg( NUnitStrings::lengthUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString feetToMeters( bool useAbbreviations, bool tex )
+        QString feetToMeters( bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::feetPerMeters(), NUnitStrings::lengthUnit( false, useAbbreviations, tex ), NUnitStrings::lengthUnit( true, useAbbreviations, tex ), tex, 3 );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::feetPerMeters(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::lengthUnit( true, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::lengthUnit( false, useAbbreviations, tex ); },   //
+                {} );
         }
 
-        QString metersToFeet( bool useAbbreviations, bool tex )
+        QString metersToFeet( bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::metersPerFeet(), NUnitStrings::lengthUnit( true, useAbbreviations, tex ), NUnitStrings::lengthUnit( false, useAbbreviations, tex ), tex, 3 );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::feetPerMeters(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::lengthUnit( false, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::lengthUnit( true, useAbbreviations, tex ); },   //
+                {} );
         }
 
-        QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex )
+        QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::freshWaterToSeaWater(), NUnitStrings::depthUnit( imperial, false, useAbbreviations, tex ), NUnitStrings::depthUnit( imperial, true, useAbbreviations, tex ), tex, 2 );
+            return ratioConstant(
+                imperial, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::freshWaterToSeaWater(); },   //
+                []() -> QString { return {}; },   //
+                []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::depthUnit( imperial, false, useAbbreviations, tex ); },   //
+                []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::depthUnit( imperial, true, useAbbreviations, tex ); },   //
+                2 );
         }
 
-        QString seaWaterToFreshWater( bool imperial, bool useAbbreviations, bool tex )
+        QString seaWaterToFreshWater( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::seaWaterToFreshWater(), NUnitStrings::depthUnit( imperial, true, useAbbreviations, tex ), NUnitStrings::depthUnit( imperial, false, useAbbreviations, tex ), tex, 2 );
+            return ratioConstant(
+                imperial, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::seaWaterToFreshWater(); },   //
+                []() -> QString { return {}; },   //
+                []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::depthUnit( imperial, true, useAbbreviations, tex ); },   //
+                []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::depthUnit( imperial, false, useAbbreviations, tex ); },   //
+                2 );
         }
 
-        QString psiToBar( bool useAbbreviations, bool tex )
+        QString psiToBar( bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::psiToBar(), NUnitStrings::pressureUnit( true, useAbbreviations, tex ), NUnitStrings::pressureUnit( false, useAbbreviations, tex ), tex, 3 );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::psiToBar(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::pressureUnit( true, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::pressureUnit( false, useAbbreviations, tex ); },   //
+                2 );
         }
 
-        QString barToPSI( bool useAbbreviations, bool tex )
+        QString barToPSI( bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::barToPSI(), NUnitStrings::pressureUnit( false, useAbbreviations, tex ), NUnitStrings::pressureUnit( true, useAbbreviations, tex ), tex, 3 );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::psiToBar(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::pressureUnit( false, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::pressureUnit( true, useAbbreviations, tex ); },   //
+                2 );
         }
 
-        QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex )
+        QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::absZeroOffset( imperial ), 0 ) ).arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Absolute Zero Offset" ) );
+            else
+                retVal = retVal.arg( doubleToString( NConstants::absZeroOffset( imperial ), 0 ) );
+
+            retVal = retVal.arg( NUnitStrings::tempUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex )
+        QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::pressureAtSurface( imperial ), 1 ) ).arg( NUnitStrings::atmosphereUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Pressure at Sea Level" ) );
+            else
+                retVal = retVal.arg( doubleToString( NConstants::pressureAtSurface( imperial ), 1 ) );
+
+            retVal = retVal.arg( NUnitStrings::atmosphereUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString pressureLossPerAltitude( bool imperial, bool useAbbreviations, bool tex )
+        QString pressureLossPerAltitude( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::pressureLossPerAltitude( imperial ), NUnitStrings::atmosphereUnit( imperial, useAbbreviations, tex ), NUnitStrings::lengthUnit( imperial, useAbbreviations, tex ), tex, 4 );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                [ imperial ]() -> double { return NConstants::pressureLossPerAltitude( imperial ); },   //
+                []() -> QString { return {}; },   //
+                []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::atmosphereUnit( imperial, useAbbreviations, tex ); },   //
+                []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::atmosphereUnit( imperial, useAbbreviations, tex ); },   //
+                4 );
         }
 
-        QString safetyStop( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        QString safetyStop( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::safetyStopDepth( imperial, seaWater ), 1 ) ).arg( NUnitStrings::depthUnit( imperial, seaWater, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Safety Stop Depth" ) );
+            else
+                retVal = retVal.arg( doubleToString( NConstants::safetyStopDepth( imperial, seaWater ), 1 ) );
+
+            retVal = retVal.arg( NUnitStrings::depthUnit( imperial, seaWater, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex )
+        QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = tex ? "%1%2" : "%1 (%2)";
-            retVal = retVal.arg( doubleToString( NConstants::waterWeightAdjustment( imperial, seaWater ), 1 ) ).arg( NUnitStrings::weightUnit( imperial, useAbbreviations, tex ) );
+            if ( description )
+                retVal = retVal.arg( QObject::tr( "Weight Adjustment for Water" ) );
+            else
+                retVal = retVal.arg( doubleToString( NConstants::waterWeightAdjustment( imperial, seaWater ), 1 ) );
+
+            retVal = retVal.arg( NUnitStrings::weightUnit( imperial, useAbbreviations, tex ) );
             return retVal;
         }
 
-        QString cubicFeetToLiters( bool useAbbreviations, bool tex )
+        QString cubicFeetToLiters( bool useAbbreviations, bool tex, bool description )
         {
-            return ratio( NConstants::cubicFeetPerLiter(), NUnitStrings::volumeUnit( true, useAbbreviations, tex ), NUnitStrings::lengthUnit( false, useAbbreviations, tex ), tex, 4 );
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::cubicFeetPerLiter(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::volumeUnit( true, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::volumeUnit( false, useAbbreviations, tex ); },   //
+                4 );
+        }
+        
+        QString litersToCubicFeet( bool useAbbreviations, bool tex, bool description )
+        {
+            return ratioConstant(
+                false, false, useAbbreviations, tex, description,   //
+                []() -> double { return NConstants::litersPerCubicFeet(); },   //
+                []() -> QString { return {}; },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::volumeUnit( false, useAbbreviations, tex ); },   //
+                []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::volumeUnit( true, useAbbreviations, tex ); },   //
+                4 );
         }
 
-        QString litersToCubicFeet( bool useAbbreviations, bool tex )
-        {
-            return ratio( NConstants::litersPerCubicFeet(), NUnitStrings::volumeUnit( false, useAbbreviations, tex ), NUnitStrings::lengthUnit( true, useAbbreviations, tex ), tex, 4 );
-        }
-
-        QString constantString( bool imperial, bool seaWater, EVariableType constantType )
+        QString constantString( bool imperial, bool seaWater, EVariableType constantType, bool description )
         {
             switch ( constantType )
             {
@@ -346,53 +499,53 @@ namespace NUtilities
                     Q_ASSERT( isConstantVariable( constantType ) );
                     break;
                 case EVariableType::ePressurePerDegreeConst:
-                    return NUtilities::NConstants::pressureChangePerDegreeChange( imperial, true, true );
+                    return pressureChangePerDegreeChange( imperial, true, true, description );
                 case EVariableType::eWeightPerVolumeOfWaterConst:
-                    return NUtilities::NConstants::weightPerVolumeOfWater( imperial, seaWater, true, true );
+                    return weightPerVolumeOfWater( imperial, seaWater, true, true, description );
                 case EVariableType::eVolumePerWeightOfWaterConst:
-                    return NUtilities::NConstants::volumePerWeightOfWater( imperial, seaWater, true, true );
+                    return volumePerWeightOfWater( imperial, seaWater, true, true, description );
                 case EVariableType::eIdealGasConst:
-                    return NUtilities::NConstants::idealGasConstant( imperial, true, true );
+                    return idealGasConstant( imperial, true, true, description );
                 case EVariableType::eFN2AtSurfaceConst:
-                    return NUtilities::NConstants::percentN2AtSurface( imperial, true, true );
+                    return percentN2AtSurface( imperial, true, true, description );
                 case EVariableType::eFO2AtSurfaceConst:
-                    return NUtilities::NConstants::percentO2AtSurface( imperial, true, true );
+                    return percentO2AtSurface( imperial, true, true, description );
                 case EVariableType::eDepthToSingleATMConst:
-                    return NUtilities::NConstants::depthToSingleAtmosphere( imperial, seaWater, true, true );
+                    return depthToSingleAtmosphere( imperial, seaWater, true, true, description );
                 case EVariableType::eFeetToMetersConst:
-                    return NUtilities::NConstants::feetToMeters( true, true );
+                    return feetToMeters( true, true, description );
                 case EVariableType::eMetersToFeetConst:
-                    return NUtilities::NConstants::metersToFeet( true, true );
+                    return metersToFeet( true, true, description );
                 case EVariableType::eLbsPerKgsConst:
-                    return NUtilities::NConstants::lbsPerKgs( true, true );
+                    return lbsPerKgs( true, true, description );
                 case EVariableType::eKgsPerLbsConst:
-                    return NUtilities::NConstants::kgsPerLbs( true, true );
+                    return kgsPerLbs( true, true, description );
                 case EVariableType::eFreshWaterToSeaWaterConst:
-                    return NUtilities::NConstants::freshWaterToSeaWater( imperial, true, true );
+                    return freshWaterToSeaWater( imperial, true, true, description );
                 case EVariableType::eSeaWaterToFreshWaterConst:
-                    return NUtilities::NConstants::seaWaterToFreshWater( imperial, true, true );
+                    return seaWaterToFreshWater( imperial, true, true, description );
                 case EVariableType::ePSIToBarConst:
-                    return NUtilities::NConstants::psiToBar( true, true );
+                    return psiToBar( true, true, description );
                 case EVariableType::eBarToPSIConst:
-                    return NUtilities::NConstants::barToPSI( true, true );
+                    return barToPSI( true, true, description );
                 case EVariableType::eAbsZeroOffsetConst:
-                    return NUtilities::NConstants::absZeroOffset( imperial, true, true );
+                    return absZeroOffset( imperial, true, true, description );
                 case EVariableType::ePressureAtSurfaceConst:
-                    return NUtilities::NConstants::pressureAtSurface( imperial, true, true );
+                    return pressureAtSurface( imperial, true, true, description );
                 case EVariableType::eSafetyStopDepthConst:
-                    return NUtilities::NConstants::safetyStop( imperial, seaWater, true, true );
+                    return safetyStop( imperial, seaWater, true, true, description );
                 case EVariableType::eWaterWeightAdjustmentConst:
-                    return NUtilities::NConstants::waterWeightAdjustment( imperial, seaWater, true, true );
+                    return waterWeightAdjustment( imperial, seaWater, true, true, description );
                 case EVariableType::eBaseMETofSCUBAConst:
-                    return NUtilities::NConstants::scubaMET( true, true );
+                    return scubaMET( true, true, description );
                 case EVariableType::eFillRateO2Const:
-                    return NUtilities::NConstants::fillRateO2( imperial, true, true );
+                    return fillRateO2( imperial, true, true, description );
                 case EVariableType::eFillRateAirConst:
-                    return NUtilities::NConstants::fillRateAir( imperial, true, true );
+                    return fillRateAir( imperial, true, true, description );
                 case EVariableType::eCubicFeetToLitersConst:
-                    return NUtilities::NConstants::cubicFeetToLiters( true, true );
+                    return cubicFeetToLiters( true, true, description );
                 case EVariableType::eLitersToCubicFeetConst:
-                    return NUtilities::NConstants::litersToCubicFeet( true, true );
+                    return litersToCubicFeet( true, true, description );
             }
             return {};
         }
