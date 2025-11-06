@@ -23,6 +23,7 @@ namespace NUtilities
         const char *kBarToPSIConstFieldName = "barToPSI";
         const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
         const char *kPressureAtSurfaceConstFieldName = "pressureAtSurface";
+        const char *kPressureLossPerAltitudeGainConstFieldName = "pressureLossPerAltitudeGain";
         const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
         const char *kFillRateAirConstFieldName = "fillRateAir";
         const char *kFillRateO2ConstFieldName = "fillRateO2";
@@ -291,7 +292,7 @@ namespace NUtilities
             if ( description )
                 return ratio( ( tex ? QObject::tr( R"__(\frac{%1 of Water}{%2})__" ) : QObject::tr( "%1 of Water/%2" ) ).arg( NUnitStrings::weightUnit( imperial, false, false ) ).arg( NUnitStrings::volumeUnit( imperial, false, false ) ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), tex );
             else
-                return ratio( NConstants::weightPerVolumeOfWater( imperial, seaWater ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), tex, 2 );
+                return ratio( NConstants::weightPerVolumeOfWater( imperial, seaWater ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), tex, 3 );
         }
 
         QString volumePerWeightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
@@ -299,7 +300,7 @@ namespace NUtilities
             if ( description )
                 return ratio( ( tex ? QObject::tr( R"__(\frac{%1 of Water}{%2})__" ) : QObject::tr( "%1 of Water/%2" ) ).arg( NUnitStrings::volumeUnit( imperial, false, tex ) ).arg( NUnitStrings::weightUnit( imperial, false, tex ) ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), tex );
             else
-                return ratio( NConstants::volumePerWeightOfWater( imperial, seaWater ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), tex, 2 );
+                return ratio( NConstants::volumePerWeightOfWater( imperial, seaWater ), NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::weightUnit( imperial, useAbbreviations, tex ), tex, 3 );
         }
 
         QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex, bool description )
@@ -532,6 +533,8 @@ namespace NUtilities
                     return absZeroOffset( imperial, true, true, description );
                 case EVariableType::ePressureAtSurfaceConst:
                     return pressureAtSurface( imperial, true, true, description );
+                case EVariableType::ePressureLossPerAltitudeGainConst:
+                    return pressureLossPerAltitude( imperial, true, true, description );
                 case EVariableType::eSafetyStopDepthConst:
                     return safetyStop( imperial, seaWater, true, true, description );
                 case EVariableType::eWaterWeightAdjustmentConst:
@@ -570,6 +573,7 @@ namespace NUtilities
                                            EVariableType::eBarToPSIConst,
                                            EVariableType::eAbsZeroOffsetConst,
                                            EVariableType::ePressureAtSurfaceConst,
+                                           EVariableType::ePressureLossPerAltitudeGainConst,
                                            EVariableType::eBaseMETofSCUBAConst,
                                            EVariableType::eFillRateO2Const,
                                            EVariableType::eFillRateAirConst,
