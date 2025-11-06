@@ -126,10 +126,17 @@ protected:
     TConstVariableInfo getVariable( const QString &varName ) const;
     TVariableInfo getVariable( const QString &varName );
 
-    virtual void notifyOfNewFormula( const QString &formula, EFormulaType formulaType, bool finished ) const final;
+    TConstVariableInfoList getVariables( const QString &formula, const std::function< bool( const TConstVariableInfo &variable ) > &returnVariableQuery /*= {}*/ ) const;
+    TVariableInfoList getVariables( const QString &formula, const std::function< bool( const TConstVariableInfo &variable ) > &returnVariableQuery /*= {}*/ );
+
+    virtual void notifyOfNewFormula( const QString &formula, bool finished ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
-    virtual QString finalizeFormula( bool imperial, bool seaWater, const TFormulaStringList &formulas, EFormulaType formulaType ) const final;
-    virtual QString finalizeFormula( const TFormulaStringList &formulas, EFormulaType formulaType ) const final;
+
+    virtual QString finalizeFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas ) const final;
+    virtual TFormulaStringList finalizeFormula( bool imperial, bool seaWater, const TFormulaString &formula ) const final;
+    QString postProcessFormula( const QString &retVal ) const;
+
+    virtual QString applyVariables( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const;
@@ -147,7 +154,6 @@ protected:
 
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar ) const;   // returns the current formula in use
     virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
     virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 

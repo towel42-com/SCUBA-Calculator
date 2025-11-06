@@ -5,6 +5,7 @@
 #include "Formula.h"
 #include "GeneratedFormulaData.h"
 
+#include <memory>
 #include <QRegularExpression>
 
 // https://scuba.garykessler.net/EANcalculator/EAN_psi.html
@@ -149,10 +150,10 @@ bool CSCUBACalculator::seaWater() const
     return false;
 }
 
-void CSCUBACalculator::notifyOfNewFormula( const QString &formula, EFormulaType formulaType, bool finished ) const
+void CSCUBACalculator::notifyOfNewFormula( const QString &formula, bool finished ) const
 {
     if ( fUpdateFormulaFunc )
-        fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, formulaType, finished );
+        fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, finished );
 }
 
 TVariableInfoList &CSCUBACalculator::getVariables()
@@ -226,9 +227,9 @@ void CSCUBACalculator::resetVariables()
         ( *ii )->resetValue( imperial(), seaWater(), true, false );
     }
 
-    auto formula = finalizeFormula( getBaseFormulas(), EFormulaType::eBaseFormula );
+    auto formula = finalizeFormulas( imperial(), seaWater(), getBaseFormulas() );
     updateFields( nullptr );
-    notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
+    notifyOfNewFormula( formula, true );
 }
 
 TVariableInfoList CSCUBACalculator::unsetVariables() const
@@ -271,6 +272,30 @@ bool CSCUBACalculator::allVariablesUnset() const
     return true;
 }
 
+TConstVariableInfoList CSCUBACalculator::getVariables( const QString &formula, const std::function< bool( const TConstVariableInfo &variable ) > &returnVariableQuery /*= {}*/ ) const
+{
+    auto variables = NUtilities::getVariables( formula );
+    TConstVariableInfoList retVal;
+    for ( auto &&ii : variables )
+    {
+        auto variable = getVariable( ii );
+        if ( variable && returnVariableQuery( variable ) )
+            retVal.push_back( variable );
+    }
+    return retVal;
+}
+
+TVariableInfoList CSCUBACalculator::getVariables( const QString &formula, const std::function< bool( const TConstVariableInfo &variable ) > &returnVariableQuery /*= {}*/ )
+{
+    TVariableInfoList retVal;
+    auto tmp = const_cast< const CSCUBACalculator * >( this )->getVariables( formula, returnVariableQuery );
+    for ( auto &&ii : tmp )
+    {
+        retVal.push_back( std::const_pointer_cast< CVariableInfo >( ii ) );
+    }
+    return retVal;
+}
+
 TConstVariableInfo CSCUBACalculator::getVariable( const QString &varName ) const
 {
     auto pos = fVariableMap.find( varName );
@@ -281,10 +306,10 @@ TConstVariableInfo CSCUBACalculator::getVariable( const QString &varName ) const
 
 TVariableInfo CSCUBACalculator::getVariable( const QString &varName )
 {
-    auto pos = fVariableMap.find( varName );
-    if ( pos == fVariableMap.end() )
+    auto retVal = const_cast< const CSCUBACalculator * >( this )->getVariable( varName );
+    if ( !retVal )
         return {};
-    return ( *pos ).second;
+    return std::const_pointer_cast< CVariableInfo >( retVal );
 }
 
 TVariableInfoList CSCUBACalculator::getMyVariables( bool *preReversed ) const
@@ -315,7 +340,7 @@ TFormulaList CSCUBACalculator::getFormulaList() const
 
     for ( auto &&currFormula : allFormulas )
     {
-        auto formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), currFormula->formulas(), EFormulaType::eBaseFormula );
+        auto formula = finalizeFormulas( currFormula->imperial(), currFormula->seaWater(), currFormula->formulas() );
         auto pos = existingFormulas.find( formula );
         if ( pos == existingFormulas.end() )
         {
@@ -326,7 +351,6 @@ TFormulaList CSCUBACalculator::getFormulaList() const
             retVal.push_back( newFormula );
         }
 
-        // TVariableValuePairVectorVector
         for ( auto &&currValues : valuesForVariableVectors )
         {
             for ( auto &&currVarValuePair : currValues )
@@ -340,7 +364,7 @@ TFormulaList CSCUBACalculator::getFormulaList() const
                 var->setValue( currValue );
             }
 
-            formula = finalizeFormula( currFormula->imperial(), currFormula->seaWater(), currFormula->formulas(), EFormulaType::eCurrentValueFormula );
+            formula = finalizeFormulas( currFormula->imperial(), currFormula->seaWater(), currFormula->formulas() );
             auto pos = existingFormulas.find( formula );
             if ( pos == existingFormulas.end() )
             {
@@ -573,33 +597,51 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
 
     determineVariableToUnset( updateFromSide, triggerWidget );
 
-    auto currFormula = getCurrentFormulas();
-    if ( currFormula.has_value() )
+    auto currFormulas = getCurrentFormulas();
+    if ( currFormulas.has_value() )
     {
-        auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentFormula );
-        notifyOfNewFormula( formula, EFormulaType::eCurrentFormula, false );
+        auto formula = finalizeFormulas( imperial, seaWater, currFormulas.value() );
+        notifyOfNewFormula( formula, true );
     }
 
     computeValues();
     updateFields( triggerWidget );
 
-    if ( currFormula.has_value() )
-    {
-        auto formula = finalizeFormula( currFormula.value(), EFormulaType::eCurrentValueFormula );
-        notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula, false );
-    }
+    //if ( currFormulas.has_value() )
+    //{
+    //    auto formula = finalizeFormula( currFormulas.value(), EFormulaType::eCurrentValueFormula );
+    //    notifyOfNewFormula( formula, EFormulaType::eCurrentValueFormula, false );
+    //}
 
-    auto formula = finalizeFormula( getBaseFormulas(), EFormulaType::eBaseFormula );
-    notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
+    //auto formula = finalizeFormula( getBaseFormulas(), EFormulaType::eBaseFormula );
+    //notifyOfNewFormula( formula, EFormulaType::eBaseFormula, true );
 }
 
 std::optional< TFormulaStringList > CSCUBACalculator::getCurrentFormulas() const
 {
-    if ( allVariablesUnset() )
-        return getBaseFormulas();
+    auto retVal = getBaseFormulas();
 
     auto unsetVar = getFirstUnsetVariable();
-    return getFormulasForVar( unsetVar );
+    auto formulasForVar = getFormulasForVar( unsetVar, imperial(), seaWater() );
+    if ( !formulasForVar.has_value() )
+        return retVal;
+
+    for ( auto &&ii : formulasForVar.value() )
+    {
+        bool alreadyInserted = false;
+        for ( auto &&jj : retVal )
+        {
+            if ( ii == jj )
+            {
+                alreadyInserted = true;
+                break;
+            }
+        }
+        if ( !alreadyInserted )
+            retVal.push_back( ii );
+    }
+
+    return retVal;
 }
 
 void CSCUBACalculator::computeValues()
@@ -643,11 +685,6 @@ TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
     return unset.front();
 }
 
-std::optional< TFormulaStringList > CSCUBACalculator::getFormulasForVar( const TConstVariableInfo &unsetVar ) const
-{
-    return getFormulasForVar( unsetVar, imperial(), seaWater() );
-}
-
 void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
 {
     auto &&variables = getVariables();
@@ -659,26 +696,54 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
     }
 }
 
-QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const TFormulaStringList &formulas, EFormulaType formulaType ) const
+TFormulaStringList CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const TFormulaString &formula ) const
 {
-    auto tmp = NUtilities::joinFormulas( formulas );
-    if ( !tmp.has_value() )
-        return {};
+    TFormulaStringList retVal;
 
-    auto retVal = tmp.value();
+    auto baseFormula = applyVariables( imperial, seaWater, formula.second, EFormulaType::eBaseFormula );
+    retVal.emplace_back( formula.first, baseFormula );
 
-    auto &&variables = getVariables();
+    auto currFormula = applyVariables( imperial, seaWater, formula.second, EFormulaType::eCurrentFormula );
+    if ( currFormula != baseFormula )
+        retVal.emplace_back( formula.first, currFormula );
 
-    for ( auto &&curr : variables )
+    auto currValueFormula = applyVariables( imperial, seaWater, formula.second, EFormulaType::eCurrentValueFormula );
+    if ( ( currValueFormula != baseFormula ) && ( currValueFormula != currFormula ) )
+        retVal.emplace_back( formula.first, currValueFormula );
+
+    auto unsetVars = getVariables( formula.second, []( const TConstVariableInfo &var ) { return var && !var->has_value(); } );
+    if ( unsetVars.empty() )
     {
-        curr->updateFormula( imperial, seaWater, retVal, formulaType );
+        TVariableInfo nonConst = std::const_pointer_cast< CVariableInfo >( formula.first );
+        const_cast< CSCUBACalculator * >( this )->computeValueForVar( nonConst );
+        retVal.emplace_back( formula.first, nonConst->valueString( imperial, seaWater ) );
+    }
+    return retVal;
+}
+
+QString CSCUBACalculator::finalizeFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas ) const
+{
+    QString retVal;
+
+    TFormulaStringList allFormulas;
+    for ( auto &&ii : formulas )
+    {
+        auto currFormulas = finalizeFormula( imperial, seaWater, ii );
+        allFormulas.insert( allFormulas.end(), currFormulas.begin(), currFormulas.end() );
     }
 
-    NUtilities::NConstants::foreachConstantType(   //
-        [ =, &retVal ]( EVariableType currConst )   //
-        {   //
-            CVariableInfo::updateFormula( imperial, seaWater, retVal, currConst );
-        } );
+    auto joined = NUtilities::joinFormulas( imperial, seaWater, allFormulas );
+    if ( !joined.has_value() )
+        return {};
+
+    retVal = postProcessFormula( joined.value() );
+
+    return retVal;
+}
+
+QString CSCUBACalculator::postProcessFormula( const QString &formula ) const
+{
+    auto retVal = formula;
 
     retVal = retVal.replace( " ", R"__(\ )__" );
     auto regEx = QRegularExpression( R"__(([^\\])%)__" );
@@ -692,12 +757,22 @@ QString CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const T
         retVal.replace( start + offset, 2, replacementText );
         offset++;
     }
-
     return retVal;
 }
 
-QString CSCUBACalculator::finalizeFormula( const TFormulaStringList &formulas, EFormulaType formulaType ) const
+QString CSCUBACalculator::applyVariables( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const
 {
-    return finalizeFormula( imperial(), seaWater(), formulas, formulaType );
-}
+    auto retVal = formula;
+    auto &&variables = getVariables();
+    for ( auto &&curr : variables )
+    {
+        retVal = curr->updateFormula( imperial, seaWater, retVal, formulaType );
+    }
+    NUtilities::NConstants::foreachConstantType(   //
+        [ =, &retVal ]( EVariableType currConst )   //
+        {   //
+            retVal = CVariableInfo::updateFormula( imperial, seaWater, retVal, currConst, ( formulaType == EFormulaType::eBaseFormula ) );
+        } );
 
+    return retVal;
+}
