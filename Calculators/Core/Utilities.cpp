@@ -11,7 +11,7 @@ namespace NUtilities
     {
         QStringList retVal;
 
-        auto regEx = QRegularExpression( R"__(\<((?:[A-Za-z]+)|(?:%\d+))\>)__" );
+        auto regEx = QRegularExpression( R"__(\<((?:[A-Za-z][A-Za-z0-9]+)|(?:%\d+))\>)__" );
         auto matchII = regEx.globalMatch( formula );
         int offset = 0;
         while ( matchII.hasNext() )
