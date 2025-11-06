@@ -90,18 +90,26 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     auto theoreticalDepth = getVariable( "theoreticalDepth" );
     auto surfacePressure = getVariable( "surfacePressure" );
 
-    if ( unsetVar == theoreticalDepth )
+    if ( !surfacePressure->has_value() && altitude->has_value() )
     {
         surfacePressure->setValue( NUtilities::NConversions::surfacePressureAtAltitude( imperial(), altitude->value() ) );
-        theoreticalDepth->setValue( ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
-        getVariable( "safetyStop" )->setValue( ( NUtilities::NConstants::safetyStopDepth( imperial(), seaWater() ) + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
     }
-    else if ( unsetVar == altitude )
+    if ( !altitude->has_value() && surfacePressure->has_value() )
+    {
+        surfacePressure->setValue( NUtilities::NConversions::surfacePressureAtAltitude( imperial(), altitude->value() ) );
+    }
+
+    if ( unsetVar == theoreticalDepth )
+    {
+        theoreticalDepth->setValue( ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
+        getVariable( "safetyStop" )->setValue( ( NUtilities::NConstants::safetyStopDepth( imperial(), seaWater() ) + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
+    }
+    else if ( ( unsetVar == altitude ) && surfacePressure->has_value() )
     {
         altitude->setValue( NUtilities::NConversions::altitudeForSurfacePressure( imperial(), surfacePressure->value() ) );
     }
     else if ( unsetVar == depth )
     {
-        depth->setValue( ( ( theoreticalDepth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) * ( surfacePressure->value() / NUtilities::NConstants::pressureAtSurface( imperial() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        depth->setValue( ( ( theoreticalDepth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) * ( surfacePressure->value() / NUtilities::NConstants::pressureAtSurface( imperial() ) ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
 }
