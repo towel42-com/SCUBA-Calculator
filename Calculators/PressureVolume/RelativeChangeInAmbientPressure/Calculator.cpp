@@ -52,7 +52,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( "<relChange>", QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
+    return TFormulaStringList( { TFormulaString( getVariable( "relChange>" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -63,11 +63,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "p1" )
     {
-        TFormulaStringList( { TFormulaString( "<p1>", QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
+        TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
     }
     else if ( unsetVar->name() == "p2" )
     {
-        TFormulaStringList( { TFormulaString( "<p2>", QString( R"__(<p2> \times <relChange>)__" ) ) } );
+        TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<p2> \times <relChange>)__" ) ) } );
     }
     return {};
 }

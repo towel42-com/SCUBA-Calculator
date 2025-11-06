@@ -66,8 +66,8 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( "ata", "depth" ) } );
-    formulas.emplace_back( R"__(<partialPressureAtDepth>)__", QString( R"__(<ata_value> \times <partialPressureAtSurface>)__" ) );
+    auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( getVariable( "ata" ), getVariable( "depth" ) ) } );
+    formulas.emplace_back( getVariable( "partialPressureAtDepth" ), QString( R"__(<ata_value> \times <partialPressureAtSurface>)__" ) );
     return formulas;
 }
 
@@ -79,12 +79,12 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return TFormulaStringList( { TFormulaString( R"__(<depth>)__", QString( R"__(<%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<%1> \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "partialPressureAtSurface" )
     {
-        auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( "ata", "depth" ) } );
-        formulas.emplace_back( R"__(<partialPressureAtSurface>)__", R"__(\frac{< partialPressureAtDepth > } {< ata_value > })__" );
+        auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( getVariable( "ata" ), getVariable( "depth" ) ) } );
+        formulas.emplace_back( unsetVar, R"__(\frac{< partialPressureAtDepth > } {< ata_value > })__" );
         return formulas;
     }
 

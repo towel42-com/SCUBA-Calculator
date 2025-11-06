@@ -245,9 +245,9 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
 {
     TFormulaStringList formulas;
 
-    formulas.emplace_back( R"__(<baseLeadWeight>)__", R"__(<yourWeight> \times 0.1)__" );
-    formulas.emplace_back( R"__(<adjustments>)__", QString( R"__(<%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) );
-    formulas.emplace_back( R"__(<lead> = <baseLeadWeight>)__", R"__(<adjustments>)__" );
+    formulas.emplace_back( getVariable( "baseLeadWeight" ), R"__(<yourWeight> \times 0.1)__" );
+    formulas.emplace_back( getVariable( "adjustments" ), QString( R"__(<%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) );
+    formulas.emplace_back( getVariable( "lead" ), R"__(<baseLeadWeight> + <adjustments>)__" );
 
     return formulas;
 }
@@ -260,9 +260,9 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
         return myBaseFormulas( imperial, seaWater );
     else if ( unsetVar->name() == "yourWeight" )
     {
-        formulas.emplace_back( R"__(<adjustments>)__", QString( R"__(<%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) );
-        formulas.emplace_back( R"__(<baseLeadWeight>)__", R"__(<lead> - <adjustments>)__" );
-        formulas.emplace_back( R"__(<yourWeight>)__", R"__(\frac{<baseLeadWeight>}{0.1})__" );
+        formulas.emplace_back( getVariable( "adjustments" ), QString( R"__(<%1> + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) );
+        formulas.emplace_back( getVariable( "baseLeadWeight" ), R"__(<lead> - <adjustments>)__" );
+        formulas.emplace_back( getVariable( "yourWeight" ), R"__(\frac{<baseLeadWeight>}{0.1})__" );
     }
 
     return formulas;

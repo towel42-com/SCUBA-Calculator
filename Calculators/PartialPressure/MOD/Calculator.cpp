@@ -71,7 +71,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( R"__(<mod>)__", QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
+    return TFormulaStringList( { TFormulaString( getVariable( "mod" ), QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -82,11 +82,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "maxPO2" )
     {
-        return TFormulaStringList( { TFormulaString( R"__(<maxPO2>)__", QString( R"__(<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<fo2> \times [(\frac{<mod>}{<%1>})+1])__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "fo2" )
     {
-        return TFormulaStringList( { TFormulaString( R"__(<fo2>)__", QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{<%1>})+1})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ) ) } );
     }
 
     return {};

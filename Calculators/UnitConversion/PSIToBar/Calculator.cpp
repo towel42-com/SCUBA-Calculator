@@ -64,12 +64,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::psiToBarFormula( "psi", "bar" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::psiToBarFormula( getVariable( "psi" ), getVariable( "bar" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::barToPSIFormula( "psi", "bar" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::barToPSIFormula( getVariable( "psi" ), getVariable( "bar" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const

@@ -109,12 +109,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( "<m2>", QString( R"__(<m1> \times \frac{<p1>}{<p2>})__" ) ) } );
+    return TFormulaStringList( { TFormulaString( getVariable( "m2" ), QString( R"__(<m1> \times \frac{<p1>}{<p2>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( "<p2>", QString( R"__(<p1> \times \frac{<m1>}{<m2>})__" ) ) } );
+    return TFormulaStringList( { TFormulaString( getVariable( "p2" ), QString( R"__(<p1> \times \frac{<m1>}{<m2>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -129,11 +129,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "m1" )
     {
-        return TFormulaStringList( { TFormulaString( "<m1>", QString( R"__(<m2> \times \frac{<p2>}{<p1>})__" ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<m2> \times \frac{<p2>}{<p1>})__" ) ) } );
     }
     else if ( unsetVar->name() == "p1" )
     {
-        return TFormulaStringList( { TFormulaString( "<p1>", QString( R"__(<p2> \times \frac{<m2>}{<m1>})__" ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<p2> \times \frac{<m2>}{<m1>})__" ) ) } );
     }
     return {};
 }

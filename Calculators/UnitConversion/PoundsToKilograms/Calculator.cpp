@@ -64,12 +64,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::lbsToKGsFormula( "pounds", "kiloGrams" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::lbsToKGsFormula( getVariable( "pounds" ), getVariable( "kiloGrams" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::kgsToLbsFormula( "pounds", "kiloGrams" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::kgsToLbsFormula( getVariable( "pounds" ), getVariable( "kiloGrams" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const

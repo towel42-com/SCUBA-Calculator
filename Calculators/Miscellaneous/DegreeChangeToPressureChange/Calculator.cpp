@@ -67,12 +67,12 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::pressureChangeForDegreeChangeFormula( "t1", "p1" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::pressureChangeForDegreeChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::degreeChangeForPressureChangeFormula( "t1", "p1" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::degreeChangeForPressureChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const

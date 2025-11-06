@@ -53,7 +53,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( R"__(<p> \times <v>)__", QString( R"__(<numMoles> \times <%1> \times <t>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ) ) } );
+    return TFormulaStringList( { TFormulaString( {}, QString( R"__(<p> \times <v> = <numMoles> \times <%1> \times <t>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
@@ -61,22 +61,22 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     if ( unsetVar->name() == "p" )
     {
         // p = nrt/v
-        return TFormulaStringList( { TFormulaString( "<p>)__", QString( R"__(\frac{<numMoles> \times <%1> \times (<t> + <%2>)}{<v>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<numMoles> \times <%1> \times (<t> + <%2>)}{<v>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar->name() == "v" )
     {
         // v = nrt/p
-        return TFormulaStringList( { TFormulaString( "<v>", QString( R"__(\frac{<numMoles> \times <%1> \times (<t> + <%2>)}{<p>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<numMoles> \times <%1> \times (<t> + <%2>)}{<p>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar->name() == "numMoles" )
     {
         // n = pv/rt
-        return TFormulaStringList( { TFormulaString( "<numMoles>", QString( R"__(\frac{<p> \times <v>}{<%1> \times (<t> + <%2>)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<p> \times <v>}{<%1> \times (<t> + <%2>)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar->name() == "t" )
     {
         // t = pv/nr
-        return TFormulaStringList( { TFormulaString( "<t>", QString( R"__((\frac{<p> \times <v>}{<%1> \times <numMoles>}) - <%2>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__((\frac{<p> \times <v>}{<%1> \times <numMoles>}) - <%2>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
 
     return {};

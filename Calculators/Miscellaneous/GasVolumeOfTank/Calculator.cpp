@@ -54,7 +54,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( R"__(<gasVolume>)__", R"__(<tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__" ) } );
+    return TFormulaStringList( { TFormulaString( getVariable( "gasVolume" ), R"__(<tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__" ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
@@ -62,11 +62,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     if ( unsetVar->name() == "gasVolume" )
         return myBaseFormulas( false, false );
     else if ( unsetVar->name() == "currTankPressure" )
-        return TFormulaStringList( { TFormulaString( R"__(<currTankPressure>)__", R"__(<ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__" ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, R"__(<ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__" ) } );
     else if ( unsetVar->name() == "ratedTankPressure" )
-        return TFormulaStringList( { TFormulaString( R"__(<ratedTankPressure>)__", R"__(<currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__" ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, R"__(<currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__" ) } );
     else if ( unsetVar->name() == "tankVolume" )
-        return TFormulaStringList( { TFormulaString( R"__(<tankVolume>)__", R"__(<gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__" ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, R"__(<gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__" ) } );
     return {};
 }
 

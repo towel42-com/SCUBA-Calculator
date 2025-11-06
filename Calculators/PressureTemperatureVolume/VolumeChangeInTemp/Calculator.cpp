@@ -77,7 +77,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( R"__(<v2>)__", QString( R"__(<v1> \times \frac{<t2>}{<t1>})__" ) ) } );
+    return TFormulaStringList( { TFormulaString( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<t2>}{<t1>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -90,18 +90,18 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     else if ( unsetVar->name() == "v1" )
     {
         // V1 = V2 * ( t1/t2 );
-        return TFormulaStringList( { TFormulaString( R"__(<v1>)__", QString( R"__(<v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) )
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) )
     } );
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(V1/v2)
-        return TFormulaStringList( { TFormulaString( R"__(<t1>)__", QString( R"__([(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__([(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
     }
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(V2/v1)
-        return TFormulaStringList( { TFormulaString( R"__(<t2>)__", QString( R"__([(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
+        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__([(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
     }
 
     return {};

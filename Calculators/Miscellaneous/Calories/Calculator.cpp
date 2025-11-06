@@ -75,7 +75,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool imperial, bool seaWater ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial, seaWater, "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" ) } );
+    return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
 }
 
 TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
@@ -94,7 +94,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "duration" )
     {
-        return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeDurationFormula( imperial, seaWater, "calories", "weight", "depth", { getVariable( "temp" )->optValue(), "temp" }, "activityLevel", "duration" ) } );
+        return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeDurationFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
     }
     return {};
 }
