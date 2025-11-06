@@ -104,6 +104,7 @@ enum class EVariableType
     eBarToPSIConst,
     eAbsZeroOffsetConst,
     ePressureAtSurfaceConst,
+    ePressureLossPerAltitudeGainConst,
     eBaseMETofSCUBAConst,
     eFillRateO2Const,
     eFillRateAirConst,
@@ -158,7 +159,8 @@ class CGeneratedFormulaData;
 using TGeneratedFormulaData = std::shared_ptr< CGeneratedFormulaData >;
 using TFormulaMap = std::unordered_map< CSCUBACalculator *, TGeneratedFormulaData >;
 
-using TFormulaString = std::pair< TConstVariableInfo, QString >;
+class CFormulaString;
+using TFormulaString = std::shared_ptr< CFormulaString >;
 using TFormulaStringList = std::list< TFormulaString >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );

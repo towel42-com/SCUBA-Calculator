@@ -77,7 +77,7 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual std::shared_ptr< CGeneratedFormulaData > getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) const /*final*/;
+    virtual std::shared_ptr< CGeneratedFormulaData > getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) /*final*/;
 
     virtual void initResources() const /*final*/;
 
@@ -90,6 +90,11 @@ public:
     virtual TVariableInfoList &getLHSVariables() final;
     virtual TVariableInfoList &getRHSVariables() final;
 
+    TConstVariableInfo getVariable( const QString &varName ) const;
+    TVariableInfo getVariable( const QString &varName );
+
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
+
 protected:
     virtual bool imperial() const final;
     virtual bool seaWater() const final;
@@ -100,7 +105,7 @@ protected:
     virtual const TVariableInfoList &getLHSVariables() const final;
     virtual const TVariableInfoList &getRHSVariables() const final;
 
-    TFormulaList getFormulaList() const;
+    TFormulaList getFormulaList();
     TFormulaList getNamedFormulas() const;
     TVariableValuePairVectorVector getAllVariableValueCombinations() const;
 
@@ -123,20 +128,14 @@ protected:
     std::size_t numUnsetVariables() const;
     bool allVariablesUnset() const;
 
-    TConstVariableInfo getVariable( const QString &varName ) const;
-    TVariableInfo getVariable( const QString &varName );
-
-    TConstVariableInfoList getVariables( const QString &formula, const std::function< bool( const TConstVariableInfo &variable ) > &returnVariableQuery /*= {}*/ ) const;
-    TVariableInfoList getVariables( const QString &formula, const std::function< bool( const TConstVariableInfo &variable ) > &returnVariableQuery /*= {}*/ );
-
     virtual void notifyOfNewFormula( const QString &formula, bool finished ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
 
-    virtual QString finalizeFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas ) const final;
-    virtual TFormulaStringList finalizeFormula( bool imperial, bool seaWater, const TFormulaString &formula ) const final;
+    virtual QString finalizeFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas ) final;
+    virtual TFormulaStringList finalizeFormula( bool imperial, bool seaWater, const TFormulaString &formula ) final;
     QString postProcessFormula( const QString &retVal ) const;
 
-    virtual QString applyVariables( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const final;
+    virtual TFormulaString applyVariables( bool imperial, bool seaWater, const TFormulaString &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const = 0;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const;
@@ -155,7 +154,6 @@ protected:
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
     virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;
     TVariableInfo getLastVariable( EVariableLoc side ) const;

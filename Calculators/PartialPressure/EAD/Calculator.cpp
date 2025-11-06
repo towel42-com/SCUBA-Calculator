@@ -2,6 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -54,7 +55,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "ead" ), QString( R"__([(\frac{<fn2>}{<%2>}) \times (<depth> + <%1>)] - <%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "ead" ), QString( R"__([(\frac{<fn2>}{%2}) \times (<depth> + %1)] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -65,11 +66,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "fn2" )
     {
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{[<%2> \times (<ead>+<%1>)]}{(<depth>+<%1>)})__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{[%2 \times (<ead>+<%1>)]}{(<depth>+%1)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
     }
     else if ( unsetVar->name() == "depth" )
     {
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__([\frac{<ead>+<%1>}{\frac{<fn2>}{<%2>}}]-<%1>)__" ).arg( NUtilities::NConstants::kDepthToSingleATMConstFieldName ).arg( NUtilities::NConstants::kFN2AtSurfaceFieldName ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__([\frac{<ead>+%1}{\frac{<fn2>}{%2}}]-%1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
     }
     return {};
 }

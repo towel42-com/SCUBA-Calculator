@@ -1,5 +1,6 @@
 #include "Utilities.h"
 #include "VariableInfo.h"
+#include "FormulaString.h"
 
 #include <QString>
 #include <QObject>
@@ -57,27 +58,27 @@ namespace NUtilities
 
     TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator )
     {
-        return { returnVariable, ratio( numerator->fieldName(), denominator->fieldName(), true ) };
+        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator->fieldName(), denominator->fieldName(), true ) );
     }
 
     TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator )
     {
-        return { returnVariable, ratio( numerator->fieldName(), denominator, true ) };
+        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator->fieldName(), denominator, true ) );
     }
 
     TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator )
     {
-        return { returnVariable, ratio( numerator, denominator->fieldName(), true ) };
+        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator, denominator->fieldName(), true ) );
     }
 
     TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator )
     {
-        return { returnVariable, ratio( numerator->fieldName(), NUtilities::fieldNameForType( denominator ), true ) };
+        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator->fieldName(), NUtilities::fieldNameForType( denominator ), true ) );
     }
 
     TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator )
     {
-        return { returnVariable, ratio( NUtilities::fieldNameForType( numerator ), denominator->fieldName(), true ) };
+        return std::make_shared< CFormulaString >( returnVariable, ratio( NUtilities::fieldNameForType( numerator ), denominator->fieldName(), true ) );
     }
 
     QString descForType( EVariableType type )
@@ -121,6 +122,8 @@ namespace NUtilities
                 return QObject::tr( "Absolute Zero Offset", "descForType" );
             case EVariableType::ePressureAtSurfaceConst:
                 return QObject::tr( "Pressure at Surface", "descForType" );
+            case EVariableType::ePressureLossPerAltitudeGainConst:
+                return QObject::tr( "Pressure Loss Per Altitude Gain", "descForType" );
             case EVariableType::eSafetyStopDepthConst:
                 return QObject::tr( "Safety Stop Depth", "descForType" );
             case EVariableType::eWaterWeightAdjustmentConst:
@@ -141,61 +144,90 @@ namespace NUtilities
 
     QString fieldNameForType( EVariableType type )
     {
+        QString retVal;
         switch ( type )
         {
             case EVariableType::eIntermediate:
             case EVariableType::eVariable:
                 return {};
             case EVariableType::ePressurePerDegreeConst:
-                return NConstants::kPressurePerDegreeConstFieldName;
+                retVal =  NConstants::kPressurePerDegreeConstFieldName;
+                break;
             case EVariableType::eWeightPerVolumeOfWaterConst:
-                return NConstants::kWeightPerVolumeOfWaterConstFieldName;
+                retVal =  NConstants::kWeightPerVolumeOfWaterConstFieldName;
+                break;
             case EVariableType::eVolumePerWeightOfWaterConst:
-                return NConstants::kVolumePerWeightOfWaterConstFieldName;
+                retVal =  NConstants::kVolumePerWeightOfWaterConstFieldName;
+                break;
             case EVariableType::eIdealGasConst:
-                return NConstants::kIdealGasConstantFieldName;
+                retVal =  NConstants::kIdealGasConstantFieldName;
+                break;
             case EVariableType::eFN2AtSurfaceConst:
-                return NConstants::kFN2AtSurfaceFieldName;
+                retVal =  NConstants::kFN2AtSurfaceFieldName;
+                break;
             case EVariableType::eFO2AtSurfaceConst:
-                return NConstants::kFO2AtSurfaceFieldName;
+                retVal =  NConstants::kFO2AtSurfaceFieldName;
+                break;
             case EVariableType::eDepthToSingleATMConst:
-                return NConstants::kDepthToSingleATMConstFieldName;
+                retVal =  NConstants::kDepthToSingleATMConstFieldName;
+                break;
             case EVariableType::eFeetToMetersConst:
-                return NConstants::kFeetToMetersConstFieldName;
+                retVal =  NConstants::kFeetToMetersConstFieldName;
+                break;
             case EVariableType::eMetersToFeetConst:
-                return NConstants::kMetersToFeetConstFieldName;
+                retVal =  NConstants::kMetersToFeetConstFieldName;
+                break;
             case EVariableType::eLbsPerKgsConst:
-                return NConstants::kLbsPerKgsConstFieldName;
+                retVal =  NConstants::kLbsPerKgsConstFieldName;
+                break;
             case EVariableType::eKgsPerLbsConst:
-                return NConstants::kKgsPerLbsConstFieldName;
+                retVal =  NConstants::kKgsPerLbsConstFieldName;
+                break;
             case EVariableType::eFreshWaterToSeaWaterConst:
-                return NConstants::kFreshWaterToSeaWaterConstFieldName;
+                retVal =  NConstants::kFreshWaterToSeaWaterConstFieldName;
+                break;
             case EVariableType::eSeaWaterToFreshWaterConst:
-                return NConstants::kSeaWaterToFreshWaterConstFieldName;
+                retVal =  NConstants::kSeaWaterToFreshWaterConstFieldName;
+                break;
             case EVariableType::ePSIToBarConst:
-                return NConstants::kPSIToBarConstFieldName;
+                retVal =  NConstants::kPSIToBarConstFieldName;
+                break;
             case EVariableType::eBarToPSIConst:
-                return NConstants::kBarToPSIConstFieldName;
+                retVal =  NConstants::kBarToPSIConstFieldName;
+                break;
             case EVariableType::eAbsZeroOffsetConst:
-                return NConstants::kAbsZeroOffsetConstFieldName;
+                retVal =  NConstants::kAbsZeroOffsetConstFieldName;
+                break;
             case EVariableType::ePressureAtSurfaceConst:
-                return NConstants::kPressureAtSurfaceConstFieldName;
+                retVal =  NConstants::kPressureAtSurfaceConstFieldName;
+                break;
+            case EVariableType::ePressureLossPerAltitudeGainConst:
+                retVal = NConstants::kPressureLossPerAltitudeGainConstFieldName;
+                break;
             case EVariableType::eSafetyStopDepthConst:
-                return NConstants::kSafetyStopDepthConstFieldName;
+                retVal =  NConstants::kSafetyStopDepthConstFieldName;
+                break;
             case EVariableType::eWaterWeightAdjustmentConst:
-                return NConstants::kWaterWeightAdjustmentFieldName;
+                retVal =  NConstants::kWaterWeightAdjustmentFieldName;
+                break;
             case EVariableType::eBaseMETofSCUBAConst:
-                return NConstants::kBaseMETofSCUBAConstFieldName;
+                retVal =  NConstants::kBaseMETofSCUBAConstFieldName;
+                break;
             case EVariableType::eFillRateAirConst:
-                return NConstants::kFillRateAirConstFieldName;
+                retVal =  NConstants::kFillRateAirConstFieldName;
+                break;
             case EVariableType::eFillRateO2Const:
-                return NConstants::kFillRateO2ConstFieldName;
+                retVal =  NConstants::kFillRateO2ConstFieldName;
+                break;
             case EVariableType::eCubicFeetToLitersConst:
-                return NConstants::kCubicFeetToLitersFieldName;
+                retVal =  NConstants::kCubicFeetToLitersFieldName;
+                break;
             case EVariableType::eLitersToCubicFeetConst:
-                return NConstants::kLitersToCubicFeetFieldName;
+                retVal =  NConstants::kLitersToCubicFeetFieldName;
+                break;
         };
-        return {};
+        retVal = QString( "%1" ).arg( retVal );
+        return retVal;
     }
 
     bool isConstantVariable( EVariableType type )
@@ -219,6 +251,7 @@ namespace NUtilities
             case EVariableType::eBarToPSIConst:
             case EVariableType::eAbsZeroOffsetConst:
             case EVariableType::ePressureAtSurfaceConst:
+            case EVariableType::ePressureLossPerAltitudeGainConst:
             case EVariableType::eSafetyStopDepthConst:
             case EVariableType::eWaterWeightAdjustmentConst:
             case EVariableType::eBaseMETofSCUBAConst:
@@ -259,27 +292,27 @@ namespace NUtilities
             return {};
 
         QStringList formulas;
+        std::optional< TVariableInfo > prevVar;
         for ( auto &&ii : formulaStrings )
-            formulas << NUtilities::createEquation( imperial, seaWater, ii );
+        {
+            if ( !ii )
+                continue;
 
-        auto retVal = formulas.join( R"( \newline )" );
+            if ( ( prevVar.has_value() && ( prevVar.value() != ii->variable() ) ) )
+                formulas << QString();
+
+            formulas << ii->equation( imperial, seaWater );
+            prevVar = ii->variable();
+        }
+
+        auto retVal = formulas.join( R"( \newline )" "\n" );
         if ( formulas.size() > 1 )
         {
-            retVal = QString( R"__(\begin{align})__" ) + retVal + QString( R"__(\end{align})__" );
+            retVal = QString( R"__(\begin{align})__" "\n" )
+                     + retVal
+                     + QString( "\n" R"__(\end{align})__" "\n" );
             retVal.replace( "=", "& =" );
         }
         return retVal;
     }
-
-    QString createEquation( bool imperial, bool seaWater, const TFormulaString &formula )
-    {
-        if ( formula.first && !formula.second.isEmpty() )
-            return QString( "%1 = %2" ).arg( formula.first->descriptiveName( imperial, seaWater ) ).arg( formula.second );
-        if ( formula.first && formula.second.isEmpty() )
-            return QString( "%1" ).arg( formula.first->descriptiveName( imperial, seaWater ) );
-        if ( !formula.first && !formula.second.isEmpty() )
-            return QString( "%1" ).arg( formula.second );
-        return {};
-    }
-
 }

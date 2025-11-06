@@ -30,6 +30,7 @@ set(qtproject_SRCS
     VariableInfo.cpp
     Formula.cpp
     Units.cpp
+    FormulaString.cpp
 )
 
 set(qtproject_H
@@ -43,6 +44,7 @@ set(project_H
     VariableInfo.h
     Utilities.h
     Formula.h
+    FormulaString.h
 )
 
 set(qtproject_UIS

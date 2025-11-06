@@ -66,6 +66,7 @@ namespace NUtilities
         extern const char *kBarToPSIConstFieldName;
         extern const char *kAbsZeroOffsetConstFieldName;
         extern const char *kPressureAtSurfaceConstFieldName;
+        extern const char *kPressureLossPerAltitudeGainConstFieldName;
         extern const char *kBaseMETofSCUBAConstFieldName;
         extern const char *kFillRateAirConstFieldName;
         extern const char *kFillRateO2ConstFieldName;
@@ -212,7 +213,7 @@ namespace NUtilities
     }
 
     CALCULATORS_EXPORT std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas );
-    CALCULATORS_EXPORT QString createEquation( bool imperial, bool seaWater, const TFormulaString &formula );
+    CALCULATORS_EXPORT QString equation( bool imperial, bool seaWater, const TFormulaString &formula );
     CALCULATORS_EXPORT QString descForType( EVariableType type );
     CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
     CALCULATORS_EXPORT bool isConstantVariable( EVariableType type );

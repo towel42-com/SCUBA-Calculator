@@ -2,6 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -75,7 +76,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<p1>}{<p2>})__" ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<p1>}{<p2>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -88,17 +89,17 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     else if ( unsetVar->name() == "v1" )
     {
         // v1 = v2 * (p2/p1)
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<v2> \times \frac{<p2>}{<p1>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<v2> \times \frac{<p2>}{<p1>})__" ) ) } );
     }
     else if ( unsetVar->name() == "p2" )
     {
         // p2 = p1 * (v1/v2);
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<p1> \times \frac{<v1>}{<v2>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p1> \times \frac{<v1>}{<v2>})__" ) ) } );
     }
     else if ( unsetVar->name() == "p1" )
     {
         // p1 = p2 * (v2/v1);
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<p2> \times \frac{<v2>}{<v1>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p2> \times \frac{<v2>}{<v1>})__" ) ) } );
     }
 
     return {};

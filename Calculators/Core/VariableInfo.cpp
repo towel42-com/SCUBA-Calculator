@@ -382,7 +382,7 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
 
     QString retVal = formula;
 
-    auto token = QString( "<%1>" ).arg( name() );
+    auto token = fieldName();
     if ( fType == EVariableType::eIntermediate )
     {
         if ( formulaType != EFormulaType::eCurrentValueFormula )
@@ -403,7 +403,7 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
 
 QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EVariableType varType, bool descriptionNotValue )
 {
-    auto token = QString( "<%1>" ).arg( NUtilities::fieldNameForType( varType ) );
+    auto token = NUtilities::fieldNameForType( varType );
     auto pos = formula.indexOf( token );
     if ( pos == -1 )
         return formula;

@@ -2,6 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -53,7 +54,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "volumeDisplaced" ), QString( R"__(<negativeBuoyancy> \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "volumeDisplaced" ), QString( R"__(<negativeBuoyancy> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -62,9 +63,9 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    if ( unsetVar->name() == "negativeBuoyancy" )
+    else if ( unsetVar->name() == "negativeBuoyancy" )
     {
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<volumeDisplaced> \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
     }
     return {};
 }

@@ -1,6 +1,7 @@
 #include "Formula.h"
 #include "Utilities.h"
 #include "VariableInfo.h"
+#include "FormulaString.h"
 
 #include "T42-MathJaxQt6/include/MathJaxQt6.h"
 
@@ -76,7 +77,7 @@ namespace NUtilities
         auto retVal = this->formulas();
         for ( auto &&ii : retVal )
         {
-            ii.second = NTowel42::cleanupFormula( ii.second );
+            ii->cleanupFormula();
         }
         return retVal;
     }
@@ -84,7 +85,7 @@ namespace NUtilities
     void SFormula::setFormula( const QString &formula )
     {
         fFormulas.clear();
-        fFormulas.emplace_back( TConstVariableInfo(), formula );
+        fFormulas.emplace_back( std::make_shared< CFormulaString >( formula ) );
     }
 
     bool SFormula::operator==( const SFormula &rhs ) const

@@ -2,6 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -54,7 +55,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "end" ), QString( R"__([(<depth> + <%1>) \times ( 1.0 - <fhe> ) ] - <%1> )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "end" ), QString( R"__([(<depth> + %1) \times ( 1.0 - <fhe> ) ] - %1 )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
@@ -62,9 +63,9 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     if ( unsetVar->name() == "end" )
         return myBaseFormulas( false, false );
     else if ( unsetVar->name() == "fhe" )
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(1.0 - \frac{<end> + %1}{<depth> + <%1>} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(1.0 - \frac{<end> + %1}{<depth> + %1} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     else if ( unsetVar->name() == "depth" )
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<end> + %1}{1.0 - <fhe>} - <%1>))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<end> + %1}{1.0 - <fhe>} - %1))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     return {};
 }
 

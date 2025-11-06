@@ -2,6 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -23,7 +24,7 @@ public:
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo & unsetVar ) override;   // updates all values
+    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -77,7 +78,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<t2>}{<t1>})__" ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<t2>}{<t1>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -90,24 +91,23 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     else if ( unsetVar->name() == "v1" )
     {
         // V1 = V2 * ( t1/t2 );
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<v2> \times \frac{<t1> + <%1>}{<t2> + <%1>})__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) )
-    } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar->name() == "t1" )
     {
         // T1 = t2*(V1/v2)
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__([(<t2> + <%1>) \times \frac{<v1>}{<v2>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__([(<t2> + %1) \times \frac{<v1>}{<v2>}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar->name() == "t2" )
     {
         // T2 = t1*(V2/v1)
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__([(<t1> + <%1>) \times \frac{<v2>}{<v1>}] - <%1>)__" ).arg( NUtilities::NConstants::kAbsZeroOffsetConstFieldName ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__([(<t1> + %1) \times \frac{<v2>}{<v1>}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & unsetVar )
+void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 {
     auto v1 = getVariable( "v1" );
     auto t1 = getVariable( "t1" );

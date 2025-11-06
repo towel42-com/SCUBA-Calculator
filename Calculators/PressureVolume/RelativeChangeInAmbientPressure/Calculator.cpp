@@ -1,7 +1,7 @@
 #include "Calculator.h"
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
-#include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -52,7 +52,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "relChange>" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "relChange>" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -63,11 +63,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     }
     else if ( unsetVar->name() == "p1" )
     {
-        TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
+        TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
     }
     else if ( unsetVar->name() == "p2" )
     {
-        TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<p2> \times <relChange>)__" ) ) } );
+        TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p2> \times <relChange>)__" ) ) } );
     }
     return {};
 }

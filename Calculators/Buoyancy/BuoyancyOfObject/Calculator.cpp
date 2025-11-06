@@ -2,6 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
+#include "Core/FormulaString.h"
 
 #include <memory>
 
@@ -54,7 +55,7 @@ TVariableInfoList CCalculator::getMyVariables() const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { TFormulaString( getVariable( "buoyancy" ), QString( R"__(<weightOfObject> - [<volumeDisplaced> \times <%1>])__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "buoyancy" ), QString( R"__(<weightOfObject> - [<volumeDisplaced> \times %1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
@@ -63,13 +64,13 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    if ( unsetVar->name() == "weightOfObject" )
+    else if ( unsetVar->name() == "weightOfObject" )
     {
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__(<buoyancy> + <volumeDisplaced> \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<buoyancy> + <volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
     }
-    if ( unsetVar->name() == "volumeDisplaced" )
+    else if ( unsetVar->name() == "volumeDisplaced" )
     {
-        return TFormulaStringList( { TFormulaString( unsetVar, QString( R"__((<weightOfObject> - <buoyancy>) \times <%1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__((<weightOfObject> - <buoyancy>) \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
     }
     return {};
 }

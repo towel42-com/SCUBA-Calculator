@@ -1,7 +1,12 @@
 #include "Utilities.h"
 #include "VariableInfo.h"
+#include "FormulaString.h"
 #include <QString>
 #include <QObject>
+
+#include "SCUBACalculatorFwd.h"
+
+#include <memory>
 
 namespace NUtilities
 {
@@ -19,7 +24,7 @@ namespace NUtilities
 
         TFormulaString barToPSIFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar )
         {
-            return { psi, QString( R"__(%1 \times <%3>)__" ).arg( bar->fieldName() ).arg( fieldNameForType( EVariableType::ePSIToBarConst ) ) };
+            return std::make_shared< CFormulaString >( psi, QString( R"__(%1 \times %3)__" ).arg( bar->fieldName() ).arg( fieldNameForType( EVariableType::ePSIToBarConst ) ) );
         }
 
         double barToPSI( double bar )
@@ -39,7 +44,7 @@ namespace NUtilities
 
         TFormulaString depthToATAFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth )
         {
-            return { ata, QString( R"__(\frac{%2}{<%3>} + 1)__" ).arg( depth->fieldName() ).arg( NConstants::kDepthToSingleATMConstFieldName ) };
+            return std::make_shared< CFormulaString >( ata, QString( R"__(\frac{%2}{%3} + 1)__" ).arg( depth->fieldName() ).arg( fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) );
         }
 
         double depthToATA( bool imperial, bool seaWater, double depth )
@@ -50,7 +55,7 @@ namespace NUtilities
 
         TFormulaString ataToDepthFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth )
         {
-            return { depth, QString( R"__((%1-1) \times <%3>)__" ).arg( ata->fieldName() ).arg( NConstants::kDepthToSingleATMConstFieldName ) };
+            return std::make_shared< CFormulaString >( depth, QString( R"__((%1-1) \times %3)__" ).arg( ata->fieldName() ).arg( fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) );
         }
 
         double ataToDepth( bool imperial, bool seaWater, double pressure )
@@ -66,7 +71,7 @@ namespace NUtilities
 
         TFormulaString depthFreshwaterToSeawaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater )
         {
-            return { seaWater, QString( R"__(%2 \times <%3>)__" ).arg( freshWater->fieldName() ).arg( fieldNameForType( EVariableType::eFreshWaterToSeaWaterConst ) ) };
+            return std::make_shared< CFormulaString >( seaWater, QString( R"__(%2 \times %3)__" ).arg( freshWater->fieldName() ).arg( fieldNameForType( EVariableType::eFreshWaterToSeaWaterConst ) ) );
         }
 
         double depthSeawaterToFreshwater( double depthSW )
@@ -76,7 +81,7 @@ namespace NUtilities
 
         TFormulaString depthSeawaterToFreshwaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater )
         {
-            return { freshWater, QString( R"__(%2 \times <%3>)__" ).arg( seaWater->fieldName() ).arg( fieldNameForType( EVariableType::eSeaWaterToFreshWaterConst ) ) };
+            return std::make_shared< CFormulaString >( freshWater, QString( R"__(%2 \times %3)__" ).arg( seaWater->fieldName() ).arg( fieldNameForType( EVariableType::eSeaWaterToFreshWaterConst ) ) );
         }
 
         double feetToMeters( double feet )
@@ -86,7 +91,7 @@ namespace NUtilities
 
         TFormulaString feetToMetersFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters )
         {
-            return { meters, QString( R"__(%1 \times <%3>)__" ).arg( feet->fieldName() ).arg( NConstants::kFeetToMetersConstFieldName ) };
+            return std::make_shared< CFormulaString >( meters, QString( R"__(%1 \times %3)__" ).arg( feet->fieldName() ).arg( fieldNameForType( EVariableType::eFeetToMetersConst ) ) );
         }
 
         double metersToFeet( double meters )
@@ -96,7 +101,7 @@ namespace NUtilities
 
         TFormulaString metersToFeetFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters )
         {
-            return { feet, QString( R"__(%2 \times <%3>)__" ).arg( meters->fieldName() ).arg( NConstants::kMetersToFeetConstFieldName ) };
+            return std::make_shared< CFormulaString >( feet, QString( R"__(%2 \times %3)__" ).arg( meters->fieldName() ).arg( fieldNameForType( EVariableType::eMetersToFeetConst ) ) );
         }
 
         double pressureChangeForDegreeChange( bool imperial, double temperature )
@@ -111,7 +116,7 @@ namespace NUtilities
 
         TFormulaString pressureChangeForDegreeChangeFormula( const TConstVariableInfo &temp, const TConstVariableInfo &pressure )
         {
-            return { pressure, QString( R"__(%1 \times <%3>)__" ).arg( temp->fieldName() ).arg( NConstants::kPressurePerDegreeConstFieldName ) };
+            return std::make_shared< CFormulaString >( pressure, QString( R"__(%1 \times %3)__" ).arg( temp->fieldName() ).arg( fieldNameForType( EVariableType::ePressurePerDegreeConst ) ) );
         }
 
         TFormulaString degreeChangeForPressureChangeFormula( const TConstVariableInfo &temp, const TConstVariableInfo &pressure )
@@ -131,12 +136,12 @@ namespace NUtilities
 
         TFormulaString lbsToKGsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs )
         {
-            return { kgs, QString( R"__(%2 \times <%3>)__" ).arg( lbs->fieldName() ).arg( NConstants::kKgsPerLbsConstFieldName ) };
+            return std::make_shared< CFormulaString >( kgs, QString( R"__(%2 \times %3)__" ).arg( lbs->fieldName() ).arg( fieldNameForType( EVariableType::eKgsPerLbsConst ) ) );
         }
 
         TFormulaString kgsToLbsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs )
         {
-            return { lbs, QString( R"__(%2 \times <%3>)__" ).arg( kgs->fieldName() ).arg( NConstants::kLbsPerKgsConstFieldName ) };
+            return std::make_shared< CFormulaString >( lbs, QString( R"__(%2 \times %3)__" ).arg( kgs->fieldName() ).arg( fieldNameForType( EVariableType::eLbsPerKgsConst ) ) );
         }
 
         double farenheightToCelsius( double temp )
@@ -147,7 +152,7 @@ namespace NUtilities
         TFormulaString farenheightToCelsiusFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight )
         {
             auto formula = QString( R"__((%1 - 32 ) \times \frac{5%2}{9%3})__" ).arg( farenheight->fieldName() ).arg( NUnitStrings::tempUnit( false, true, true ) ).arg( NUnitStrings::tempUnit( true, true, true ) );
-            return { celsius, formula };
+            return std::make_shared< CFormulaString >( celsius, formula );
         }
 
         double celsiusToFarenheight( double temp )
@@ -158,7 +163,7 @@ namespace NUtilities
         TFormulaString celsiusToFarenheightFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight )
         {
             auto formula = QString( R"__((%1 \times \frac{9%2}{5%3}) + 32)__" ).arg( celsius->fieldName() ).arg( NUnitStrings::tempUnit( true, true, true ) ).arg( NUnitStrings::tempUnit( false, true, true ) );
-            return { farenheight, formula };
+            return std::make_shared< CFormulaString >( farenheight, formula );
         }
 
         double cubicFeetToLiters( double cuft )
@@ -187,22 +192,22 @@ namespace NUtilities
 
         TFormulaString sacToRMVFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure )
         {
-            return { rmv, QString( R"__(%2 \times \frac{%3}{%4})__" ).arg( sac->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) };
+            return std::make_shared< CFormulaString >( rmv, QString( R"__(%2 \times \frac{%3 ){%4})__" ).arg( sac->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) );
         }
 
         TFormulaString rmvToSACFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure )
         {
-            return { sac, QString( R"__(%1 \times \frac{%4}{%3})__" ).arg( rmv->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) };
+            return std::make_shared< CFormulaString >( sac, QString( R"__(%1 \times \frac{%4 ){%3})__" ).arg( rmv->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) );
         }
 
         TFormulaString cubicFeetToLitersFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters )
         {
-            return { liters, QString( R"__(%2 \times <%3>)__" ).arg( cubicFeet->fieldName() ).arg( NConstants::kLitersToCubicFeetFieldName ) };
+            return std::make_shared< CFormulaString >( liters, QString( R"__(%2 \times %3)__" ).arg( cubicFeet->fieldName() ).arg( fieldNameForType( EVariableType::eLitersToCubicFeetConst ) ) );
         }
 
         TFormulaString litersToCubicFeetFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters )
         {
-            return { cubicFeet, QString( R"__(%2 \times <%3>)__" ).arg( liters->fieldName() ).arg( NConstants::kCubicFeetToLitersFieldName ) };
+            return std::make_shared< CFormulaString >( cubicFeet, QString( R"__(%2 \times %3)__" ).arg( liters->fieldName() ).arg( fieldNameForType( EVariableType::eCubicFeetToLitersConst ) ) );
         }
 
         double surfacePressureAtAltitude( bool imperial, double altitude )
@@ -210,13 +215,13 @@ namespace NUtilities
             return NConstants::pressureAtSurface( imperial ) - ( altitude * NConstants::pressureLossPerAltitude( imperial ) );
         }
 
-        TFormulaString surfacePressureAtAltitudeFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude )
+        TFormulaString surfacePressureAtAltitudeFormula( bool /*imperial*/, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude )
         {
             auto retVal = QString( R"__(%2 - ( %3 \times %4 ))__" )   //
-                              .arg( NConstants::pressureAtSurface( imperial, true, true, false ) )
+                              .arg( fieldNameForType( EVariableType::ePressureAtSurfaceConst ) )
                               .arg( altitude->fieldName() )
-                              .arg( NConstants::pressureLossPerAltitude( imperial, true, true, false ) );
-            return { surfacePressure, retVal };
+                              .arg( fieldNameForType( EVariableType::ePressureLossPerAltitudeGainConst ) );
+            return std::make_shared< CFormulaString >( surfacePressure, retVal );
         }
 
         double altitudeForSurfacePressure( bool imperial, double surfacePressure )
@@ -228,9 +233,9 @@ namespace NUtilities
         {
             auto formula = QString( R"__(\frac{%1 - %2}{%4})__" )   //
                                .arg( surfacePressure->fieldName() )
-                               .arg( NConstants::pressureAtSurface( imperial, true, true, false ) )
-                               .arg( NConstants::pressureLossPerAltitude( imperial, true, true, false ) );
-            return { altitude, formula };
+                               .arg( NConstants::pressureAtSurface( imperial, true, true, true ) )
+                               .arg( NConstants::pressureLossPerAltitude( imperial, true, true, true ) );
+            return std::make_shared< CFormulaString >( altitude, formula );
         }
 
         namespace NCaloriesComputer
@@ -324,20 +329,20 @@ namespace NUtilities
                 TFormulaStringList formulas;
                 if ( imperial )
                 {
-                    formulas.emplace_back( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) );
+                    formulas.push_back( std::make_shared< CFormulaString >( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) ) );
                     if ( seaWater )
-                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ) );
+                        formulas.push_back( std::make_shared< CFormulaString >( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ) ) );
                     else
-                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) );
+                        formulas.push_back( std::make_shared< CFormulaString >( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) ) );
 
-                    formulas.emplace_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
+                    formulas.push_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
                 }
                 else if ( !seaWater )
                 {
-                    formulas.emplace_back( depthFreshwaterToSeawaterFormula( depth, actualDepth = depth->clone( "MS" ) ) );
+                    formulas.push_back( depthFreshwaterToSeawaterFormula( depth, actualDepth = depth->clone( "MS" ) ) );
                 }
 
-                auto rhs = QString( "<%2 > " ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+                auto rhs = fieldNameForType( EVariableType::eBaseMETofSCUBAConst );
                 rhs += QString( R"__( \times ( 1 + [ %1 \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepth->fieldName() ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
 
                 if ( !temperature->optValue().has_value() || ( temperature->optValue().value() < 25.0 ) )
@@ -350,7 +355,7 @@ namespace NUtilities
                            .arg( activityLevel->fieldName() )
                            .arg( duration->fieldName() );
 
-                formulas.emplace_back( calories, rhs );
+                formulas.push_back( std::make_shared< CFormulaString >( calories, rhs ) );
                 return formulas;
             }
 
@@ -398,20 +403,20 @@ namespace NUtilities
                 TFormulaStringList formulas;
                 if ( imperial )
                 {
-                    formulas.emplace_back( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) );
+                    formulas.push_back( std::make_shared< CFormulaString >( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) ) );
                     if ( seaWater )
-                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ) );
+                        formulas.push_back( std::make_shared< CFormulaString >( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ) ) );
                     else
-                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) );
+                        formulas.push_back( std::make_shared< CFormulaString >( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) ) );
 
-                    formulas.emplace_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
+                    formulas.push_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
                 }
                 else if ( !seaWater )
                 {
-                    formulas.emplace_back( depthFreshwaterToSeawaterFormula( depth, actualDepth = depth->clone( "MS" ) ) );
+                    formulas.push_back( depthFreshwaterToSeawaterFormula( depth, actualDepth = depth->clone( "MS" ) ) );
                 }
 
-                auto rhs = QString( R"__(\frac{%2}{<%3>)__" ).arg( calories->fieldName() ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+                auto rhs = QString( R"__(\frac{%2}{%3)__" ).arg( calories->fieldName() ).arg( fieldNameForType( EVariableType::eBaseMETofSCUBAConst ) );
                 rhs += QString( R"__( \times ( 1 + [ %1 \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepth->fieldName() ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
 
                 if ( !temperature->optValue().has_value() || ( temperature->optValue().value() < 25.0 ) )
@@ -423,7 +428,7 @@ namespace NUtilities
                            .arg( activityLevel->fieldName() )
                            .arg( actualWeight->fieldName() );
 
-                formulas.emplace_back( duration, rhs );
+                formulas.push_back( std::make_shared< CFormulaString >( duration, rhs ) );
                 return formulas;
             }
         }
