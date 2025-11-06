@@ -220,7 +220,7 @@ namespace NUtilities
         QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             return ratioConstant(
-                false, false, useAbbreviations, tex, description,   //
+                imperial, false, useAbbreviations, tex, description,   //
                 [ imperial ]() -> double { return NConstants::pressureChangePerDegreeChange( imperial ); },   //
                 [ tex ]() -> QString { return ratio( QObject::tr( "Pressure" ), QObject::tr( "Degree Change" ), tex ); },   //
                 []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ); },   //
@@ -435,7 +435,7 @@ namespace NUtilities
         QString pressureLossPerAltitudeGain( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             auto retVal = ratioConstant(
-                false, false, useAbbreviations, tex, description,   //
+                imperial, false, useAbbreviations, tex, description,   //
                 [ imperial ]() -> double { return NConstants::pressureLossPerAltitudeGain( imperial ); },   //
                 [ tex ]() -> QString { return ratio( QObject::tr( "Pressure Loss" ), QObject::tr( "Altitude Gain" ), tex ); },   //
                 []( bool imperial, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::atmosphereUnit( imperial, useAbbreviations, tex ); },   //
