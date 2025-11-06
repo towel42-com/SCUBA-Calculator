@@ -58,7 +58,7 @@ bool CGeneratedFormulaData::operator==( const CGeneratedFormulaData &rhs ) const
 void CGeneratedFormulaData::addFormula( const TFormula &formula, const std::function< bool( const QString &formula ) > &beenCreated )
 {
     auto tex = formula->formulas();
-    auto formulaString = NUtilities::joinFormulas( tex );
+    auto formulaString = NUtilities::joinFormulas( formula->imperial(), formula->seaWater(), tex );
     if ( !formulaString.has_value() )
         return;
 

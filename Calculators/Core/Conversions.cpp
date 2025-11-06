@@ -1,4 +1,5 @@
 #include "Utilities.h"
+#include "VariableInfo.h"
 #include <QString>
 #include <QObject>
 
@@ -16,9 +17,9 @@ namespace NUtilities
             return temp - NConstants::absZeroOffset( imperial );
         }
 
-        TFormulaString barToPSIFormula( const QString &psiFieldName, const QString &barFieldName )
+        TFormulaString barToPSIFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar )
         {
-            return { QString( "<%1>" ).arg( psiFieldName ), QString( R"__(<%1> \times <%3>)__" ).arg( barFieldName ).arg( NConstants::kPSIToBarConstFieldName ) };
+            return { psi, QString( R"__(<%1> \times <%3>)__" ).arg( bar->fieldName() ).arg( NConstants::kPSIToBarConstFieldName ) };
         }
 
         double barToPSI( double bar )
@@ -26,9 +27,9 @@ namespace NUtilities
             return bar * NConstants::barToPSI();
         }
 
-        TFormulaString psiToBarFormula( const QString &psiFieldName, const QString &barFieldName )
+        TFormulaString psiToBarFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar )
         {
-            return ratioFormula( barFieldName, psiFieldName, fieldNameForType( EVariableType::ePSIToBarConst ) );
+            return ratioFormula( psi, bar, fieldNameForType( EVariableType::ePSIToBarConst ) );
         }
 
         double psiToBar( double psi )
@@ -36,9 +37,9 @@ namespace NUtilities
             return psi / NConstants::barToPSI();
         }
 
-        TFormulaString depthToATAFormula( const QString &ataFieldName, const QString &depthFieldName )
+        TFormulaString depthToATAFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth )
         {
-            return { QString( "<%1>" ).arg( ataFieldName ), QString( R"__(\frac{<%2>}{<%3>} + 1)__" ).arg( depthFieldName ).arg( NConstants::kDepthToSingleATMConstFieldName ) };
+            return { ata, QString( R"__(\frac{<%2>}{<%3>} + 1)__" ).arg( depth->fieldName() ).arg( NConstants::kDepthToSingleATMConstFieldName ) };
         }
 
         double depthToATA( bool imperial, bool seaWater, double depth )
@@ -47,9 +48,9 @@ namespace NUtilities
             return ( depth / depthOfATM ) + 1;
         }
 
-        TFormulaString ataToDepthFormula( const QString &ataFieldName, const QString &depthFieldName )
+        TFormulaString ataToDepthFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth )
         {
-            return { QString( "<%1>" ).arg( depthFieldName ), QString( R"__((<%1>-1) \times <%3>)__" ).arg( ataFieldName ).arg( NConstants::kDepthToSingleATMConstFieldName ) };
+            return { depth, QString( R"__((<%1>-1) \times <%3>)__" ).arg( ata->fieldName() ).arg( NConstants::kDepthToSingleATMConstFieldName ) };
         }
 
         double ataToDepth( bool imperial, bool seaWater, double pressure )
@@ -63,9 +64,9 @@ namespace NUtilities
             return depthFW * NConstants::freshWaterToSeaWater();
         }
 
-        TFormulaString depthFreshwaterToSeawaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName )
+        TFormulaString depthFreshwaterToSeawaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater )
         {
-            return { QString( "<%1>" ).arg( seaWaterFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( freshWaterFieldName ).arg( fieldNameForType( EVariableType::eFreshWaterToSeaWaterConst ) ) };
+            return { seaWater, QString( R"__(<%2> \times <%3>)__" ).arg( freshWater->fieldName() ).arg( fieldNameForType( EVariableType::eFreshWaterToSeaWaterConst ) ) };
         }
 
         double depthSeawaterToFreshwater( double depthSW )
@@ -73,9 +74,9 @@ namespace NUtilities
             return depthSW * NConstants::seaWaterToFreshWater();
         }
 
-        TFormulaString depthSeawaterToFreshwaterFormula( const QString &freshWaterFieldName, const QString &seaWaterFieldName )
+        TFormulaString depthSeawaterToFreshwaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater )
         {
-            return { QString( "<%1>" ).arg( freshWaterFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( seaWaterFieldName ).arg( fieldNameForType( EVariableType::eSeaWaterToFreshWaterConst ) ) };
+            return { freshWater, QString( R"__(<%2> \times <%3>)__" ).arg( seaWater->fieldName() ).arg( fieldNameForType( EVariableType::eSeaWaterToFreshWaterConst ) ) };
         }
 
         double feetToMeters( double feet )
@@ -83,9 +84,9 @@ namespace NUtilities
             return feet * NConstants::metersPerFeet();
         }
 
-        TFormulaString feetToMetersFormula( const QString &feetFieldName, const QString &metersFieldName )
+        TFormulaString feetToMetersFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters )
         {
-            return { QString( "<%1>" ).arg( metersFieldName ), QString( R"__(<%1> \times <%3>)__" ).arg( feetFieldName ).arg( NConstants::kFeetToMetersConstFieldName ) };
+            return { meters, QString( R"__(<%1> \times <%3>)__" ).arg( feet->fieldName() ).arg( NConstants::kFeetToMetersConstFieldName ) };
         }
 
         double metersToFeet( double meters )
@@ -93,9 +94,9 @@ namespace NUtilities
             return meters * NConstants::feetPerMeters();
         }
 
-        TFormulaString metersToFeetFormula( const QString &feetFieldName, const QString &metersFieldName )
+        TFormulaString metersToFeetFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters )
         {
-            return { QString( "<%1>" ).arg( feetFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( metersFieldName ).arg( NConstants::kMetersToFeetConstFieldName ) };
+            return { feet, QString( R"__(<%2> \times <%3>)__" ).arg( meters->fieldName() ).arg( NConstants::kMetersToFeetConstFieldName ) };
         }
 
         double pressureChangeForDegreeChange( bool imperial, double temperature )
@@ -108,14 +109,14 @@ namespace NUtilities
             return pressure / NConstants::pressureChangePerDegreeChange( imperial );
         }
 
-        TFormulaString pressureChangeForDegreeChangeFormula( const QString &tempFieldName, const QString &pressureFieldName )
+        TFormulaString pressureChangeForDegreeChangeFormula( const TConstVariableInfo &temp, const TConstVariableInfo &pressure )
         {
-            return { QString( "<%1>" ).arg( pressureFieldName ), QString( R"__(<%1> \times <%3>)__" ).arg( tempFieldName ).arg( NConstants::kPressurePerDegreeConstFieldName ) };
+            return { pressure, QString( R"__(<%1> \times <%3>)__" ).arg( temp->fieldName() ).arg( NConstants::kPressurePerDegreeConstFieldName ) };
         }
 
-        TFormulaString degreeChangeForPressureChangeFormula( const QString &tempFieldName, const QString &pressureFieldName )
+        TFormulaString degreeChangeForPressureChangeFormula( const TConstVariableInfo &temp, const TConstVariableInfo &pressure )
         {
-            return ratioFormula( tempFieldName, pressureFieldName, fieldNameForType( EVariableType::ePressurePerDegreeConst ) );
+            return ratioFormula( temp, pressure, fieldNameForType( EVariableType::ePressurePerDegreeConst ) );
         }
 
         double lbsToKGs( double lbs )
@@ -128,14 +129,14 @@ namespace NUtilities
             return kgs * NConstants::lbsPerKGs();
         }
 
-        TFormulaString lbsToKGsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
+        TFormulaString lbsToKGsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs )
         {
-            return { QString( "<%1>" ).arg( kgsFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( lbsFieldName ).arg( NConstants::kKgsPerLbsConstFieldName ) };
+            return { kgs, QString( R"__(<%2> \times <%3>)__" ).arg( lbs->fieldName() ).arg( NConstants::kKgsPerLbsConstFieldName ) };
         }
 
-        TFormulaString kgsToLbsFormula( const QString &lbsFieldName, const QString &kgsFieldName )
+        TFormulaString kgsToLbsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs )
         {
-            return { QString( "<%1>" ).arg( lbsFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( kgsFieldName ).arg( NConstants::kLbsPerKgsConstFieldName ) };
+            return { lbs, QString( R"__(<%2> \times <%3>)__" ).arg( kgs->fieldName() ).arg( NConstants::kLbsPerKgsConstFieldName ) };
         }
 
         double farenheightToCelsius( double temp )
@@ -143,10 +144,10 @@ namespace NUtilities
             return ( temp - 32 ) * 5.0 / 9.0;
         }
 
-        TFormulaString farenheightToCelsiusFormula( const QString &celsiusFieldName, const QString &farenheightFieldName )
+        TFormulaString farenheightToCelsiusFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight )
         {
-            auto formula = QString( R"__((<%1> - 32 ) \times \frac{5%2}{9%3})__" ).arg( farenheightFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) ).arg( NUnitStrings::tempUnit( true, true, true ) );
-            return { QString( "<%1>" ).arg( celsiusFieldName ), formula };
+            auto formula = QString( R"__((<%1> - 32 ) \times \frac{5%2}{9%3})__" ).arg( farenheight->fieldName() ).arg( NUnitStrings::tempUnit( false, true, true ) ).arg( NUnitStrings::tempUnit( true, true, true ) );
+            return { celsius, formula };
         }
 
         double celsiusToFarenheight( double temp )
@@ -154,10 +155,10 @@ namespace NUtilities
             return ( temp * 9 / 5 ) + 32;
         }
 
-        TFormulaString celsiusToFarenheightFormula( const QString &celsiusFieldName, const QString &farenheightFieldName )
+        TFormulaString celsiusToFarenheightFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight )
         {
-            auto formula = QString( R"__((<%1> \times \frac{9%2}{5%3}) + 32)__" ).arg( celsiusFieldName ).arg( NUnitStrings::tempUnit( true, true, true ) ).arg( NUnitStrings::tempUnit( false, true, true ) );
-            return { QString( "<%1>" ).arg( farenheightFieldName ), formula };
+            auto formula = QString( R"__((<%1> \times \frac{9%2}{5%3}) + 32)__" ).arg( celsius->fieldName() ).arg( NUnitStrings::tempUnit( true, true, true ) ).arg( NUnitStrings::tempUnit( false, true, true ) );
+            return { farenheight, formula };
         }
 
         double cubicFeetToLiters( double cuft )
@@ -184,24 +185,24 @@ namespace NUtilities
             return sac;
         }
 
-        TFormulaString sacToRMVFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName )
+        TFormulaString sacToRMVFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure )
         {
-            return { QString( "<%1>" ).arg( rmvFieldName ), QString( R"__(<%2> \times \frac{<%3>}{<%4>})__" ).arg( sacFieldName ).arg( tankVolumeFieldName ).arg( tankPressureFieldName ) };
+            return { rmv, QString( R"__(<%2> \times \frac{<%3>}{<%4>})__" ).arg( sac->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) };
         }
 
-        TFormulaString rmvToSACFormula( const QString &sacFieldName, const QString &rmvFieldName, const QString &tankVolumeFieldName, const QString &tankPressureFieldName )
+        TFormulaString rmvToSACFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure )
         {
-            return { QString( "<%1>" ).arg( sacFieldName ), QString( R"__(<%1> \times \frac{<%4>}{<%3>})__" ).arg( rmvFieldName ).arg( tankVolumeFieldName ).arg( tankPressureFieldName ) };
+            return { sac, QString( R"__(<%1> \times \frac{<%4>}{<%3>})__" ).arg( rmv->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) };
         }
 
-        TFormulaString cubicFeetToLitersFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
+        TFormulaString cubicFeetToLitersFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters )
         {
-            return { QString( "<%1>" ).arg( litersFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( cubicFeetFieldName ).arg( NConstants::kLitersToCubicFeetFieldName ) };
+            return { liters, QString( R"__(<%2> \times <%3>)__" ).arg( cubicFeet->fieldName() ).arg( NConstants::kLitersToCubicFeetFieldName ) };
         }
 
-        TFormulaString litersToCubicFeetFormula( const QString &cubicFeetFieldName, const QString &litersFieldName )
+        TFormulaString litersToCubicFeetFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters )
         {
-            return { QString( "<%1>" ).arg( cubicFeetFieldName ), QString( R"__(<%2> \times <%3>)__" ).arg( litersFieldName ).arg( NConstants::kCubicFeetToLitersFieldName ) };
+            return { cubicFeet, QString( R"__(<%2> \times <%3>)__" ).arg( liters->fieldName() ).arg( NConstants::kCubicFeetToLitersFieldName ) };
         }
 
         double surfacePressureAtAltitude( bool imperial, double altitude )
@@ -209,13 +210,13 @@ namespace NUtilities
             return NConstants::pressureAtSurface( imperial ) - ( altitude * NConstants::pressureLossPerAltitude( imperial ) );
         }
 
-        TFormulaString surfacePressureAtAltitudeFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName )
+        TFormulaString surfacePressureAtAltitudeFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude )
         {
             auto retVal = QString( R"__(%2 - ( <%3> \times %4 ))__" )   //
-                              .arg( NConstants::pressureAtSurface( imperial, true, true ) )
-                              .arg( altitudeFieldName )
-                              .arg( NConstants::pressureLossPerAltitude( imperial, true, true ) );
-            return { QString( "<%1>" ).arg( surfacePressureFieldName ), retVal };
+                              .arg( NConstants::pressureAtSurface( imperial, true, true, false ) )
+                              .arg( altitude->fieldName() )
+                              .arg( NConstants::pressureLossPerAltitude( imperial, true, true, false ) );
+            return { surfacePressure, retVal };
         }
 
         double altitudeForSurfacePressure( bool imperial, double surfacePressure )
@@ -223,13 +224,13 @@ namespace NUtilities
             return ( surfacePressure - NConstants::pressureAtSurface( imperial ) ) / NConstants::pressureLossPerAltitude( imperial );
         }
 
-        TFormulaString altitudeForSurfacePressureFormula( bool imperial, const QString &surfacePressureFieldName, const QString &altitudeFieldName )
+        TFormulaString altitudeForSurfacePressureFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude )
         {
             auto formula = QString( R"__(\frac{<%1> - %2}{%4})__" )   //
-                               .arg( surfacePressureFieldName )
-                               .arg( NConstants::pressureAtSurface( imperial, true, true ) )
-                               .arg( NConstants::pressureLossPerAltitude( imperial, true, true ) );
-            return { QString( "<%1>" ).arg( altitudeFieldName ), formula };
+                               .arg( surfacePressure->fieldName() )
+                               .arg( NConstants::pressureAtSurface( imperial, true, true, false ) )
+                               .arg( NConstants::pressureLossPerAltitude( imperial, true, true, false ) );
+            return { altitude, formula };
         }
 
         namespace NCaloriesComputer
@@ -315,45 +316,41 @@ namespace NUtilities
                 return calories;
             }
 
-            TFormulaStringList computeCaloriesFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
+            TFormulaStringList computeCaloriesFormula( bool imperial, bool seaWater, const TConstVariableInfo &calories, const TConstVariableInfo &weight, const TConstVariableInfo &depth, const TConstVariableInfo &temperature, const TConstVariableInfo &activityLevel, const TConstVariableInfo &duration )
             {
-                auto actualWeightFieldName = weightFieldName;
-                auto actualDepthFieldName = depthFieldName;
-                auto actualTempFieldName = tempFieldNameAndValue.second;
+                auto actualWeight = weight;
+                auto actualDepth = depth;
+                auto actualTemp = temperature;
                 TFormulaStringList formulas;
                 if ( imperial )
                 {
-                    formulas.emplace_back( QString( "<%1>" ).arg( weightFieldName + "M" ), QString( R"__(<%2> \times %3)__" ).arg( weightFieldName ).arg( NConstants::kgsPerLbs( true, true ) ) );
+                    formulas.emplace_back( actualWeight = weight->clone( "M" ), QString( R"__(<%2> \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) );
                     if ( seaWater )
-                        formulas.emplace_back( QString( "<%1>" ).arg( depthFieldName + "MS" ), QString( R"__(<%2> \times %3)__" ).arg( depthFieldName ).arg( NConstants::feetToMeters( true, true ) ) );
+                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(<%2> \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ) );
                     else
-                        formulas.emplace_back( QString( "<%1>" ).arg( depthFieldName + "MS" ), QString( R"__(\frac{<%2> \times %3}{%4} )__" ).arg( depthFieldName ).arg( NConstants::feetToMeters( true, true ) ).arg( NConstants::freshWaterToSeaWater( false, true, true ) ) );
+                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{<%2> \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) );
 
-                    formulas.emplace_back( farenheightToCelsiusFormula( tempFieldNameAndValue.second + "M", tempFieldNameAndValue.second ) );
-                    actualWeightFieldName += "M";
-                    actualDepthFieldName += "MS";
-                    actualTempFieldName += "M";
+                    formulas.emplace_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
                 }
                 else if ( !seaWater )
                 {
-                    formulas.emplace_back( depthFreshwaterToSeawaterFormula( depthFieldName, depthFieldName + "MS" ) );
-                    actualDepthFieldName += "MS";
+                    formulas.emplace_back( depthFreshwaterToSeawaterFormula( depth, actualDepth = depth->clone( "MS" ) ) );
                 }
 
                 auto rhs = QString( "<%2 > " ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
-                rhs += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
+                rhs += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepth->fieldName() ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
 
-                if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
+                if ( !temperature->optValue().has_value() || ( temperature->optValue().value() < 25.0 ) )
                 {
-                    rhs += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
+                    rhs += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTemp->fieldName() ).arg( NUnitStrings::tempUnit( false, true, true ) );
                 }
 
                 rhs += QString( R"__( \times <%1> \times \frac{<%2>}{100\%} \times <%3>)__" )   //
-                           .arg( actualWeightFieldName )
-                           .arg( activityLevelFieldName )
-                           .arg( durationFieldName );
+                           .arg( actualWeight->fieldName() )
+                           .arg( activityLevel->fieldName() )
+                           .arg( duration->fieldName() );
 
-                formulas.emplace_back( QString( "<%1>" ).arg( caloriesFieldName ), rhs );
+                formulas.emplace_back( calories, rhs );
                 return formulas;
             }
 
@@ -393,46 +390,40 @@ namespace NUtilities
                 return duration;
             }
 
-            TFormulaStringList computeDurationFormula( bool imperial, bool seaWater, const QString &caloriesFieldName, const QString &weightFieldName, const QString &depthFieldName, const std::pair< TOptionalDouble, QString > &tempFieldNameAndValue, const QString &activityLevelFieldName, const QString &durationFieldName )
+            TFormulaStringList computeDurationFormula( bool imperial, bool seaWater, const TConstVariableInfo &calories, const TConstVariableInfo &weight, const TConstVariableInfo &depth, const TConstVariableInfo &temperature, const TConstVariableInfo &activityLevel, const TConstVariableInfo &duration )
             {
-                //auto weightFormula = QString( "<%1>" ).arg( weightFieldName );
-                //auto depthFormula = QString( "<%1>" ).arg( depthFieldName );
-                //auto temperatureFormula = QString( "<%1>" ).arg( tempFieldNameAndValue.second );
-                auto actualDepthFieldName = depthFieldName;
-                auto actualTempFieldName = tempFieldNameAndValue.second;
-                auto actualWeightFieldName = weightFieldName;
+                auto actualDepth = depth;
+                auto actualTemp = temperature;
+                auto actualWeight = weight;
                 TFormulaStringList formulas;
                 if ( imperial )
                 {
-                    formulas.emplace_back( QString( "<%1>" ).arg( weightFieldName + "C" ), QString( R"__(<%2> \times %3)__" ).arg( weightFieldName ).arg( NConstants::kgsPerLbs( true, true ) ) );
+                    formulas.emplace_back( actualWeight = weight->clone( "M" ), QString( R"__(<%2> \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) );
                     if ( seaWater )
-                        formulas.emplace_back( QString( "<%1>" ).arg( depthFieldName + "C" ), QString( R"__(<%2> \times %3)__" ).arg( depthFieldName ).arg( NConstants::feetToMeters( true, true ) ) );
+                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(<%2> \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ) );
                     else
-                        formulas.emplace_back( QString( "<%1>" ).arg( depthFieldName + "C" ), QString( R"__(\frac{<%2> \times %3}{%4} )__" ).arg( depthFieldName ).arg( NConstants::feetToMeters( true, true ) ).arg( NConstants::freshWaterToSeaWater( false, true, true ) ) );
+                        formulas.emplace_back( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{<%2> \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::feetToMeters( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) );
 
-                    formulas.emplace_back( farenheightToCelsiusFormula( tempFieldNameAndValue.second + "C", tempFieldNameAndValue.second ) );
-                    actualDepthFieldName += "C";
-                    actualTempFieldName += "C";
+                    formulas.emplace_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
                 }
                 else if ( !seaWater )
                 {
-                    formulas.emplace_back( depthFreshwaterToSeawaterFormula( depthFieldName, depthFieldName + "C" ) );
-                    actualDepthFieldName += "C";
+                    formulas.emplace_back( depthFreshwaterToSeawaterFormula( depth, actualDepth = depth->clone( "MS" ) ) );
                 }
 
-                auto rhs = QString( R"__(\frac{<%2>}{<%3>)__" ).arg( caloriesFieldName ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
-                rhs += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepthFieldName ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
+                auto rhs = QString( R"__(\frac{<%2>}{<%3>)__" ).arg( calories->fieldName() ).arg( NConstants::kBaseMETofSCUBAConstFieldName );
+                rhs += QString( R"__( \times ( 1 + [ <%1> \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepth->fieldName() ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
 
-                if ( !tempFieldNameAndValue.first.has_value() || ( tempFieldNameAndValue.first.value() < 25.0 ) )
+                if ( !temperature->optValue().has_value() || ( temperature->optValue().value() < 25.0 ) )
                 {
-                    rhs += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTempFieldName ).arg( NUnitStrings::tempUnit( false, true, true ) );
+                    rhs += QString( R"__( \times ( 1 + [ 25.0%2 - <%1> \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTemp->fieldName() ).arg( NUnitStrings::tempUnit( false, true, true ) );
                 }
 
                 rhs += QString( R"__( \times \frac{<%1>}{100\%} \times <%2> })__" )   //
-                           .arg( activityLevelFieldName )
-                           .arg( actualWeightFieldName );
+                           .arg( activityLevel->fieldName() )
+                           .arg( actualWeight->fieldName() );
 
-                formulas.emplace_back( QString( R"__(<%1>)__" ).arg( durationFieldName ), rhs );
+                formulas.emplace_back( duration, rhs );
                 return formulas;
             }
         }

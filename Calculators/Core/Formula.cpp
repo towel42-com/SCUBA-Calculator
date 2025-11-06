@@ -65,7 +65,7 @@ namespace NUtilities
 
     QString SFormula::formula() const
     {
-        auto retVal = NUtilities::joinFormulas( cleanedFormulas() );
+        auto retVal = NUtilities::joinFormulas( imperial(), seaWater(), cleanedFormulas() );
         if ( !retVal.has_value() )
             return {};
         return retVal.value();
@@ -76,7 +76,6 @@ namespace NUtilities
         auto retVal = this->formulas();
         for ( auto &&ii : retVal )
         {
-            ii.first = NTowel42::cleanupFormula( ii.first );
             ii.second = NTowel42::cleanupFormula( ii.second );
         }
         return retVal;
@@ -84,7 +83,8 @@ namespace NUtilities
 
     void SFormula::setFormula( const QString &formula )
     {
-        fFormulas.clear(), fFormulas.emplace_back( formula, QString() );
+        fFormulas.clear();
+        fFormulas.emplace_back( TConstVariableInfo(), formula );
     }
 
     bool SFormula::operator==( const SFormula &rhs ) const

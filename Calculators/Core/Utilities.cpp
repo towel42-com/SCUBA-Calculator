@@ -1,9 +1,33 @@
 #include "Utilities.h"
+#include "VariableInfo.h"
+
 #include <QString>
 #include <QObject>
+#include <QRegularExpression>
 
 namespace NUtilities
 {
+    QStringList getVariables( const QString &formula )
+    {
+        QStringList retVal;
+
+        auto regEx = QRegularExpression( R"__(\<((?:[A-Za-z]+)|(?:%\d+))\>)__" );
+        auto matchII = regEx.globalMatch( formula );
+        int offset = 0;
+        while ( matchII.hasNext() )
+        {
+            auto match = matchII.next();
+            retVal << match.captured( 1 );
+        }
+        return retVal;
+    }
+
+    bool hasVariable( const QString &formula )
+    {
+        auto regEx = QRegularExpression( R"__(\<([A-Za-z]+)|(%\d+)\>)__" );
+        return regEx.match( formula ).hasMatch();
+    }
+
     QString ratio( const QString &numerator, const QString &denominator, bool tex )
     {
         QString retVal = tex ? R"__(\frac{%2}{%3})__" : "(%2/%3)";
@@ -11,23 +35,49 @@ namespace NUtilities
         return retVal;
     }
 
-    TFormulaString ratioFormula( const QString &resultantFieldName, const QString &numeratorFieldName, const QString &denominatorFieldName )
+    QString ratio( const QString &desc, const QString &numerator, const QString &denominator, bool tex )
     {
-        return { QString( "<%1>" ).arg( resultantFieldName ), ratio( "<" + numeratorFieldName + ">", "<" + denominatorFieldName + ">", true ) };
+        QString retVal = tex ? R"__(%1 %2)__" : "%1 %2";
+        retVal = retVal.arg( desc ).arg( ratio( numerator, denominator, tex ) );
+
+        return retVal;
     }
 
     QString ratio( double value, const QString &numerator, const QString &denominator, bool tex, std::optional< int > numDecimal /*= {}*/ )
     {
         QString valueString;
+
         if ( !numDecimal.has_value() )
             valueString = QString( "%1" ).arg( value );
         else
             valueString = NUtilities::doubleToString( value, numDecimal.value() );
 
-        QString retVal = tex ? R"__(%1 %2)__" : "%1 %2";
-        retVal = retVal.arg( valueString ).arg( ratio( numerator, denominator, tex ) );
+        return ratio( valueString, numerator, denominator, tex );
+    }
 
-        return retVal;
+    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator )
+    {
+        return { returnVariable, ratio( numerator->fieldName(), denominator->fieldName(), true ) };
+    }
+
+    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator )
+    {
+        return { returnVariable, ratio( numerator->fieldName(), denominator, true ) };
+    }
+
+    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator )
+    {
+        return { returnVariable, ratio( numerator, denominator->fieldName(), true ) };
+    }
+
+    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator )
+    {
+        return { returnVariable, ratio( numerator->fieldName(), NUtilities::fieldNameForType( denominator ), true ) };
+    }
+
+    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator )
+    {
+        return { returnVariable, ratio( NUtilities::fieldNameForType( numerator ), denominator->fieldName(), true ) };
     }
 
     QString descForType( EVariableType type )
@@ -203,14 +253,14 @@ namespace NUtilities
         return retVal;
     }
 
-    std::optional< QString > joinFormulas( const TFormulaStringList &formulaStrings )
+    std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulaStrings )
     {
         if ( formulaStrings.empty() )
             return {};
 
         QStringList formulas;
         for ( auto &&ii : formulaStrings )
-            formulas << NUtilities::createEquation( ii );
+            formulas << NUtilities::createEquation( imperial, seaWater, ii );
 
         auto retVal = formulas.join( R"( \newline )" );
         if ( formulas.size() > 1 )
@@ -221,15 +271,14 @@ namespace NUtilities
         return retVal;
     }
 
-    QString createEquation( const TFormulaString &formula )
+    QString createEquation( bool imperial, bool seaWater, const TFormulaString &formula )
     {
-        if ( !formula.first.isEmpty() && !formula.second.isEmpty() )
-            return QString( "%1 = %2" ).arg( formula.first ).arg( formula.second );
-        if ( !formula.first.isEmpty() && formula.second.isEmpty() )
-            return QString( "%1" ).arg( formula.first );
-        if ( formula.first.isEmpty() && !formula.second.isEmpty() )
+        if ( formula.first && !formula.second.isEmpty() )
+            return QString( "%1 = %2" ).arg( formula.first->descriptiveName( imperial, seaWater ) ).arg( formula.second );
+        if ( formula.first && formula.second.isEmpty() )
+            return QString( "%1" ).arg( formula.first->descriptiveName( imperial, seaWater ) );
+        if ( !formula.first && !formula.second.isEmpty() )
             return QString( "%1" ).arg( formula.second );
-        //if ( formula.first.isEmpty() && formula.second.isEmpty() )
         return {};
     }
 
