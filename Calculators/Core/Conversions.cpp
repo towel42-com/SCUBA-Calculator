@@ -86,7 +86,7 @@ namespace NUtilities
 
         double feetToMeters( double feet )
         {
-            return feet * NConstants::metersPerFeet();
+            return feet * NConstants::metersPerFoot();
         }
 
         TFormulaString feetToMetersFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters )
@@ -168,7 +168,7 @@ namespace NUtilities
 
         double cubicFeetToLiters( double cuft )
         {
-            return cuft * NConstants::litersPerCubicFeet();
+            return cuft * NConstants::litersPerCubicFoot();
         }
 
         double litersToCubicFeet( double liters )
@@ -314,7 +314,7 @@ namespace NUtilities
 
                 metValue *= activityLevelMultiplier;
 
-                metValue = NConstants::baseMETForScuba() * metValue;
+                metValue = NConstants::scubaMET() * metValue;
 
                 // Calculate calories burned: MET * weight in kg * time in minutes
                 auto calories = metValue * weight * duration;
@@ -388,7 +388,7 @@ namespace NUtilities
 
                 metValue *= activityLevelMultiplier;
 
-                metValue = NConstants::baseMETForScuba() * metValue;
+                metValue = NConstants::scubaMET() * metValue;
 
                 // Calculate calories burned: MET * weight in kg * time in minutes
                 auto duration = calories / ( metValue * weight );

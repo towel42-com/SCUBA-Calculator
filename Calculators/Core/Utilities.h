@@ -57,7 +57,7 @@ namespace NUtilities
         CALCULATORS_EXPORT double singleATMPerDepth( bool imperial, bool seaWater );
         CALCULATORS_EXPORT double idealGasConstant( bool imperial );
 
-        CALCULATORS_EXPORT double metersPerFeet();
+        CALCULATORS_EXPORT double metersPerFoot();
         CALCULATORS_EXPORT double feetPerMeters();
 
         CALCULATORS_EXPORT double freshWaterToSeaWater();
@@ -71,19 +71,19 @@ namespace NUtilities
         CALCULATORS_EXPORT double lbsPerKGs();
         CALCULATORS_EXPORT double kgsPerLbs();
 
-        CALCULATORS_EXPORT double baseMETForScuba();
+        CALCULATORS_EXPORT double scubaMET();
         CALCULATORS_EXPORT double fillRateAir( bool imperial );
         CALCULATORS_EXPORT double fillRateO2( bool imperial );
 
         CALCULATORS_EXPORT double cubicFeetPerLiter();
-        CALCULATORS_EXPORT double litersPerCubicFeet();
+        CALCULATORS_EXPORT double litersPerCubicFoot();
 
         CALCULATORS_EXPORT double pressureLossPerAltitudeGain( bool imperial );
         CALCULATORS_EXPORT double safetyStopDepth( bool imperial, bool seaWater );
         CALCULATORS_EXPORT double waterWeightAdjustment( bool imperial, bool seaWater );
 
         CALCULATORS_EXPORT QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString lbsPerKgs( bool useAbbreviations, bool tex, bool description );
+        CALCULATORS_EXPORT QString lbsPerKGs( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString kgsPerLbs( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString scubaMET( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString fillRateO2( bool imperial, bool useAbbreviations, bool tex, bool description );
@@ -102,14 +102,15 @@ namespace NUtilities
         CALCULATORS_EXPORT QString psiPerBAR( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString pressureLossPerAltitudeGain( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString safetyStop( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
+        CALCULATORS_EXPORT QString safetyStopDepth( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString litersPerCubicFoot( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString cubicFootPerLiter( bool useAbbreviations, bool tex, bool description );
+        CALCULATORS_EXPORT QString cubicFeetPerLiter( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex, bool description );
 
         void foreachConstantType( const std::function< void( EVariableType ) > &onConstType );
         QString constantString( bool imperial, bool seaWater, EVariableType constantType, bool description );
+        TOptionalDouble constantValue( bool imperial, bool seaWater, EVariableType constantType );
     }
 
     namespace NConversions

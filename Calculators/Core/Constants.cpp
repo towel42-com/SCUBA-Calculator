@@ -67,7 +67,7 @@ namespace NUtilities
             if ( imperial )
             {
                 retVal *= pressureAtSurface( imperial );   // psi/m
-                retVal *= metersPerFeet();   // psi/ft
+                retVal *= metersPerFoot();   // psi/ft
             }
             return retVal;
         }
@@ -116,14 +116,14 @@ namespace NUtilities
             return 1 / freshWaterToSeaWater();
         }
 
-        double metersPerFeet()
+        double metersPerFoot()
         {
             return 0.3048;
         }
 
         double feetPerMeters()
         {
-            return 1 / metersPerFeet();
+            return 1 / metersPerFoot();
         }
 
         double percentN2AtSurface()
@@ -158,10 +158,10 @@ namespace NUtilities
 
         double cubicFeetPerLiter()
         {
-            return 1 / litersPerCubicFeet();
+            return 1 / litersPerCubicFoot();
         }
 
-        double litersPerCubicFeet()
+        double litersPerCubicFoot()
         {
             return 28.3168;
         }
@@ -169,7 +169,7 @@ namespace NUtilities
         // the base unit of 7.0 is
         // kcal/(kg*hour)
         // we return kcal/(kg*min) by dividing by 60
-        double baseMETForScuba()
+        double scubaMET()
         {
             return 7.0 / 60.0;
         }
@@ -228,7 +228,7 @@ namespace NUtilities
                 {} );
         }
 
-        QString lbsPerKgs( bool useAbbreviations, bool tex, bool description )
+        QString lbsPerKGs( bool useAbbreviations, bool tex, bool description )
         {
             return ratioConstant(
                 false, false, useAbbreviations, tex, description,   //
@@ -256,7 +256,7 @@ namespace NUtilities
             if ( description )
                 retVal = retVal.arg( QObject::tr( "Base MET for SCUBA" ) );
             else
-                retVal = retVal.arg( NConstants::baseMETForScuba() );
+                retVal = retVal.arg( NConstants::scubaMET() );
             retVal = retVal.arg( NUnitStrings::metUnits( useAbbreviations, tex ) );
             return retVal;
         }
@@ -444,7 +444,7 @@ namespace NUtilities
             return retVal;
         }
 
-        QString safetyStop( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
+        QString safetyStopDepth( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description )
         {
             QString retVal = ( tex && !description ) ? "%1%2" : "%1 (%2)";
             if ( description )
@@ -479,11 +479,11 @@ namespace NUtilities
                 4 );
         }
 
-        QString cubicFootPerLiter( bool useAbbreviations, bool tex, bool description )
+        QString cubicFeetPerLiter( bool useAbbreviations, bool tex, bool description )
         {
             return ratioConstant(
                 false, false, useAbbreviations, tex, description,   //
-                []() -> double { return NConstants::litersPerCubicFeet(); },   //
+                []() -> double { return NConstants::litersPerCubicFoot(); },   //
                 [ tex ]() -> QString { return ratio( QObject::tr( "Cubic Feet" ), QObject::tr( "Liter" ), tex ); },   //
                 []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::volumeUnit( false, useAbbreviations, tex ); },   //
                 []( bool /*imperial*/, bool /*seaWater*/, bool useAbbreviations, bool tex ) -> QString { return NUnitStrings::volumeUnit( true, useAbbreviations, tex ); },   //
@@ -517,7 +517,7 @@ namespace NUtilities
                 case EVariableType::eMetersToFeetConst:
                     return feetPerMeter( true, true, description );
                 case EVariableType::eLbsPerKgsConst:
-                    return lbsPerKgs( true, true, description );
+                    return lbsPerKGs( true, true, description );
                 case EVariableType::eKgsPerLbsConst:
                     return kgsPerLbs( true, true, description );
                 case EVariableType::eFreshWaterToSeaWaterConst:
@@ -535,7 +535,7 @@ namespace NUtilities
                 case EVariableType::ePressureLossPerAltitudeGainConst:
                     return pressureLossPerAltitudeGain( imperial, true, true, description );
                 case EVariableType::eSafetyStopDepthConst:
-                    return safetyStop( imperial, seaWater, true, true, description );
+                    return safetyStopDepth( imperial, seaWater, true, true, description );
                 case EVariableType::eWaterWeightAdjustmentConst:
                     return waterWeightAdjustment( imperial, seaWater, true, true, description );
                 case EVariableType::eBaseMETofSCUBAConst:
@@ -547,7 +547,69 @@ namespace NUtilities
                 case EVariableType::eCubicFeetToLitersConst:
                     return litersPerCubicFoot( true, true, description );
                 case EVariableType::eLitersToCubicFeetConst:
-                    return cubicFootPerLiter( true, true, description );
+                    return cubicFeetPerLiter( true, true, description );
+            }
+            return {};
+        }
+
+        TOptionalDouble constantValue( bool imperial, bool seaWater, EVariableType constantType )
+        {
+            switch ( constantType )
+            {
+                case EVariableType::eIntermediate:
+                case EVariableType::eVariable:
+                    Q_ASSERT( isConstantVariable( constantType ) );
+                    break;
+                case EVariableType::ePressurePerDegreeConst:
+                    return pressureChangePerDegreeChange( imperial );
+                case EVariableType::eWeightPerVolumeOfWaterConst:
+                    return weightPerVolumeOfWater( imperial, seaWater );
+                case EVariableType::eVolumePerWeightOfWaterConst:
+                    return volumePerWeightOfWater( imperial, seaWater );
+                case EVariableType::eIdealGasConst:
+                    return idealGasConstant( imperial );
+                case EVariableType::eFN2AtSurfaceConst:
+                    return percentN2AtSurface();
+                case EVariableType::eFO2AtSurfaceConst:
+                    return percentO2AtSurface();
+                case EVariableType::eDepthToSingleATMConst:
+                    return singleATMPerDepth( imperial, seaWater );
+                case EVariableType::eFeetToMetersConst:
+                    return metersPerFoot();
+                case EVariableType::eMetersToFeetConst:
+                    return feetPerMeters();
+                case EVariableType::eLbsPerKgsConst:
+                    return lbsPerKGs();
+                case EVariableType::eKgsPerLbsConst:
+                    return kgsPerLbs();
+                case EVariableType::eFreshWaterToSeaWaterConst:
+                    return freshWaterToSeaWater();
+                case EVariableType::eSeaWaterToFreshWaterConst:
+                    return seaWaterToFreshWater();
+                case EVariableType::ePSIToBarConst:
+                    return barPerPSI();
+                case EVariableType::eBarToPSIConst:
+                    return psiPerBAR();
+                case EVariableType::eAbsZeroOffsetConst:
+                    return absZeroOffset( imperial );
+                case EVariableType::ePressureAtSurfaceConst:
+                    return pressureAtSurface( imperial );
+                case EVariableType::ePressureLossPerAltitudeGainConst:
+                    return pressureLossPerAltitudeGain( imperial );
+                case EVariableType::eSafetyStopDepthConst:
+                    return safetyStopDepth( imperial, seaWater );
+                case EVariableType::eWaterWeightAdjustmentConst:
+                    return waterWeightAdjustment( imperial, seaWater );
+                case EVariableType::eBaseMETofSCUBAConst:
+                    return scubaMET();
+                case EVariableType::eFillRateO2Const:
+                    return fillRateO2( imperial );
+                case EVariableType::eFillRateAirConst:
+                    return fillRateAir( imperial );
+                case EVariableType::eCubicFeetToLitersConst:
+                    return litersPerCubicFoot();
+                case EVariableType::eLitersToCubicFeetConst:
+                    return cubicFeetPerLiter();
             }
             return {};
         }
