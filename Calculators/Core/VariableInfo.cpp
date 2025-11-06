@@ -178,20 +178,25 @@ void CVariableInfo::resetValue( bool imperial, bool seaWater, bool updateUI, boo
 
 TOptionalDouble CVariableInfo::optValue() const
 {
-    TOptionalDouble currValue;
-    if ( lineEdit() && !lineEdit()->text().isEmpty() )
-        currValue = valueForString( lineEdit()->text() );
-    else if ( doubleSpinBox() )
-        currValue = doubleSpinBox()->value();
-    else if ( comboBox() )
+    TOptionalDouble retVal;
+    if ( fType == EVariableType::eVariable )
     {
-        auto le = fExtraInputWidgets.empty() ? nullptr : ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) );
-        if ( !comboBox()->currentData().isNull() )
-            currValue = comboBox()->currentData().toDouble();
-        else if ( le && !le->text().isEmpty() )
-            currValue = valueForString( le->text() );
+        if ( lineEdit() && !lineEdit()->text().isEmpty() )
+            retVal = valueForString( lineEdit()->text() );
+        else if ( doubleSpinBox() )
+            retVal = doubleSpinBox()->value();
+        else if ( comboBox() )
+        {
+            auto le = fExtraInputWidgets.empty() ? nullptr : ( dynamic_cast< QLineEdit * >( fExtraInputWidgets.front() ) );
+            if ( !comboBox()->currentData().isNull() )
+                retVal = comboBox()->currentData().toDouble();
+            else if ( le && !le->text().isEmpty() )
+                retVal = valueForString( le->text() );
+        }
     }
-    return currValue;
+    else if ( fType == EVariableType::eIntermediate )
+        retVal = fValue;
+    return retVal;
 }
 
 QLineEdit *CVariableInfo::lineEdit() const
