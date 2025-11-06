@@ -22,12 +22,6 @@ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariabl
 {
 }
 
-//CVariableInfo::CVariableInfo( EVariableType type ) :
-//    CVariableInfo( NUtilities::fieldNameForType( type ), NUtilities::descForType( type ), type, EUnit::eNone, EVariableLoc::eRHS )
-//{
-//    Q_ASSERT( ( fType != EVariableType::eIntermediate ) && ( fType != EVariableType::eVariable ) );
-//}
-
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo ) :
     CVariableInfo( name, desc, EVariableType::eVariable, unitType, variableLocation )
 {
@@ -342,10 +336,10 @@ TOptionalDouble CVariableInfo::valueForString( const QString &text ) const
     return retVal;
 }
 
-void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EFormulaType formulaType ) const
+QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const
 {
     if ( NUtilities::isConstantVariable( fType ) )
-        return updateFormula( imperial, seaWater, formula, fType );
+        return updateFormula( imperial, seaWater, formula, fType, false );
 
     QString value;
     QString format;
@@ -377,7 +371,7 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
 
         if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eCurrentValueFormula ) )
         {
-            newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true ) );
+            newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true, false ) );
         }
         else
         {
@@ -385,6 +379,8 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
             newString.replace( " ()", "" );
         }
     }
+
+    QString retVal = formula;
 
     auto token = QString( "<%1>" ).arg( name() );
     if ( fType == EVariableType::eIntermediate )
@@ -394,21 +390,43 @@ void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formul
             auto labelString = QString( "%1 (%2)" ).arg( fDescription );
             labelString = labelString.arg( unitText( imperial, seaWater, true, formulaType ) );
             labelString.replace( " ()", "" );
-            formula = formula.replace( token, labelString );
+            retVal = retVal.replace( token, labelString );
         }
         else
-            formula = formula.replace( token, newString );
+            retVal = retVal.replace( token, newString );
         token = QString( "<%1_value>" ).arg( name() );
     }
 
-    formula = formula.replace( token, newString );
+    retVal.replace( token, newString );
+    return retVal;
 }
 
-void CVariableInfo::updateFormula( bool imperial, bool seaWater, QString &formula, EVariableType varType )
+QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EVariableType varType, bool descriptionNotValue )
 {
-    QString constantString = NUtilities::NConstants::constantString( imperial, seaWater, varType );
     auto token = QString( "<%1>" ).arg( NUtilities::fieldNameForType( varType ) );
-    formula = formula.replace( token, constantString );
+    auto pos = formula.indexOf( token );
+    if ( pos == -1 )
+        return formula;
+
+    QString constantString = NUtilities::NConstants::constantString( imperial, seaWater, varType, descriptionNotValue );
+    QString retVal = formula;
+    retVal.replace( token, constantString );
+    return retVal;
+}
+
+QString CVariableInfo::descriptiveName( bool imperial, bool seaWater ) const
+{
+    auto retVal = updateFormula( imperial, seaWater, fieldName(), EFormulaType::eBaseFormula );
+    return retVal;
+}
+
+QString CVariableInfo::valueString( bool imperial, bool seaWater ) const
+{
+    if ( !has_value() )
+        return {};
+
+    auto retVal = updateFormula( imperial, seaWater, fieldName(), EFormulaType::eCurrentValueFormula );
+    return retVal;
 }
 
 double CVariableInfo::value() const
@@ -613,6 +631,21 @@ void CVariableInfo::updateValuesAndRanges( bool imperial, bool seaWater )
 {
     setupValues( imperial, seaWater );
     setupRange( imperial, seaWater );
+}
+
+std::shared_ptr< CVariableInfo > CVariableInfo::clone( const QString &suffix /*={}*/ ) const
+{
+    auto retVal = std::make_shared< CVariableInfo >( name() + suffix, fDescription, fType, fUnit, fVariableLocation );
+    retVal->fRanges = fRanges;
+    retVal->fValues = fValues;
+    retVal->fUnitOverride = fUnitOverride;
+    retVal->fValue = fValue;
+    return retVal;
+}
+
+QString CVariableInfo::fieldName() const
+{
+    return QString( "<%1>" ).arg( name() );
 }
 
 void CVariableInfo::setupRange( bool imperial, bool seaWater )

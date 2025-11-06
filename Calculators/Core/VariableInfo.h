@@ -1,4 +1,5 @@
 // The MIT License( MIT )
+// The MIT License( MIT )
 //
 // Copyright( c ) 2025 Scott Aron Bloom
 //
@@ -143,36 +144,41 @@ public:
     CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &range );
     CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &values );
     CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitLabel, bool imperial );
+
+    [[nodiscard]] std::shared_ptr< CVariableInfo > clone( const QString &suffix = {} ) const;
+
     ~CVariableInfo() {}
 
-    QString name() const { return fName; }
-    EVariableLoc variableLoc() const { return fVariableLocation; }
+    [[nodiscard]] QString name() const { return fName; }
+    [[nodiscard]] QString fieldName() const;   // includes < >
+    [[nodiscard]] QString valueString( bool imperial, bool seaWater ) const;
+    [[nodiscard]] QString descriptiveName( bool imperial, bool seaWater ) const;
+
+    [[nodiscard]] EVariableLoc variableLoc() const { return fVariableLocation; }
 
     bool createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout );
 
     void updateLabels( bool imperial, bool seaWater );
     void updateValuesAndRanges( bool imperial, bool seaWater );   // if the values or range need updating due to conditions
-
-public:
-    QString unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const;
+    [[nodiscard]] QString unitText( bool imperial, bool seaWater, bool tex, EFormulaType formulaType ) const;
 
     void resetValue( bool imperial, bool seaWater, bool updateUI, bool notifyUI );   // if updateUI set, fField is updated, if notifyUpdate is true signals are emitted of the change
 
     void updateFieldFromValue( bool imperial, bool seaWater, bool notifyUI = false );   // updates fField from fValue
     void updateValueFromField();   // updates fValue from fField
-    void updateFormula( bool imperial, bool seaWater, QString &newFormula, EFormulaType formulaType ) const;
-    static void updateFormula( bool imperial, bool seaWater, QString &newFormula, EVariableType constant );
+    [[nodiscard]] QString updateFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const;
+    [[nodiscard]] static QString updateFormula( bool imperial, bool seaWater, const QString &formula, EVariableType constantType, bool descriptionNotValue );
 
-    int numDecimals() const { return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2; }
-    double formulaValue() const;   // user responsible for calling has_value first
-    double value() const;   // user responsible for calling has_value first
-    TOptionalDouble optValue() const;
+    [[nodiscard]] int numDecimals() const { return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2; }
+    [[nodiscard]] double formulaValue() const;   // user responsible for calling has_value first
+    [[nodiscard]] double value() const;   // user responsible for calling has_value first
+    [[nodiscard]] TOptionalDouble optValue() const;
 
-    bool has_value() const { return fValue.has_value(); }
-    void setValue( TOptionalDouble value ) { fValue = value; }
+    [[nodiscard]] bool has_value() const { return fValue.has_value(); }
+    [[nodiscard]] void setValue( TOptionalDouble value ) { fValue = value; }
 
-    bool isVariable() const { return fType == EVariableType::eVariable; }
-    bool isWidget( QWidget *widget ) const;
+    [[nodiscard]] bool isVariable() const { return fType == EVariableType::eVariable; }
+    [[nodiscard]] bool isWidget( QWidget *widget ) const;
 
     void setDefaultRange( const SRange &range );
     void addRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range );
@@ -182,18 +188,18 @@ public:
     void addValues( const SBaseInfo< TNamedValueItemList > &valueInfo );
     void setUnitOverride( EUnit unit, bool imperial ) { fUnitOverride = { unit, imperial }; }   // overrides default behavior and always uses this string for the label
 
-    QLineEdit *lineEdit() const;
-    QDoubleSpinBox *doubleSpinBox() const;
-    QComboBox *comboBox() const;
+    [[nodiscard]] QLineEdit *lineEdit() const;
+    [[nodiscard]] QDoubleSpinBox *doubleSpinBox() const;
+    [[nodiscard]] QComboBox *comboBox() const;
 
     void reverseVariableLoc();
 
-    bool needsFieldUpdate( QWidget *triggerWidget );
-    bool hasValues() const;
-    bool hasRange() const;
-    std::optional< TOptionalDoubleVector > validValues( bool imperial, bool seaWater ) const;
+    [[nodiscard]] bool needsFieldUpdate( QWidget *triggerWidget );
+    [[nodiscard]] bool hasValues() const;
+    [[nodiscard]] bool hasRange() const;
+    [[nodiscard]] std::optional< TOptionalDoubleVector > validValues( bool imperial, bool seaWater ) const;
 
-    bool hasCustomValue() const;
+    [[nodiscard]] bool hasCustomValue() const;
 
 private:
     TOptionalNamedValueItemList getValues( bool imperial, bool seaWater ) const;
@@ -210,7 +216,6 @@ private:
     QString fDescription;   // used as place holder text as well
     EVariableType fType{ EVariableType::eVariable };
     EUnit fUnit{ EUnit::eNone };
-
     EVariableLoc fVariableLocation{ EVariableLoc::eRHS };
 
     QLabel *fLabel{ nullptr };
