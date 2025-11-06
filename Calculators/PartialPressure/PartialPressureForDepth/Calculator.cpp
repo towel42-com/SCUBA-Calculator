@@ -106,7 +106,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     }
     else if ( unsetVar == depth )
     {
-        depth->setValue( NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
+        depth->setValue( NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
     }
     else if ( unsetVar == partialPressureAtSurface )
     {

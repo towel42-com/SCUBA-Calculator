@@ -101,15 +101,15 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == mod )
     {
-        mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
     else if ( unsetVar == maxPO2 )
     {
-        maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
+        maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) + 1 ) );
     }
     else if ( unsetVar == fo2 )
     {
         if ( mod->value() != 0.0 )
-            fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) + 1 ) );
+            fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) + 1 ) );
     }
 }

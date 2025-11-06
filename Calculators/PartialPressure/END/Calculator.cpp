@@ -75,7 +75,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     auto fhe = getVariable( "fhe" );
     auto end = getVariable( "end" );
 
-    auto depthToSingleATM = NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() );
+    auto depthToSingleATM = NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() );
     if ( unsetVar == end )
     {
         end->setValue( ( ( depth->value() + depthToSingleATM ) * ( 1.0 - fhe->value() ) ) - depthToSingleATM );

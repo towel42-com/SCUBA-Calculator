@@ -38,9 +38,11 @@ namespace NUtilities
 
     QString ratio( const QString &desc, const QString &numerator, const QString &denominator, bool tex )
     {
-        QString retVal = tex ? R"__(%1 %2)__" : "%1 %2";
-        retVal = retVal.arg( desc ).arg( ratio( numerator, denominator, tex ) );
-
+        auto units = ratio( numerator, denominator, tex );
+        QString retVal = desc;
+        if ( !retVal.isEmpty() )
+            retVal += " ";
+        retVal += units;
         return retVal;
     }
 
@@ -140,94 +142,6 @@ namespace NUtilities
                 return QObject::tr( "Liters to Cubic Feet", "descForType" );
         };
         return {};
-    }
-
-    QString fieldNameForType( EVariableType type )
-    {
-        QString retVal;
-        switch ( type )
-        {
-            case EVariableType::eIntermediate:
-            case EVariableType::eVariable:
-                return {};
-            case EVariableType::ePressurePerDegreeConst:
-                retVal =  NConstants::kPressurePerDegreeConstFieldName;
-                break;
-            case EVariableType::eWeightPerVolumeOfWaterConst:
-                retVal =  NConstants::kWeightPerVolumeOfWaterConstFieldName;
-                break;
-            case EVariableType::eVolumePerWeightOfWaterConst:
-                retVal =  NConstants::kVolumePerWeightOfWaterConstFieldName;
-                break;
-            case EVariableType::eIdealGasConst:
-                retVal =  NConstants::kIdealGasConstantFieldName;
-                break;
-            case EVariableType::eFN2AtSurfaceConst:
-                retVal =  NConstants::kFN2AtSurfaceFieldName;
-                break;
-            case EVariableType::eFO2AtSurfaceConst:
-                retVal =  NConstants::kFO2AtSurfaceFieldName;
-                break;
-            case EVariableType::eDepthToSingleATMConst:
-                retVal =  NConstants::kDepthToSingleATMConstFieldName;
-                break;
-            case EVariableType::eFeetToMetersConst:
-                retVal =  NConstants::kFeetToMetersConstFieldName;
-                break;
-            case EVariableType::eMetersToFeetConst:
-                retVal =  NConstants::kMetersToFeetConstFieldName;
-                break;
-            case EVariableType::eLbsPerKgsConst:
-                retVal =  NConstants::kLbsPerKgsConstFieldName;
-                break;
-            case EVariableType::eKgsPerLbsConst:
-                retVal =  NConstants::kKgsPerLbsConstFieldName;
-                break;
-            case EVariableType::eFreshWaterToSeaWaterConst:
-                retVal =  NConstants::kFreshWaterToSeaWaterConstFieldName;
-                break;
-            case EVariableType::eSeaWaterToFreshWaterConst:
-                retVal =  NConstants::kSeaWaterToFreshWaterConstFieldName;
-                break;
-            case EVariableType::ePSIToBarConst:
-                retVal =  NConstants::kPSIToBarConstFieldName;
-                break;
-            case EVariableType::eBarToPSIConst:
-                retVal =  NConstants::kBarToPSIConstFieldName;
-                break;
-            case EVariableType::eAbsZeroOffsetConst:
-                retVal =  NConstants::kAbsZeroOffsetConstFieldName;
-                break;
-            case EVariableType::ePressureAtSurfaceConst:
-                retVal =  NConstants::kPressureAtSurfaceConstFieldName;
-                break;
-            case EVariableType::ePressureLossPerAltitudeGainConst:
-                retVal = NConstants::kPressureLossPerAltitudeGainConstFieldName;
-                break;
-            case EVariableType::eSafetyStopDepthConst:
-                retVal =  NConstants::kSafetyStopDepthConstFieldName;
-                break;
-            case EVariableType::eWaterWeightAdjustmentConst:
-                retVal =  NConstants::kWaterWeightAdjustmentFieldName;
-                break;
-            case EVariableType::eBaseMETofSCUBAConst:
-                retVal =  NConstants::kBaseMETofSCUBAConstFieldName;
-                break;
-            case EVariableType::eFillRateAirConst:
-                retVal =  NConstants::kFillRateAirConstFieldName;
-                break;
-            case EVariableType::eFillRateO2Const:
-                retVal =  NConstants::kFillRateO2ConstFieldName;
-                break;
-            case EVariableType::eCubicFeetToLitersConst:
-                retVal =  NConstants::kCubicFeetToLitersFieldName;
-                break;
-            case EVariableType::eLitersToCubicFeetConst:
-                retVal =  NConstants::kLitersToCubicFeetFieldName;
-                break;
-        };
-        retVal = QString( "%1" ).arg( retVal );
-        return retVal;
     }
 
     bool isConstantVariable( EVariableType type )

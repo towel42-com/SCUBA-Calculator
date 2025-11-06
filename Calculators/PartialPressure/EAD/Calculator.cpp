@@ -83,14 +83,14 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == ead )
     {
-        ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
     else if ( unsetVar == fn2 )
     {
-        fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) ) / ( depth->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) );
+        fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) ) / ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) );
     }
     else if ( unsetVar == depth )
     {
-        depth->setValue( ( ( ead->value() + NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::depthToSingleAtmosphere( imperial(), seaWater() ) );
+        depth->setValue( ( ( ead->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
 }
