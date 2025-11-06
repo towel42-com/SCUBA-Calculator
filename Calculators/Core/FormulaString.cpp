@@ -111,15 +111,18 @@ TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWate
     if ( hasUnsetVar )
         return {};
 
-    bool hasValue = fVariable->has_value();
+    auto prevValue = fVariable->optValue();
+    if ( prevValue.has_value() )
+        fVariable->resetValue( imperial, seaWater, false, false );
 
-    Q_ASSERT( !hasValue );
-    if ( !hasValue )
-        calculator->computeValueForVar( fVariable );
+    calculator->computeValueForVar( fVariable );
+
+    auto currValue = fVariable->optValue();
+    Q_ASSERT( !prevValue.has_value() || ( prevValue == currValue ) );
 
     auto retVal = std::make_shared< CFormulaString >( fVariable, fVariable->valueString( imperial, seaWater ) );
 
-    if ( !hasValue )
-        fVariable->resetValue( imperial, seaWater, false, false );
+    if ( prevValue.has_value() )
+        fVariable->setValue( prevValue );
     return retVal;
 }
