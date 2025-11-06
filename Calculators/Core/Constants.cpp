@@ -196,7 +196,7 @@ namespace NUtilities
         QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex, bool description )
         {
             if ( description )
-                return ratio( QObject::tr( "Pressure/Degree Change", "pressureChangePerDegreeChange" ), NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ), NUnitStrings::tempUnit( imperial, useAbbreviations, tex ), tex );
+                return ratio( tex ? QObject::tr( R"__(\frac{Pressure}{Degree Change})__" ) : QObject::tr( "Pressure/Degree Change", "pressureChangePerDegreeChange" ), NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ), NUnitStrings::tempUnit( imperial, useAbbreviations, tex ), tex );
             else
                 return ratio( NConstants::pressureChangePerDegreeChange( imperial ), NUnitStrings::pressureUnit( imperial, useAbbreviations, tex ), NUnitStrings::tempUnit( imperial, useAbbreviations, tex ), tex );
         }
