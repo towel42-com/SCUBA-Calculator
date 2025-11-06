@@ -59,7 +59,7 @@ enum class EFormulaType;
 using TOptionalDouble = std::optional< double >;
 using TOptionalDoubleVector = std::vector< TOptionalDouble >;
 
-using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, EFormulaType, bool finished ) >;
+using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, bool finished ) >;
 using TInstantiateCalcFunc = CSCUBACalculator *(*)();
 
 constexpr char kInstantiateCalcFuncName[] = "instantiateCalculator";
@@ -128,6 +128,8 @@ enum class EFormulaType
 
 class CVariableInfo;
 using TConstVariableInfo = std::shared_ptr< const CVariableInfo >;
+using TConstVariableInfoList = std::list< TConstVariableInfo >;
+
 using TVariableInfo = std::shared_ptr< CVariableInfo >;
 using TVariableInfoList = std::list< TVariableInfo >;
 
@@ -156,7 +158,7 @@ class CGeneratedFormulaData;
 using TGeneratedFormulaData = std::shared_ptr< CGeneratedFormulaData >;
 using TFormulaMap = std::unordered_map< CSCUBACalculator *, TGeneratedFormulaData >;
 
-using TFormulaString = std::pair< QString, QString >;
+using TFormulaString = std::pair< TConstVariableInfo, QString >;
 using TFormulaStringList = std::list< TFormulaString >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
