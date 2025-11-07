@@ -111,10 +111,10 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     if ( unsetVar == calories )
     {
-        calories->setValue( NUtilities::NConversions::NCaloriesComputer::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value(), duration->value() ) );
+        calories->setValue( NUtilities::NConversions::NCaloriesComputer::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value()/100.0, duration->value() ) );
     }
     else if ( unsetVar == duration )
     {
-        duration->setValue( NUtilities::NConversions::NCaloriesComputer::computeDuration( imperial(), seaWater(), calories->value(), weight->value(), depth->value(), temp->value(), activityLevel->value() ) );
+        duration->setValue( NUtilities::NConversions::NCaloriesComputer::computeDuration( imperial(), seaWater(), calories->value(), weight->value(), depth->value(), temp->value(), activityLevel->value()/100.0 ) );
     }
 }
