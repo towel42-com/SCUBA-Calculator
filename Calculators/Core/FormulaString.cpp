@@ -89,9 +89,9 @@ bool CFormulaString::operator==( const CFormulaString *rhs ) const
 
 bool CFormulaString::operator==( const CFormulaString &rhs ) const
 {
-    return ( fVariable == rhs.fVariable ) //
-        && ( fFormula == rhs.fFormula ) //
-        && ( fBaseFormula == rhs.fBaseFormula );
+    return ( fVariable == rhs.fVariable )   //
+           && ( fFormula == rhs.fFormula );   //
+        //&& ( fBaseFormula == rhs.fBaseFormula );
 }
 
 TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWater, CSCUBACalculator *calculator )
@@ -120,9 +120,16 @@ TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWate
     auto currValue = fVariable->optValue();
     Q_ASSERT( !prevValue.has_value() || ( prevValue == currValue ) );
 
-    auto retVal = std::make_shared< CFormulaString >( fVariable, fVariable->valueString( imperial, seaWater ) );
+    auto valueString = fVariable->valueString( imperial, seaWater );
 
-    if ( prevValue.has_value() )
+    TFormulaString retVal;
+
+    if ( !valueString.isEmpty() )
+    {
+        retVal = std::make_shared< CFormulaString >( fVariable, R"__(\color{green}{)__" + valueString + R"__(})__" );
+    }
+
+    if ( prevValue.has_value() && ( prevValue != currValue ) )
         fVariable->setValue( prevValue );
     return retVal;
 }
