@@ -12,7 +12,7 @@ public:
     virtual ~CCalculator() override {}
 
     virtual bool isReversible() const override { return true; }
-    virtual std::pair< QString, QString > fromToLabels() const override;
+    virtual std::optional< std::pair< QString, QString > > fromToLabels() const override;
 
     virtual QStringList myCalculatorPath() const override;
     virtual QStringList myReversedCalculatorPath() const override;
@@ -22,13 +22,13 @@ public:
 
     virtual bool showUnits() const { return false; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -36,9 +36,9 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-std::pair< QString, QString > CCalculator::fromToLabels() const
+std::optional< std::pair< QString, QString > > CCalculator::fromToLabels() const
 {
-    return { tr( "Pounds" ), tr( "Kilograms" ) };
+    return std::make_pair( tr( "Pounds" ), tr( "Kilograms" ) );
 }
 
 QStringList CCalculator::myCalculatorPath() const
@@ -51,7 +51,7 @@ QStringList CCalculator::myReversedCalculatorPath() const
     return { tr( "Unit Conversion" ), tr( "Metric to Imperial" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
@@ -72,29 +72,30 @@ std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*
     return TFormulaStringList( { NUtilities::NConversions::kgsToLbsFormula( getVariable( "pounds" ), getVariable( "kiloGrams" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "kiloGrams" )
+    if ( unsetVar == "kiloGrams" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "pounds" )
+    else if ( unsetVar == "pounds" )
     {
         return myReversedBaseFormulas( imperial, seaWater );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto pounds = getVariable( "pounds" );
     auto kiloGrams = getVariable( "kiloGrams" );
 
-    if ( unsetVar == kiloGrams )
+    if ( pounds->has_value() && !kiloGrams->has_value() )
     {
         kiloGrams->setValue( NUtilities::NConversions::lbsToKGs( pounds->value() ) );
     }
-    else if ( unsetVar == pounds )
+    
+    if ( !pounds->has_value() && kiloGrams->has_value() )
     {
         pounds->setValue( NUtilities::NConversions::kgsToLbs( kiloGrams->value() ) );
     }

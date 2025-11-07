@@ -18,12 +18,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -41,7 +41,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
@@ -72,28 +72,28 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return formulas;
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     TFormulaStringList formulas;
-    if ( unsetVar->name() == "o2_p" )
+    if ( unsetVar == "o2_p" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "mix1" )
+    else if ( unsetVar == "mix1" )
     {
-        formulas.emplace_back( std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{( <p2> \times (<mix2> - %1) ) - ((<o2_p> + <p1>) \times %2)}{<p1>} + %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{( <p2> \times (<mix2> - %1) ) - ((<o2_p> + <p1>) \times %2)}{<p1>} + %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
     }
-    else if ( unsetVar->name() == "p1" )
+    else if ( unsetVar == "p1" )
     {
-        formulas.emplace_back( std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<p2>(<mix2> - %1) - %2 \times <o2_p>}{(<mix1> - %1) + %2})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<p2>(<mix2> - %1) - %2 \times <o2_p>}{(<mix1> - %1) + %2})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
     }
-    else if ( unsetVar->name() == "mix2" )
+    else if ( unsetVar == "mix2" )
     {
-        formulas.emplace_back( std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<p2>} + %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<p2>} + %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
     }
-    else if ( unsetVar->name() == "p2" )
+    else if ( unsetVar == "p2" )
     {
-        formulas.emplace_back( std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<mix2> - %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<mix2> - %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
     }
     if ( !formulas.empty() )
     {
@@ -129,7 +129,7 @@ function check()
 }
 */
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto mix1 = getVariable( "mix1" );
     auto p1 = getVariable( "p1" );
@@ -140,7 +140,7 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     auto o2_t = getVariable( "o2_t" );
     auto air_t = getVariable( "air_t" );
 
-    if ( unsetVar == o2_p )
+    if ( mix1->has_value() && p1->has_value() && mix2->has_value() && p2->has_value() )
     {
         if ( ( mix1->value() == mix2->value() ) && ( mix1->value() == NUtilities::NConstants::percentO2AtSurface() ) )
         {
@@ -152,24 +152,34 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
         o2_p->setValue( std::ceil( ( ( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) ) - ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / NUtilities::NConstants::percentN2AtSurface() ) + p1->value() ) );
     }
 
-    else if ( unsetVar == mix1 )
+    if ( !mix1->has_value() && p1->has_value() && mix2->has_value() && p2->has_value() && o2_p->has_value() )
     {
         mix1->setValue( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) ) - ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) / p1->value() ) + NUtilities::NConstants::percentO2AtSurface() );
     }
-    else if ( unsetVar->name() == "p1" )
+
+    if ( mix1->has_value() && !p1->has_value() && mix2->has_value() && p2->has_value() && o2_p->has_value() )
     {
         p1->setValue( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) - NUtilities::NConstants::percentN2AtSurface() * o2_p->value() ) / ( ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) + NUtilities::NConstants::percentN2AtSurface() ) );
         return;
     }
-    else if ( unsetVar->name() == "mix2" )
+
+    if ( mix1->has_value() && p1->has_value() && !mix2->has_value() && p2->has_value() && o2_p->has_value() )
     {
         mix2->setValue( ( ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) + ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / p2->value() ) + NUtilities::NConstants::percentO2AtSurface() );
     }
-    else if ( unsetVar->name() == "p2" )
+
+    if ( mix1->has_value() && p1->has_value() && mix2->has_value() && !p2->has_value() && o2_p->has_value() )
     {
         p2->setValue( ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) + ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) );
     }
 
-    o2_t->setValue( std::ceil( ( o2_p->value() - p1->value() ) / NUtilities::NConstants::fillRateO2( imperial() ) ) );
-    air_t->setValue( std::ceil( ( p2->value() - o2_p->value() ) / NUtilities::NConstants::fillRateAir( imperial() ) ) );
+    if ( !o2_t->has_value() && o2_p->has_value() && p1->has_value() )
+    {
+        o2_t->setValue( std::ceil( ( o2_p->value() - p1->value() ) / NUtilities::NConstants::fillRateO2( imperial() ) ) );
+    }
+
+    if ( !air_t->has_value() && o2_p->has_value() && p2->has_value() )
+    {
+        air_t->setValue( std::ceil( ( p2->value() - o2_p->value() ) / NUtilities::NConstants::fillRateAir( imperial() ) ) );
+    }
 }

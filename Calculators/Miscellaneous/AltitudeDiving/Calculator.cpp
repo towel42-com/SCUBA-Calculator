@@ -20,12 +20,12 @@ public:
 
     virtual bool isWaterTypeBased() const override { return true; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -43,7 +43,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
@@ -66,21 +66,21 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool imperial, 
     return formulas;
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     TFormulaStringList retVal;
 
-    if ( unsetVar->name() == "theoreticalDepth" )
+    if ( unsetVar == "theoreticalDepth" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "altitude" )
+    else if ( unsetVar == "altitude" )
     {
         retVal = TFormulaStringList( { NUtilities::NConversions::altitudeForSurfacePressureFormula( imperial, getVariable( "surfacePressure" ), getVariable( "altitude" ) ) } );
     }
-    else if ( unsetVar->name() == "depth" )
+    else if ( unsetVar == "depth" )
     {
-        retVal = TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__([(<theoreticalDepth> + %1) \times \frac{<surfacePressure>}{%2}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
+        retVal = TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__([(<theoreticalDepth> + %1) \times \frac{<surfacePressure>}{%2}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
     }
 
     if ( !getVariable( "surfacePressure" )->has_value() && getVariable( "altitude" )->has_value() )
@@ -101,7 +101,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     return retVal;
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto altitude = getVariable( "altitude" );
     auto depth = getVariable( "depth" );
@@ -123,15 +123,17 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
         getVariable( "safetyStop" )->setValue( ( NUtilities::NConstants::safetyStopDepth( imperial(), seaWater() ) + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
 
-    if ( unsetVar == theoreticalDepth )
+    if ( !theoreticalDepth->has_value() && depth->has_value() && surfacePressure->has_value() )
     {
         theoreticalDepth->setValue( ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) * ( NUtilities::NConstants::pressureAtSurface( imperial() ) / surfacePressure->value() ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
-    else if ( ( unsetVar == altitude ) && surfacePressure->has_value() )
+    
+    if ( !altitude->has_value() && surfacePressure->has_value() )
     {
         altitude->setValue( NUtilities::NConversions::altitudeForSurfacePressure( imperial(), surfacePressure->value() ) );
     }
-    else if ( unsetVar == depth )
+    
+    if ( !depth->has_value() && theoreticalDepth->has_value() && surfacePressure->has_value() )
     {
         depth->setValue( ( ( theoreticalDepth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) * ( surfacePressure->value() / NUtilities::NConstants::pressureAtSurface( imperial() ) ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }

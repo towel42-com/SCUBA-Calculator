@@ -115,7 +115,7 @@ TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWate
     if ( prevValue.has_value() )
         fVariable->resetValue( imperial, seaWater, false, false );
 
-    calculator->computeValueForVar( fVariable );
+    calculator->computeVariableValues();
 
     auto currValue = fVariable->optValue();
     Q_ASSERT( !prevValue.has_value() || ( prevValue == currValue ) );

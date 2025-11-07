@@ -17,12 +17,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -40,7 +40,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Pressure and Volume Conversions" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
@@ -55,38 +55,40 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "relChange>" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "relChange" )
+    if ( unsetVar == "relChange" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "p1" )
+    else if ( unsetVar == "p1" )
     {
-        TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
+        TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
     }
-    else if ( unsetVar->name() == "p2" )
+    else if ( unsetVar == "p2" )
     {
-        TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p2> \times <relChange>)__" ) ) } );
+        TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times <relChange>)__" ) ) } );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto relChange = getVariable( "relChange" );
     auto p1 = getVariable( "p1" );
     auto p2 = getVariable( "p2" );
 
-    if ( unsetVar->name() == "relChange" )
+    if ( !relChange->has_value() && p1->has_value() && p2->has_value() )
     {
         relChange->setValue( p2->value() / p1->value() );
     }
-    else if ( unsetVar->name() == "p1" )
+    
+    if ( relChange->has_value() && !p1->has_value() && p2->has_value() )
     {
         p1->setValue( p2->value() / relChange->value() );
     }
-    else if ( unsetVar->name() == "p2" )
+    
+    if ( relChange->has_value() && p1->has_value() && !p2->has_value() )
     {
         p2->setValue( relChange->value() * p1->value() );
     }

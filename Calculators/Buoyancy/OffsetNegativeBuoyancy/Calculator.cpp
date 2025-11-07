@@ -20,12 +20,12 @@ public:
 
     virtual bool isWaterTypeBased() const override { return true; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -43,7 +43,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Buoyancy Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
@@ -57,28 +57,30 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "volumeDisplaced" ), QString( R"__(<negativeBuoyancy> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "volumeDisplaced" )
+    if ( unsetVar == "volumeDisplaced" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "negativeBuoyancy" )
+    else if ( unsetVar == "negativeBuoyancy" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto negativeBuoyancy = getVariable( "negativeBuoyancy" );
     auto volumeDisplaced = getVariable( "volumeDisplaced" );
-    if ( unsetVar == volumeDisplaced )
+    
+    if ( !volumeDisplaced->has_value() && negativeBuoyancy->has_value() )
     {
         volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) );
     }
-    else if ( unsetVar == negativeBuoyancy )
+
+    if ( volumeDisplaced->has_value() && !negativeBuoyancy->has_value() )
     {
         negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) );
     }

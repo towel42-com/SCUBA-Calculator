@@ -20,12 +20,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -43,7 +43,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
@@ -253,13 +253,13 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return formulas;
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     TFormulaStringList formulas;
 
-    if ( unsetVar->name() == "lead" )
+    if ( unsetVar == "lead" )
         return myBaseFormulas( imperial, seaWater );
-    else if ( unsetVar->name() == "yourWeight" )
+    else if ( unsetVar == "yourWeight" )
     {
         formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
         formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "baseLeadWeight" ), R"__(<lead> - <adjustments>)__" ) );
@@ -269,7 +269,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     return formulas;
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto lead = getVariable( "lead" );
     auto yourWeight = getVariable( "yourWeight" );
@@ -282,7 +282,18 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
     auto waterAdjustment = NUtilities::NConstants::waterWeightAdjustment( imperial(), seaWater() );
 
-    if ( ( unsetVar == lead ) || ( unsetVar == yourWeight ) )
+    TOptionalDouble baseLeadWeightValue;
+    if ( yourWeight->has_value() )
+    {
+        baseLeadWeightValue = yourWeight->value() * 0.1;
+    }
+
+    if ( !baseLeadWeight->has_value() && baseLeadWeightValue.has_value() )
+    {
+        baseLeadWeight->setValue( baseLeadWeightValue );
+    }
+
+    if ( !adjustments->has_value() && experience->has_value() && exposureSuit->has_value() && tankMaterial->has_value() && additionalEquipment->has_value() )
     {
         auto experienceAdjustment = experience->value();
         auto exposureSuitAdjustment = exposureSuit->value();
@@ -291,17 +302,25 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
 
         auto adjustmentsValue = experienceAdjustment + waterAdjustment + exposureSuitAdjustment + tankMaterialAdjustment + additionalEquipmentAdjustment;
         adjustments->setValue( adjustmentsValue );
+    }
 
-        if ( unsetVar == lead )
-        {
-            auto baseWeight = yourWeight->value() * 0.1;
-            baseLeadWeight->setValue( baseWeight );
-            lead->setValue( baseWeight + adjustmentsValue );
-        }
-        else
-        {
-            baseLeadWeight->setValue( lead->value() - adjustments->value() );
-            yourWeight->setValue( baseLeadWeight->value() / 0.1 );
-        }
+    if ( adjustments->has_value() && !baseLeadWeight->has_value() && lead->has_value() )
+    {
+        baseLeadWeight->setValue( lead->value() - adjustments->value() );
+    }
+
+    if ( adjustments->has_value() && baseLeadWeight->has_value() && !lead->has_value() )
+    {
+        lead->setValue( baseLeadWeightValue.value() + adjustments->value() );
+    }
+
+    if ( adjustments->has_value() && !baseLeadWeight->has_value() && lead->has_value() )
+    {
+        baseLeadWeight->setValue( lead->value() - adjustments->value() );
+    }
+
+    if ( !yourWeight->has_value() && baseLeadWeight->has_value() )
+    {
+        yourWeight->setValue( baseLeadWeight->value() / 0.1 );
     }
 }

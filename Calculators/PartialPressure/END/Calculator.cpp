@@ -19,12 +19,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -42,7 +42,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Partial Pressure Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
@@ -58,33 +58,35 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "end" ), QString( R"__([(<depth> + %1) \times ( 1.0 - <fhe> ) ] - %1 )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    if ( unsetVar->name() == "end" )
+    if ( unsetVar == "end" )
         return myBaseFormulas( false, false );
-    else if ( unsetVar->name() == "fhe" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(1.0 - \frac{<end> + %1}{<depth> + %1} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
-    else if ( unsetVar->name() == "depth" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<end> + %1}{1.0 - <fhe>} - %1))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+    else if ( unsetVar == "fhe" )
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(1.0 - \frac{<end> + %1}{<depth> + %1} )__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+    else if ( unsetVar == "depth" )
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<end> + %1}{1.0 - <fhe>} - %1))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto depth = getVariable( "depth" );
     auto fhe = getVariable( "fhe" );
     auto end = getVariable( "end" );
 
     auto depthToSingleATM = NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() );
-    if ( unsetVar == end )
+    if ( !end->has_value() && depth->has_value() && fhe->has_value() )
     {
         end->setValue( ( ( depth->value() + depthToSingleATM ) * ( 1.0 - fhe->value() ) ) - depthToSingleATM );
     }
-    else if ( unsetVar == fhe )
+    
+    if ( end->has_value() && depth->has_value() && !fhe->has_value() )
     {
         fhe->setValue( 1.0 - ( end->value() + depthToSingleATM ) / ( depth->value() + depthToSingleATM ) );
     }
-    else if ( unsetVar == depth )
+    
+    if ( end->has_value() && !depth->has_value() && fhe->has_value() )
     {
         depth->setValue( ( ( end->value() + depthToSingleATM ) / ( 1.0 - fhe->value() ) ) - depthToSingleATM );
     }

@@ -18,12 +18,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -41,7 +41,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
@@ -58,39 +58,42 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "gasVolume" ), R"__(<tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__" ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    if ( unsetVar->name() == "gasVolume" )
+    if ( unsetVar == "gasVolume" )
         return myBaseFormulas( false, false );
-    else if ( unsetVar->name() == "currTankPressure" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, R"__(<ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__" ) } );
-    else if ( unsetVar->name() == "ratedTankPressure" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, R"__(<currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__" ) } );
-    else if ( unsetVar->name() == "tankVolume" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, R"__(<gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__" ) } );
+    else if ( unsetVar == "currTankPressure" )
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(<ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__" ) } );
+    else if ( unsetVar == "ratedTankPressure" )
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(<currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__" ) } );
+    else if ( unsetVar == "tankVolume" )
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(<gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__" ) } );
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto gasVolume = getVariable( "gasVolume" );
     auto currTankPressure = getVariable( "currTankPressure" );
     auto ratedTankPressure = getVariable( "ratedTankPressure" );
     auto tankVolume = getVariable( "tankVolume" );
 
-    if ( unsetVar == gasVolume )
+    if ( !gasVolume->has_value() && tankVolume->has_value() && currTankPressure->has_value() && ratedTankPressure->has_value() )
     {
         gasVolume->setValue( tankVolume->value() * ( currTankPressure->value() / ratedTankPressure->value() ) );
     }
-    else if ( unsetVar == currTankPressure )
+    
+    if ( gasVolume->has_value() && tankVolume->has_value() && !currTankPressure->has_value() && ratedTankPressure->has_value() )
     {
         currTankPressure->setValue( ratedTankPressure->value() * ( gasVolume->value() / tankVolume->value() ) );
     }
-    else if ( unsetVar == ratedTankPressure )
+    
+    if ( gasVolume->has_value() && tankVolume->has_value() && currTankPressure->has_value() && !ratedTankPressure->has_value() )
     {
         ratedTankPressure->setValue( currTankPressure->value() * ( tankVolume->value() / gasVolume->value() ) );
     }
-    else if ( unsetVar == tankVolume )
+    
+    if ( gasVolume->has_value() && !tankVolume->has_value() && currTankPressure->has_value() && ratedTankPressure->has_value() )
     {
         tankVolume->setValue( gasVolume->value() * ( ratedTankPressure->value() / currTankPressure->value() ) );
     }

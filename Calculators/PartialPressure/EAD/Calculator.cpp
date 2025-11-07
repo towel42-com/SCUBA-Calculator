@@ -20,12 +20,12 @@ public:
 
     virtual bool isWaterTypeBased() const override { return true; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -43,7 +43,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Partial Pressure Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
@@ -58,38 +58,40 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "ead" ), QString( R"__([(\frac{<fn2>}{%2}) \times (<depth> + %1)] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "ead" )
+    if ( unsetVar == "ead" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "fn2" )
+    else if ( unsetVar == "fn2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{[%2 \times (<ead>+<%1>)]}{(<depth>+%1)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{[%2 \times (<ead>+<%1>)]}{(<depth>+%1)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "depth" )
+    else if ( unsetVar == "depth" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__([\frac{<ead>+%1}{\frac{<fn2>}{%2}}]-%1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__([\frac{<ead>+%1}{\frac{<fn2>}{%2}}]-%1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto ead = getVariable( "ead" );
     auto fn2 = getVariable( "fn2" );
     auto depth = getVariable( "depth" );
 
-    if ( unsetVar == ead )
+    if ( !ead->has_value() && fn2->has_value() && depth->has_value() )
     {
         ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
-    else if ( unsetVar == fn2 )
+    
+    if ( ead->has_value() && !fn2->has_value() && depth->has_value() )
     {
         fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) ) / ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) );
     }
-    else if ( unsetVar == depth )
+    
+    if ( ead->has_value() && fn2->has_value() && !depth->has_value() )
     {
         depth->setValue( ( ( ead->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }

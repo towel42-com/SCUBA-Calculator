@@ -12,7 +12,7 @@ public:
     virtual ~CCalculator() override {}
 
     virtual bool isReversible() const override { return true; }
-    virtual std::pair< QString, QString > fromToLabels() const override;
+    virtual std::optional< std::pair< QString, QString > > fromToLabels() const override;
 
     virtual QString myCalculatorName() const override;
     virtual QString myReversedCalculatorName() const override;
@@ -22,13 +22,13 @@ public:
 
     virtual QStringList myCalculatorPath() const override;
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -36,9 +36,9 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-std::pair< QString, QString > CCalculator::fromToLabels() const
+std::optional< std::pair< QString, QString > > CCalculator::fromToLabels() const
 {
-    return { tr( "Pressure Change" ), tr( "Temperature Change" ) };
+    return std::make_pair( tr( "Pressure Change" ), tr( "Temperature Change" ) );
 }
 
 QString CCalculator::myCalculatorName() const
@@ -56,7 +56,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
@@ -75,13 +75,13 @@ std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*
     return TFormulaStringList( { NUtilities::NConversions::degreeChangeForPressureChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "p1" )
+    if ( unsetVar == "p1" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "t1" )
+    else if ( unsetVar == "t1" )
     {
         return myReversedBaseFormulas( imperial, seaWater );
     }
@@ -89,16 +89,16 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto p1 = getVariable( "p1" );
     auto t1 = getVariable( "t1" );
 
-    if ( unsetVar == p1 )
+    if ( !p1->has_value() && t1->has_value() )
     {
         p1->setValue( NUtilities::NConversions::pressureChangeForDegreeChange( imperial(), t1->value() ) );
     }
-    else if ( unsetVar == t1 )
+    if ( !t1->has_value() && p1->has_value() )
     {
         t1->setValue( NUtilities::NConversions::degreeChangeForPressureChange( imperial(), p1->value() ) );
     }

@@ -21,13 +21,13 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -45,7 +45,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
@@ -86,20 +86,20 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
         return getVariable( "duration" );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "calories" )
+    if ( unsetVar == "calories" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "duration" )
+    else if ( unsetVar == "duration" )
     {
         return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeDurationFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto calories = getVariable( "calories" );
 
@@ -109,11 +109,12 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     auto temp = getVariable( "temp" );
     auto activityLevel = getVariable( "activityLevel" );
 
-    if ( unsetVar == calories )
+    if ( !calories->has_value() && weight->has_value() && depth->has_value() && temp->has_value() && activityLevel->has_value() && duration->has_value() )
     {
         calories->setValue( NUtilities::NConversions::NCaloriesComputer::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value()/100.0, duration->value() ) );
     }
-    else if ( unsetVar == duration )
+    
+    if ( calories->has_value() && weight->has_value() && depth->has_value() && temp->has_value() && activityLevel->has_value() && !duration->has_value() )
     {
         duration->setValue( NUtilities::NConversions::NCaloriesComputer::computeDuration( imperial(), seaWater(), calories->value(), weight->value(), depth->value(), temp->value(), activityLevel->value()/100.0 ) );
     }

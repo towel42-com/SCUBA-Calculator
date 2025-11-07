@@ -20,12 +20,12 @@ public:
 
     virtual bool isWaterTypeBased() const override { return true; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -43,7 +43,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Partial Pressure Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
@@ -72,45 +72,50 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return formulas;
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "partialPressureAtDepth" )
+    if ( unsetVar == "partialPressureAtDepth" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "depth" )
+    else if ( unsetVar == "depth" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(%1 \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(%1 \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "partialPressureAtSurface" )
+    else if ( unsetVar == "partialPressureAtSurface" )
     {
         auto formulas = TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( getVariable( "ata" ), getVariable( "depth" ) ) } );
-        formulas.emplace_back( std::make_shared< CFormulaString >( unsetVar, R"__(\frac{< partialPressureAtDepth > } {< ata_value > })__" ) );
+        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(\frac{< partialPressureAtDepth > } {< ata_value > })__" ) );
         return formulas;
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto ata = getVariable( "ata" );
     auto partialPressureAtDepth = getVariable( "partialPressureAtDepth" );
     auto depth = getVariable( "depth" );
     auto partialPressureAtSurface = getVariable( "partialPressureAtSurface" );
 
-    if ( unsetVar == partialPressureAtDepth )
+    if ( !ata->has_value() && depth->has_value() )
     {
         ata->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
+    }
+
+    if ( !partialPressureAtDepth->has_value() && ata->has_value() && partialPressureAtSurface->has_value() )
+    {
         partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
     }
-    else if ( unsetVar == depth )
+
+    if ( !depth->has_value() && partialPressureAtDepth->has_value() )
     {
         depth->setValue( NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
     }
-    else if ( unsetVar == partialPressureAtSurface )
+
+    if ( !partialPressureAtSurface->has_value() && partialPressureAtDepth->has_value() && ata->has_value() )
     {
-        ata->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
         partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
 }

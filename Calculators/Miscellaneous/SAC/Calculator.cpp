@@ -40,12 +40,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 };
 
@@ -64,7 +64,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Miscellaneous" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
@@ -105,18 +105,9 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return formulas;
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    auto depth = getVariable( "depth" );
-    auto time = getVariable( "time" );
-    auto pressureUsed = getVariable( "pressureUsed" );
-    auto tankVolume = getVariable( "tankVolume" );
-    auto tankPressure = getVariable( "tankPressure" );
-    auto sac = getVariable( "sac" );
-    auto rmv = getVariable( "rmv" );
-    auto gasConsumed = getVariable( "gasConsumed" );
-
-    if ( ( unsetVar == sac ) || ( unsetVar == rmv ) )
+    if ( ( unsetVar == "sac" ) || ( unsetVar == "rmv" ) )
     {
         return myBaseFormulas( imperial, seaWater );
     }
@@ -124,7 +115,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConst
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo & /*unsetVar*/ )
+void CCalculator::computeVariableValues()
 {
     auto depth = getVariable( "depth" );
     auto time = getVariable( "time" );

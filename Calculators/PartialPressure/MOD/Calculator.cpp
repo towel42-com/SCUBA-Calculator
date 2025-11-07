@@ -20,13 +20,13 @@ public:
 
     virtual bool isWaterTypeBased() const override { return true; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -44,7 +44,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Partial Pressure Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
@@ -75,39 +75,41 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "mod" ), QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "mod" )
+    if ( unsetVar == "mod" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "maxPO2" )
+    else if ( unsetVar == "maxPO2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<fo2> \times [(\frac{<mod>}{%1})+1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<fo2> \times [(\frac{<mod>}{%1})+1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "fo2" )
+    else if ( unsetVar == "fo2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{%1})+1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{%1})+1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto mod = getVariable( "mod" );
     auto maxPO2 = getVariable( "maxPO2" );
     auto fo2 = getVariable( "fo2" );
 
-    if ( unsetVar == mod )
+    if ( !mod->has_value() && maxPO2->has_value() && fo2->has_value() )
     {
         mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
-    else if ( unsetVar == maxPO2 )
+    
+    if ( mod->has_value() && !maxPO2->has_value() && fo2->has_value() )
     {
         maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) + 1 ) );
     }
-    else if ( unsetVar == fo2 )
+    
+    if ( mod->has_value() && maxPO2->has_value() && !fo2->has_value() )
     {
         if ( mod->value() != 0.0 )
             fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) + 1 ) );

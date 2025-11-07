@@ -106,15 +106,13 @@ QStringList CSCUBACalculator::calculatorPath() const
 
 QString CSCUBACalculator::calculatorName() const
 {
-    if ( isReversible() )
+    auto labels = fromToLabels();
+    if ( isReversible() && labels.has_value() )
     {
-        auto labels = fromToLabels();
-        Q_ASSERT_X( !labels.first.isEmpty() && !labels.second.isEmpty(), "myCalculatorName", "fromToLabels MUST be overridden for reversible calculators" );
-
         if ( isReversed() )
-            return tr( "%1 to %2" ).arg( labels.second ).arg( labels.first );
+            return tr( "%1 to %2" ).arg( labels.value().second ).arg( labels.value().first );
         else
-            return tr( "%2 to %1" ).arg( labels.second ).arg( labels.first );
+            return tr( "%2 to %1" ).arg( labels.value().second ).arg( labels.value().first );
     }
 
     return ( isReversed() ) ? myReversedCalculatorName() : myCalculatorName();
@@ -289,10 +287,10 @@ TVariableInfo CSCUBACalculator::getVariable( const QString &varName )
     return std::const_pointer_cast< CVariableInfo >( retVal );
 }
 
-TVariableInfoList CSCUBACalculator::getMyVariables( bool *preReversed ) const
+TVariableInfoList CSCUBACalculator::getMyVariables() const
 {
-    *preReversed = false;
-    return getMyVariables();
+    bool preReversed = false;
+    return getMyVariables( &preReversed );
 }
 
 TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
@@ -395,7 +393,7 @@ TFormulaList CSCUBACalculator::getNamedFormulas() const
                 if ( ii->hasValues() && !ii->hasCustomValue() )
                     continue;
 
-                auto currFormulas = getFormulasForVar( ii, imperial, seaWater );
+                auto currFormulas = getFormulasForVar( ii->name(), imperial, seaWater );
                 if ( !currFormulas.has_value() || currFormulas.value().empty() )
                     continue;
 
@@ -592,7 +590,7 @@ std::optional< TFormulaStringList > CSCUBACalculator::getCurrentFormulas() const
     auto baseFormulas = getBaseFormulas();
 
     auto unsetVar = getFirstUnsetVariable();
-    auto formulasForVar = getFormulasForVar( unsetVar, imperial(), seaWater() );
+    auto formulasForVar = getFormulasForVar( unsetVar ? unsetVar->name() : QString(), imperial(), seaWater() );
     if ( !formulasForVar.has_value() )
         return baseFormulas;
 
@@ -623,14 +621,7 @@ std::optional< TFormulaStringList > CSCUBACalculator::getCurrentFormulas() const
 
 void CSCUBACalculator::computeValues()
 {
-    if ( !valuesSetProperly() )
-        return;
-
-    auto unsetVar = getFirstUnsetVariable();
-    if ( !unsetVar )
-        return;
-
-    computeValueForVar( unsetVar );
+    computeVariableValues();
 }
 
 bool CSCUBACalculator::valuesSetProperly() const

@@ -93,7 +93,7 @@ public:
     TConstVariableInfo getVariable( const QString &varName ) const;
     TVariableInfo getVariable( const QString &varName );
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) = 0;
+    virtual void computeVariableValues() = 0;
 
 protected:
     virtual bool imperial() const final;
@@ -109,7 +109,7 @@ protected:
     TFormulaList getNamedFormulas() const;
     TVariableValuePairVectorVector getAllVariableValueCombinations() const;
 
-    virtual std::pair< QString, QString > fromToLabels() const { return {}; }
+    virtual std::optional< std::pair< QString, QString > > fromToLabels() const { return {}; }
 
     virtual QStringList myCalculatorPath() const = 0;
     virtual QStringList myReversedCalculatorPath() const { return {}; }
@@ -137,8 +137,8 @@ protected:
 
     virtual TFormulaString applyVariables( bool imperial, bool seaWater, const TFormulaString &formula, EFormulaType formulaType ) const final;
 
-    virtual TVariableInfoList getMyVariables() const = 0;
-    virtual TVariableInfoList getMyVariables( bool *preReversed ) const;
+    virtual TVariableInfoList getMyVariables() const final;
+    virtual TVariableInfoList getMyVariables( bool *preReversed ) const=0;
 
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
@@ -153,7 +153,7 @@ protected:
 
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;
     TVariableInfo getLastVariable( EVariableLoc side ) const;

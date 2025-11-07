@@ -13,7 +13,7 @@ public:
     virtual ~CCalculator() override {}
 
     virtual bool isReversible() const override { return true; }
-    virtual std::pair< QString, QString > fromToLabels() const override;
+    virtual std::optional< std::pair< QString, QString > > fromToLabels() const override;
 
     virtual QString myCalculatorName() const override;
     virtual QString myReversedCalculatorName() const override;
@@ -23,15 +23,14 @@ public:
 
     virtual QStringList myCalculatorPath() const override;
 
-    virtual TVariableInfoList getMyVariables() const override;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -39,9 +38,9 @@ extern "C" CSCUBACalculator *instantiateCalculator()
     return new CCalculator;
 }
 
-std::pair< QString, QString > CCalculator::fromToLabels() const
+std::optional< std::pair< QString, QString > > CCalculator::fromToLabels() const
 {
-    return { tr( "Gas Consumption Time" ), tr( "Gas Used" ) };
+    return std::make_pair( tr( "Gas Consumption Time" ), tr( "Gas Used" ) );
 }
 
 QString CCalculator::myCalculatorName() const
@@ -57,12 +56,6 @@ QString CCalculator::myReversedCalculatorName() const
 QStringList CCalculator::myCalculatorPath() const
 {
     return { tr( "Pressure and Volume Conversions" ) };
-}
-
-TVariableInfoList CCalculator::getMyVariables() const
-{
-    bool preReversed = true;
-    return getMyVariables( &preReversed );
 }
 
 TVariableInfoList CCalculator::getMyVariables( bool *preReversed ) const
@@ -118,28 +111,28 @@ std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*
     return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "p2" ), QString( R"__(<p1> \times \frac{<m1>}{<m2>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    if ( unsetVar->name() == "m2" )
+    if ( unsetVar == "m2" )
     {
         return myBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "p2" )
+    else if ( unsetVar == "p2" )
     {
         return myReversedBaseFormulas( imperial, seaWater );
     }
-    else if ( unsetVar->name() == "m1" )
+    else if ( unsetVar == "m1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<m2> \times \frac{<p2>}{<p1>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<m2> \times \frac{<p2>}{<p1>})__" ) ) } );
     }
-    else if ( unsetVar->name() == "p1" )
+    else if ( unsetVar == "p1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p2> \times \frac{<m2>}{<m1>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<m2>}{<m1>})__" ) ) } );
     }
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto p1 = getVariable( "p1" );
     auto m1 = getVariable( "m1" );
@@ -147,19 +140,22 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     auto p2 = getVariable( "p2" );
     auto m2 = getVariable( "m2" );
 
-    if ( unsetVar->name() == "p1" )
+    if ( !p1->has_value() && m1->has_value() && p2->has_value() && m2->has_value() )
     {
         p1->setValue( p2->value() * ( m2->value() / m1->value() ) );
     }
-    else if ( unsetVar->name() == "p2" )
+    
+    if ( p1->has_value() && m1->has_value() && !p2->has_value() && m2->has_value() )
     {
         p2->setValue( p1->value() * ( m1->value() / m2->value() ) );
     }
-    else if ( unsetVar->name() == "m1" )
+    
+    if ( p1->has_value() && !m1->has_value() && p2->has_value() && m2->has_value() )
     {
         m1->setValue( m2->value() * ( p2->value() / p1->value() ) );
     }
-    else if ( unsetVar->name() == "m2" )
+    
+    if ( p1->has_value() && m1->has_value() && p2->has_value() && !m2->has_value() )
     {
         m2->setValue( m1->value() * ( p1->value() / p2->value() ) );
     }
