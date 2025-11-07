@@ -301,20 +301,22 @@ namespace NUtilities
                 auto percentPerTemp = 0.015;
                 auto percentPerDepth = 0.02 / 10.0;
 
-                auto metValue = 1.0;
+                auto metMultiplier = 1.0;
 
                 // Adjust for depth - approximately 2% increase per 10 meters
-                metValue *= ( 1 + ( depth * percentPerDepth ) );
+                auto depthMult = ( 1 + ( depth * percentPerDepth ) );
+                metMultiplier *= depthMult;
 
                 // Adjust for temperature - approximately 1.5% increase per degree below 25°C
                 if ( temperature < tempThreshold )
                 {
-                    metValue *= ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+                    auto tempMult = ( 1 + ( ( tempThreshold - temperature ) * percentPerTemp ) );
+                    metMultiplier *= tempMult;
                 }
 
-                metValue *= activityLevelMultiplier;
+                metMultiplier *= activityLevelMultiplier;
 
-                metValue = NConstants::scubaMET() * metValue;
+                auto metValue = NConstants::scubaMET() * metMultiplier;
 
                 // Calculate calories burned: MET * weight in kg * time in minutes
                 auto calories = metValue * weight * duration;
@@ -343,17 +345,16 @@ namespace NUtilities
                 }
 
                 auto rhs = fieldNameForType( EVariableType::eBaseMETofSCUBAConst );
+                rhs += QString( R"__( \times %1)__" ).arg( actualWeight->fieldName() );
+                rhs += QString( R"__( \times %1)__" ).arg( duration->fieldName() );
                 rhs += QString( R"__( \times ( 1 + [ %1 \times \frac{2\%}{10%2} ] ) )__" ).arg( actualDepth->fieldName() ).arg( NUnitStrings::depthUnit( false, true, true, true ) );
 
                 if ( !temperature->optValue().has_value() || ( temperature->optValue().value() < 25.0 ) )
                 {
-                    rhs += QString( R"__( \times ( 1 + [ 25.0%2 - %1 \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTemp->fieldName() ).arg( NUnitStrings::tempUnit( false, true, true ) );
+                    rhs += QString( R"__( \times ( 1 + [ ( 25.0%2 - %1 ) \times \frac{1.5\%}{%2} ] ) )__" ).arg( actualTemp->fieldName() ).arg( NUnitStrings::tempUnit( false, true, true ) );
                 }
 
-                rhs += QString( R"__( \times %1 \times \frac{%2}{100\%} \times %3)__" )   //
-                           .arg( actualWeight->fieldName() )
-                           .arg( activityLevel->fieldName() )
-                           .arg( duration->fieldName() );
+                rhs += QString( R"__( \times \frac{%2}{100\%})__" ).arg( activityLevel->fieldName() );
 
                 formulas.push_back( std::make_shared< CFormulaString >( calories, rhs ) );
                 return formulas;
