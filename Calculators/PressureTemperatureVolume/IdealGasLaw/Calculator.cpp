@@ -18,12 +18,12 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -41,7 +41,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
@@ -57,55 +57,58 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( TVariableInfo(), QString( R"__(<p> \times <v> = <numMoles> \times %1 \times <t>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    if ( unsetVar->name() == "p" )
+    if ( unsetVar == "p" )
     {
         // p = nrt/v
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<numMoles> \times %1 \times (<t> + %2)}{<v>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<numMoles> \times %1 \times (<t> + %2)}{<v>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "v" )
+    else if ( unsetVar == "v" )
     {
         // v = nrt/p
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<numMoles> \times %1 \times (<t> + %2)}{<p>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<numMoles> \times %1 \times (<t> + %2)}{<p>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "numMoles" )
+    else if ( unsetVar == "numMoles" )
     {
         // n = pv/rt
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(\frac{<p> \times <v>}{%1 \times (<t> + %2)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<p> \times <v>}{%1 \times (<t> + %2)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "t" )
+    else if ( unsetVar == "t" )
     {
         // t = pv/nr
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__((\frac{<p> \times <v>}{%1 \times <numMoles>}) - %2)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__((\frac{<p> \times <v>}{%1 \times <numMoles>}) - %2)__" ).arg( NUtilities::fieldNameForType( EVariableType::eIdealGasConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto p = getVariable( "p" );
     auto v = getVariable( "v" );
     auto numMoles = getVariable( "numMoles" );
     auto t = getVariable( "t" );
 
-    if ( unsetVar == p )
+    if ( !p->has_value() && v->has_value() && numMoles->has_value() && t->has_value() )
     {
         // p = nrt/v
         p->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) / v->value() );
     }
-    else if ( unsetVar == v )
+    
+    if ( p->has_value() && !v->has_value() && numMoles->has_value() && t->has_value() )
     {
         // v = nrt/p
         v->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) / p->value() );
     }
-    else if ( unsetVar == numMoles )
+    
+    if ( p->has_value() && v->has_value() && !numMoles->has_value() && t->has_value() )
     {
         // n = pv/rt
         numMoles->setValue( ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) ) );
     }
-    else if ( unsetVar == t )
+    
+    if ( p->has_value() && v->has_value() && numMoles->has_value() && !t->has_value() )
     {
         // t = pv/nr
         t->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles->value() ) ) );

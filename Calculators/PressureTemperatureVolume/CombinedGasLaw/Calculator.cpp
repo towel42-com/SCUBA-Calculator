@@ -18,13 +18,13 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual TVariableInfoList getMyVariables() const override;
+    virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const TConstVariableInfo &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
-    virtual void computeValueForVar( TVariableInfo &unsetVar ) override;   // updates all values
+    virtual void computeVariableValues() override;   // updates all values
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -42,7 +42,7 @@ QStringList CCalculator::myCalculatorPath() const
     return { tr( "Pressure, Temperature and Volume Calculations" ) };
 }
 
-TVariableInfoList CCalculator::getMyVariables() const
+TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
@@ -87,37 +87,37 @@ std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial
     return TFormulaStringList( { std::make_shared< CFormulaString >( TVariableInfo(), QString( R"__(\frac{\frac{<p1> \times <v1>}{<t1>} = <p2> \times <v2>}{<t2>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const TConstVariableInfo &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    if ( unsetVar->name() == "p1" )
+    if ( unsetVar == "p1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p2> \times \frac{<v2>}{<v1>} \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>} \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "p2" )
+    else if ( unsetVar == "p2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<p1> \times \frac{<v1>}{<v2>} \times \frac{<t2> + %1}{<t1> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p1> \times \frac{<v1>}{<v2>} \times \frac{<t2> + %1}{<t1> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "v1" )
+    else if ( unsetVar == "v1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1} \times \frac{<p2>}{<p1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1} \times \frac{<p2>}{<p1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "v2" )
+    else if ( unsetVar == "v2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<v1> \times \frac{<t2> + %1}{<t1> + %1} \times \frac{<p1>}{<p2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<v1> \times \frac{<t2> + %1}{<t1> + %1} \times \frac{<p1>}{<p2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
-    else if ( unsetVar->name() == "t1" )
+    else if ( unsetVar == "t1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<t2> \times \frac{<p1>}{<p2>} \times \frac{<v1>}{<v2>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<t2> \times \frac{<p1>}{<p2>} \times \frac{<v1>}{<v2>})__" ) ) } );
     }
-    else if ( unsetVar->name() == "t2" )
+    else if ( unsetVar == "t2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( unsetVar, QString( R"__(<t1> \times \frac{<p2>}{<p1>} \times \frac{<v2>}{<v1>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<t1> \times \frac{<p2>}{<p1>} \times \frac{<v2>}{<v1>})__" ) ) } );
     }
 
     return {};
 }
 
-void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
+void CCalculator::computeVariableValues()
 {
     auto p1 = getVariable( "p1" );
     auto v1 = getVariable( "v1" );
@@ -127,27 +127,32 @@ void CCalculator::computeValueForVar( TVariableInfo &unsetVar )
     auto v2 = getVariable( "v2" );
     auto t2 = getVariable( "t2" );
 
-    if ( unsetVar == p1 )
+    if ( p1->has_value() && v1->has_value() && t1->has_value() && p2->has_value() && v2->has_value() && t2->has_value() )
     {
         p1->setValue( p2->value() * ( v2->value() / v1->value() ) * ( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) ) );
     }
-    else if ( unsetVar == p2 )
+    
+    if ( p1->has_value() && v1->has_value() && t1->has_value() && !p2->has_value() && v2->has_value() && t2->has_value() )
     {
         p2->setValue( p1->value() * ( v1->value() / v2->value() ) * ( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) ) );
     }
-    else if ( unsetVar == v1 )
+    
+    if ( p1->has_value() && !v1->has_value() && t1->has_value() && p2->has_value() && v2->has_value() && t2->has_value() )
     {
         v1->setValue( v2->value() * ( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) ) * ( p2->value() / p1->value() ) );
     }
-    else if ( unsetVar == v2 )
+    
+    if ( p1->has_value() && v1->has_value() && t1->has_value() && p2->has_value() && !v2->has_value() && t2->has_value() )
     {
         v2->setValue( v1->value() * ( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) ) * ( p1->value() / p2->value() ) );
     }
-    else if ( unsetVar == t1 )
+    
+    if ( p1->has_value() && v1->has_value() && !t1->has_value() && p2->has_value() && v2->has_value() && t2->has_value() )
     {
         t1->setValue( t2->value() * ( p1->value() / p2->value() ) * ( v1->value() / v2->value() ) );
     }
-    else if ( unsetVar == t2 )
+    
+    if ( p1->has_value() && v1->has_value() && t1->has_value() && p2->has_value() && v2->has_value() && !t2->has_value() )
     {
         t2->setValue( t1->value() * ( p2->value() / p1->value() ) * ( v2->value() / v1->value() ) );
     }
