@@ -202,7 +202,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="separator"/>
     <addaction name="actionGenerateAllFormulas"/>
     <addaction name="actionGenerateUpdatedFormulas"/>
     <addaction name="separator"/>

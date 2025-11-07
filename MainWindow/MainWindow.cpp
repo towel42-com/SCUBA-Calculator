@@ -71,6 +71,17 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     connect( fImpl->seaWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
     connect( fImpl->freshWater, &QRadioButton::toggled, this, &CMainWindow::slotWaterChanged );
 
+    connect(
+        fImpl->menuFile, &QMenu::aboutToShow,   //
+        [ this ]()   //
+        {
+#ifndef _DEBUG
+            fImpl->actionGenerateAllFormulas->setVisible( false );
+            fImpl->actionGenerateUpdatedFormulas->setVisible( false );
+            //fImpl->menuSeparator->setVisible( false );
+#endif
+        } );
+
     connect( fImpl->actionGenerateAllFormulas, &QAction::triggered, this, &CMainWindow::slotGenerateAllFormulas );
     connect( fImpl->actionGenerateUpdatedFormulas, &QAction::triggered, this, &CMainWindow::slotGenerateUpdatedFormulas );
 
@@ -840,4 +851,3 @@ std::size_t CMainWindow::loadCacheFile( QProgressDialog *progress, const QString
     }
     return numLoaded;
 }
-
