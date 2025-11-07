@@ -192,7 +192,7 @@ namespace NUtilities
 
         TFormulaString sacToRMVFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure )
         {
-            return std::make_shared< CFormulaString >( rmv, QString( R"__(%2 \times \frac{%3 ){%4})__" ).arg( sac->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) );
+            return std::make_shared< CFormulaString >( rmv, QString( R"__(%2 \times \frac{%3}){%4})__" ).arg( sac->fieldName() ).arg( tankVolume->fieldName() ).arg( tankPressure->fieldName() ) );
         }
 
         TFormulaString rmvToSACFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure )
