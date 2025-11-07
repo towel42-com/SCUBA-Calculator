@@ -193,6 +193,7 @@ public:
     [[nodiscard]] QComboBox *comboBox() const;
 
     void reverseVariableLoc();
+    void setVariableLoc( EVariableLoc loc );
 
     [[nodiscard]] bool needsFieldUpdate( QWidget *triggerWidget );
     [[nodiscard]] bool hasValues() const;

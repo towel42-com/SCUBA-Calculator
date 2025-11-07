@@ -216,12 +216,17 @@ QComboBox *CVariableInfo::comboBox() const
 
 void CVariableInfo::reverseVariableLoc()
 {
+    if ( fVariableLocation == EVariableLoc::eLHS )
+        setVariableLoc( EVariableLoc::eRHS );
+    else if ( fVariableLocation == EVariableLoc::eRHS )
+        setVariableLoc( EVariableLoc::eLHS );
+}
+
+void CVariableInfo::setVariableLoc( EVariableLoc loc )
+{
     if ( !isVariable() )
         return;
-    if ( fVariableLocation == EVariableLoc::eLHS )
-        fVariableLocation = EVariableLoc::eRHS;
-    else if ( fVariableLocation == EVariableLoc::eRHS )
-        fVariableLocation = EVariableLoc::eLHS;
+    fVariableLocation = loc;
 }
 
 bool CVariableInfo::needsFieldUpdate( QWidget *triggerWidget )
