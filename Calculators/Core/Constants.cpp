@@ -732,7 +732,7 @@ namespace NUtilities
                 retVal = NConstants::kLitersToCubicFeetFieldName;
                 break;
         };
-        retVal = QString( "%1" ).arg( retVal );
+        retVal = QString( "<%1>" ).arg( retVal );
         return retVal;
     }
 }
