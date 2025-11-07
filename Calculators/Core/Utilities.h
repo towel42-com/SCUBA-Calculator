@@ -209,6 +209,8 @@ namespace NUtilities
 
     CALCULATORS_EXPORT QStringList getVariables( const QString &formula );
     CALCULATORS_EXPORT bool hasVariable( const QString &formula );
+
+    CALCULATORS_EXPORT [[nodiscard]] TFormulaStringList sortAndUniquifyFormulas( const TFormulaStringList &formulas );
 };
 
 #endif

@@ -395,11 +395,13 @@ TFormulaList CSCUBACalculator::getNamedFormulas() const
                 if ( ii->hasValues() && !ii->hasCustomValue() )
                     continue;
 
-                auto currFormula = getFormulasForVar( ii, imperial, seaWater );
-                if ( !currFormula.has_value() || currFormula.value().empty() )
+                auto currFormulas = getFormulasForVar( ii, imperial, seaWater );
+                if ( !currFormulas.has_value() || currFormulas.value().empty() )
                     continue;
 
-                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( calculatorName() + "-" + ii->name(), currFormula.value(), imperial, seaWater ) );
+                currFormulas = NUtilities::sortAndUniquifyFormulas( currFormulas.value() );
+
+                namedFormulas.push_back( std::make_shared< NUtilities::SFormula >( calculatorName() + "-" + ii->name(), currFormulas.value(), imperial, seaWater ) );
             }
         }
     }
@@ -613,6 +615,8 @@ std::optional< TFormulaStringList > CSCUBACalculator::getCurrentFormulas() const
             ii->setBaseFormula( true );
         retVal.insert( retVal.end(), formulasForVar.value().begin(), formulasForVar.value().end() );
     }
+
+    retVal = NUtilities::sortAndUniquifyFormulas( retVal );
 
     return retVal;
 }

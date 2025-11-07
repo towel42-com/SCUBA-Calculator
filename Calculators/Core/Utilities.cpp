@@ -6,6 +6,9 @@
 #include <QObject>
 #include <QRegularExpression>
 
+#include <iterator>
+#include <list>
+
 namespace NUtilities
 {
     QStringList getVariables( const QString &formula )
@@ -27,6 +30,45 @@ namespace NUtilities
     {
         auto regEx = QRegularExpression( R"__(\<([A-Za-z]+)|(%\d+)\>)__" );
         return regEx.match( formula ).hasMatch();
+    }
+
+    TFormulaStringList sortAndUniquifyFormulas( const TFormulaStringList &formulas )
+    {
+        auto tmp = formulas;
+
+        std::unordered_map< TVariableInfo, TFormulaStringList::const_iterator > lastLocOfVar;
+
+        for ( auto &&ii = tmp.begin(); ii != tmp.end(); )
+        {
+            auto currVariable = ( *ii )->variable();
+            auto pos = lastLocOfVar.find( currVariable );
+            if ( pos == lastLocOfVar.end() )
+            {
+                lastLocOfVar[ currVariable ] = ii;
+                ++ii;
+            }
+            else
+            {
+                auto curr = *ii;
+                ii = tmp.erase( ii );
+                lastLocOfVar[ currVariable ] = tmp.insert( std::next( ( *pos ).second ), curr );
+            }
+        }
+
+        TFormulaStringList retVal;
+
+        // check for duplicates
+        for ( auto &&ii = tmp.begin(); ii != tmp.end(); ++ii )
+        {
+            bool found = false;
+            for ( auto &&jj = std::next( ii ); !found && ( jj != tmp.end() ); ++jj )
+            {
+                found = ( *ii == *jj );
+            }
+            if ( !found )
+                retVal.push_back( *ii );
+        }
+        return retVal;
     }
 
     QString ratio( const QString &numerator, const QString &denominator, bool tex )
@@ -219,12 +261,16 @@ namespace NUtilities
             prevVar = ii->variable();
         }
 
-        auto retVal = formulas.join( R"( \newline )" "\n" );
+        auto retVal = formulas.join( R"( \newline )"
+                                     "\n" );
         if ( formulas.size() > 1 )
         {
-            retVal = QString( R"__(\begin{align})__" "\n" )
+            retVal = QString( R"__(\begin{align})__"
+                              "\n" )
                      + retVal
-                     + QString( "\n" R"__(\end{align})__" "\n" );
+                     + QString( "\n"
+                                R"__(\end{align})__"
+                                "\n" );
             retVal.replace( "=", "& =" );
         }
         return retVal;
