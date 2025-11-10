@@ -2,7 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
-#include "Core/FormulaString.h"
+#include "Core/Formula.h"
 
 #include <memory>
 
@@ -24,8 +24,8 @@ public:
     
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -71,12 +71,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "mod" ), QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "mod" ), QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "mod" )
     {
@@ -84,11 +84,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     }
     else if ( unsetVar == "maxPO2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<fo2> \times [(\frac{<mod>}{%1})+1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<fo2> \times [(\frac{<mod>}{%1})+1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     }
     else if ( unsetVar == "fo2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{%1})+1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{%1})+1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
     }
 
     return {};

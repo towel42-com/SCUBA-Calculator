@@ -2,7 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
-#include "Core/FormulaString.h"
+#include "Core/Formula.h"
 
 #include <memory>
 
@@ -22,8 +22,8 @@ public:
     
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -83,36 +83,36 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( TVariableInfo(), QString( R"__(\frac{\frac{<p1> \times <v1>}{<t1>} = <p2> \times <v2>}{<t2>})__" ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( TVariableInfo(), QString( R"__(\frac{\frac{<p1> \times <v1>}{<t1>} = <p2> \times <v2>}{<t2>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar == "p1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>} \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>} \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "p2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p1> \times \frac{<v1>}{<v2>} \times \frac{<t2> + %1}{<t1> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p1> \times \frac{<v1>}{<v2>} \times \frac{<t2> + %1}{<t1> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "v1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1} \times \frac{<p2>}{<p1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1} \times \frac{<p2>}{<p1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "v2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<v1> \times \frac{<t2> + %1}{<t1> + %1} \times \frac{<p1>}{<p2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v1> \times \frac{<t2> + %1}{<t1> + %1} \times \frac{<p1>}{<p2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "t1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<t2> \times \frac{<p1>}{<p2>} \times \frac{<v1>}{<v2>})__" ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<t2> \times \frac{<p1>}{<p2>} \times \frac{<v1>}{<v2>})__" ) ) } );
     }
     else if ( unsetVar == "t2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<t1> \times \frac{<p2>}{<p1>} \times \frac{<v2>}{<v1>})__" ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<t1> \times \frac{<p2>}{<p1>} \times \frac{<v2>}{<v1>})__" ) ) } );
     }
 
     return {};

@@ -25,8 +25,8 @@ public:
 
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
     virtual void setupCustomDependencies() override;
@@ -75,9 +75,9 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool imperial, bool seaWater ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
+    return TFormulaList( { NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
 }
 
 TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
@@ -88,7 +88,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
         return getVariable( "duration" );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "calories" )
     {
@@ -96,7 +96,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     }
     else if ( unsetVar == "duration" )
     {
-        return TFormulaStringList( { NUtilities::NConversions::NCaloriesComputer::computeDurationFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
+        return TFormulaList( { NUtilities::NConversions::NCaloriesComputer::computeDurationFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
     }
     return {};
 }

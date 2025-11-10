@@ -2,7 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
-#include "Core/FormulaString.h"
+#include "Core/Formula.h"
 
 #include <memory>
 
@@ -26,9 +26,9 @@ public:
     
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const override;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const override;
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -95,17 +95,17 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "p2" ), QString( R"__(<p1> \times \frac{<v1>}{<v2>})__" ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "p2" ), QString( R"__(<p1> \times \frac{<v1>}{<v2>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<p1>}{<p2>})__" ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<p1>}{<p2>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "p2" )
     {
@@ -114,7 +114,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     else if ( unsetVar == "p1" )
     {
         // p1 = p2 * (v2/v1);
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>})__" ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>})__" ) ) } );
     }
     else if ( unsetVar == "v2" )
     {
@@ -122,7 +122,7 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     }
     else if ( unsetVar == "v1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<p2>}{<p1>})__" ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<p2>}{<p1>})__" ) ) } );
     }
 
     return {};

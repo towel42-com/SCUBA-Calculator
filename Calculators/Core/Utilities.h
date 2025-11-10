@@ -121,74 +121,74 @@ namespace NUtilities
         CALCULATORS_EXPORT double psiToBar( double psi );
         CALCULATORS_EXPORT double barToPSI( double bar );
 
-        CALCULATORS_EXPORT TFormulaString psiToBarFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar );
-        CALCULATORS_EXPORT TFormulaString barToPSIFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar );
+        CALCULATORS_EXPORT TFormula psiToBarFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar );
+        CALCULATORS_EXPORT TFormula barToPSIFormula( const TConstVariableInfo &psi, const TConstVariableInfo &bar );
 
         CALCULATORS_EXPORT double depthToATA( bool imperial, bool seaWater, double depth );
         CALCULATORS_EXPORT double ataToDepth( bool imperial, bool seaWater, double pressure );
 
-        CALCULATORS_EXPORT TFormulaString depthToATAFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth );
-        CALCULATORS_EXPORT TFormulaString ataToDepthFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth );
+        CALCULATORS_EXPORT TFormula depthToATAFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth );
+        CALCULATORS_EXPORT TFormula ataToDepthFormula( const TConstVariableInfo &ata, const TConstVariableInfo &depth );
 
         CALCULATORS_EXPORT double depthFreshwaterToSeawater( double depthFW );
         CALCULATORS_EXPORT double depthSeawaterToFreshwater( double depthSW );
 
-        CALCULATORS_EXPORT TFormulaString depthFreshwaterToSeawaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater );
-        CALCULATORS_EXPORT TFormulaString depthSeawaterToFreshwaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater );
+        CALCULATORS_EXPORT TFormula depthFreshwaterToSeawaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater );
+        CALCULATORS_EXPORT TFormula depthSeawaterToFreshwaterFormula( const TConstVariableInfo &freshWater, const TConstVariableInfo &seaWater );
 
         CALCULATORS_EXPORT double feetToMeters( double feet );
         CALCULATORS_EXPORT double metersToFeet( double meters );
 
-        CALCULATORS_EXPORT TFormulaString feetToMetersFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters );
-        CALCULATORS_EXPORT TFormulaString metersToFeetFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters );
+        CALCULATORS_EXPORT TFormula feetToMetersFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters );
+        CALCULATORS_EXPORT TFormula metersToFeetFormula( const TConstVariableInfo &feet, const TConstVariableInfo &meters );
 
         CALCULATORS_EXPORT double degreeChangeForPressureChange( bool imperial, double temperature );
         CALCULATORS_EXPORT double pressureChangeForDegreeChange( bool imperial, double pressure );
 
-        CALCULATORS_EXPORT TFormulaString degreeChangeForPressureChangeFormula( const TConstVariableInfo &temperature, const TConstVariableInfo &pressure );
-        CALCULATORS_EXPORT TFormulaString pressureChangeForDegreeChangeFormula( const TConstVariableInfo &temperature, const TConstVariableInfo &pressure );
+        CALCULATORS_EXPORT TFormula degreeChangeForPressureChangeFormula( const TConstVariableInfo &temperature, const TConstVariableInfo &pressure );
+        CALCULATORS_EXPORT TFormula pressureChangeForDegreeChangeFormula( const TConstVariableInfo &temperature, const TConstVariableInfo &pressure );
 
         CALCULATORS_EXPORT double lbsToKGs( double lbs );
         CALCULATORS_EXPORT double kgsToLbs( double kgs );
 
-        CALCULATORS_EXPORT TFormulaString lbsToKGsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs );
-        CALCULATORS_EXPORT TFormulaString kgsToLbsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs );
+        CALCULATORS_EXPORT TFormula lbsToKGsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs );
+        CALCULATORS_EXPORT TFormula kgsToLbsFormula( const TConstVariableInfo &lbs, const TConstVariableInfo &kgs );
 
         CALCULATORS_EXPORT double farenheightToCelsius( double temp );
         CALCULATORS_EXPORT double celsiusToFarenheight( double temp );
 
-        CALCULATORS_EXPORT TFormulaString farenheightToCelsiusFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight );
-        CALCULATORS_EXPORT TFormulaString celsiusToFarenheightFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight );
+        CALCULATORS_EXPORT TFormula farenheightToCelsiusFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight );
+        CALCULATORS_EXPORT TFormula celsiusToFarenheightFormula( const TConstVariableInfo &celsius, const TConstVariableInfo &farenheight );
 
         CALCULATORS_EXPORT double cubicFeetToLiters( double volume );
         CALCULATORS_EXPORT double litersToCubicFeet( double volume );
 
-        CALCULATORS_EXPORT TFormulaString cubicFeetToLitersFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters );
-        CALCULATORS_EXPORT TFormulaString litersToCubicFeetFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters );
+        CALCULATORS_EXPORT TFormula cubicFeetToLitersFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters );
+        CALCULATORS_EXPORT TFormula litersToCubicFeetFormula( const TConstVariableInfo &cubicFeet, const TConstVariableInfo &liters );
 
         CALCULATORS_EXPORT double sacToRMV( double sac, double volume, double pressure );
         CALCULATORS_EXPORT double rmvToSAC( double rmv, double volume, double pressure );
-        CALCULATORS_EXPORT TFormulaString sacToRMVFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure );
-        CALCULATORS_EXPORT TFormulaString rmvToSACFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure );
+        CALCULATORS_EXPORT TFormula sacToRMVFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure );
+        CALCULATORS_EXPORT TFormula rmvToSACFormula( const TConstVariableInfo &sac, const TConstVariableInfo &rmv, const TConstVariableInfo &tankVolume, const TConstVariableInfo &tankPressure );
 
         CALCULATORS_EXPORT double surfacePressureAtAltitude( bool imperial, double altitude );
-        CALCULATORS_EXPORT TFormulaString surfacePressureAtAltitudeFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude );
+        CALCULATORS_EXPORT TFormula surfacePressureAtAltitudeFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude );
 
         CALCULATORS_EXPORT double altitudeForSurfacePressure( bool imperial, double surfacePressure );
-        CALCULATORS_EXPORT TFormulaString altitudeForSurfacePressureFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude );
+        CALCULATORS_EXPORT TFormula altitudeForSurfacePressureFormula( bool imperial, const TConstVariableInfo &surfacePressure, const TConstVariableInfo &altitude );
 
         namespace NCaloriesComputer
         {
             CALCULATORS_EXPORT double computeCalories( bool imperial, bool seaWater, double weight, double depth, double temperature, double activityLevelMultiplier, double duration );
             CALCULATORS_EXPORT double computeDuration( bool imperial, bool seaWater, double calories, double weight, double depth, double temperature, double activityLevelMultiplier );
 
-            CALCULATORS_EXPORT TFormulaStringList computeCaloriesFormula( bool imperial, bool seaWater, const TConstVariableInfo &calories, const TConstVariableInfo &weight, const TConstVariableInfo &depth, const TConstVariableInfo &temperature, const TConstVariableInfo &activityLevel, const TConstVariableInfo &duration );
-            CALCULATORS_EXPORT TFormulaStringList computeDurationFormula( bool imperial, bool seaWater, const TConstVariableInfo &calories, const TConstVariableInfo &weight, const TConstVariableInfo &depth, const TConstVariableInfo &temperature, const TConstVariableInfo &activityLevel, const TConstVariableInfo &duration );
+            CALCULATORS_EXPORT TFormulaList computeCaloriesFormula( bool imperial, bool seaWater, const TConstVariableInfo &calories, const TConstVariableInfo &weight, const TConstVariableInfo &depth, const TConstVariableInfo &temperature, const TConstVariableInfo &activityLevel, const TConstVariableInfo &duration );
+            CALCULATORS_EXPORT TFormulaList computeDurationFormula( bool imperial, bool seaWater, const TConstVariableInfo &calories, const TConstVariableInfo &weight, const TConstVariableInfo &depth, const TConstVariableInfo &temperature, const TConstVariableInfo &activityLevel, const TConstVariableInfo &duration );
         }
     }
 
-    CALCULATORS_EXPORT std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas );
-    CALCULATORS_EXPORT QString equation( bool imperial, bool seaWater, const TFormulaString &formula );
+    CALCULATORS_EXPORT std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaList &formulas );
+    CALCULATORS_EXPORT QString equation( bool imperial, bool seaWater, const TFormula &formula );
     CALCULATORS_EXPORT QString descForType( EVariableType type );
     CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
     CALCULATORS_EXPORT bool isConstantVariable( EVariableType type );
@@ -198,12 +198,12 @@ namespace NUtilities
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
     CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );
 
-    CALCULATORS_EXPORT TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator );
-    CALCULATORS_EXPORT TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator );
-    CALCULATORS_EXPORT TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator );
-    CALCULATORS_EXPORT TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator );
-    CALCULATORS_EXPORT TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator );
-    CALCULATORS_EXPORT TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator );
 
     CALCULATORS_EXPORT QString ratio( const QString &numerator, const QString &denominator, bool tex );
     CALCULATORS_EXPORT QString ratio( const QString &description, const QString &numerator, const QString &denominator, bool tex );
@@ -212,7 +212,7 @@ namespace NUtilities
     CALCULATORS_EXPORT QStringList getVariables( const QString &formula );
     CALCULATORS_EXPORT bool hasVariable( const QString &formula );
 
-    CALCULATORS_EXPORT [[nodiscard]] TFormulaStringList sortAndUniquifyFormulas( const TFormulaStringList &formulas );
+    CALCULATORS_EXPORT [[nodiscard]] TFormulaList sortAndUniquifyFormulas( const TFormulaList &formulas );
 };
 
 #endif

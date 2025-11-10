@@ -1,129 +1,154 @@
+// The MIT License( MIT )
+//
+// Copyright( c ) 2025 Scott Aron Bloom
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files( the "Software" ), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sub-license, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+#include "SCUBACalculatorFwd.h"
+
 #include "Formula.h"
 #include "Utilities.h"
 #include "VariableInfo.h"
-#include "FormulaString.h"
+#include "SCUBACalculator.h"
+#include "include/MathJaxQt6.h"
 
-#include "T42-MathJaxQt6/include/MathJaxQt6.h"
-
-#include <QString>
-
-namespace NUtilities
+CFormula::CFormula( TVariableInfo variable, const QString &formula ) :
+    fVariable( variable ),
+    fFormula( formula )
 {
-    SFormula::SFormula( const QString &name, const TFormulaString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
-        fName( name ),
-        fFormulas( { formula } ),
-        fImperial( imperial ),
-        fSeaWater( seaWater ),
-        fNameValuePairs( nameValuePair )
+    Q_ASSERT( fVariable );
+}
+
+CFormula::CFormula( TConstVariableInfo variable, const QString &formula ) :
+    CFormula( std::const_pointer_cast< CVariableInfo >( variable ), formula )
+{
+}
+
+CFormula::CFormula( const QString &formula ) :
+    CFormula( TVariableInfo(), formula )
+{
+}
+
+TFormula CFormula::applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType )
+{
+    QString finalizedFormula = fFormula;
+    for ( auto &&curr : variables )
     {
+        finalizedFormula = curr->updateFormula( imperial, seaWater, finalizedFormula, formulaType );
     }
+    NUtilities::NConstants::foreachConstantType(   //
+        [ &, this ]( EVariableType currConst )   //
+        {   //
+            finalizedFormula = CVariableInfo::updateFormula( imperial, seaWater, finalizedFormula, currConst, ( formulaType == EFormulaType::eBaseFormula ) );
+            return true;
+        } );
+    return std::make_shared< CFormula >( fVariable, finalizedFormula );
+}
 
-    SFormula::SFormula( const QString &name, const TFormulaStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePair /*= {} */ ) :
-        fName( name ),
-        fFormulas( formulas ),
-        fImperial( imperial ),
-        fSeaWater( seaWater ),
-        fNameValuePairs( nameValuePair )
+QString CFormula::equation( bool imperial, bool seaWater ) const
+{
+    if ( fVariable && !fFormula.isEmpty() )
+        return QString( "%1 = %2" ).arg( fVariable->descriptiveName( imperial, seaWater ) ).arg( fFormula );
+    if ( fVariable && fFormula.isEmpty() )
+        return QString( "%1" ).arg( fVariable->descriptiveName( imperial, seaWater ) );
+    if ( !fVariable && !fFormula.isEmpty() )
+        return QString( "%1" ).arg( fFormula );
+    return {};
+}
+
+void CFormula::cleanupFormula()
+{
+    fFormula = NTowel42::cleanupFormula( fFormula );
+}
+
+bool CFormula::isBaseFormula() const
+{
+    if ( !fVariable )
+        return false;
+    return fBaseFormula && !fVariable->isIntermediate();
+}
+
+bool CFormula::operator==( const TFormula &rhs ) const
+{
+    return operator==( rhs.get() );
+}
+
+bool CFormula::operator==( const CFormula *rhs ) const
+{
+    if ( !rhs )
+        return false;
+
+    return operator==( *rhs );
+}
+
+bool CFormula::operator==( const CFormula &rhs ) const
+{
+    return ( fVariable == rhs.fVariable )   //
+           && ( fFormula == rhs.fFormula );   //
+    //&& ( fBaseFormula == rhs.fBaseFormula );
+}
+
+TFormula CFormula::getFinalValueFormula( bool imperial, bool seaWater, CSCUBACalculator *calculator )
+{
+    if ( !fVariable )
+        return {};
+
+    auto variables = NUtilities::getVariables( fFormula );
+
+    bool hasUnsetVar = false;
+    for ( auto &&ii : variables )
     {
-    }
+        auto variable = calculator->getVariable( ii );
+        if ( !variable && NUtilities::isConstantVariable( ii ) )
+            continue;
 
-    SFormula::SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePair ) :
-        SFormula( rhs )
-    {
-        fNameValuePairs = nameValuePair;
-    }
+        Q_ASSERT( variable || ( !variable && NUtilities::isConstantVariable( ii ) ) );
+        if ( !variable )
+            continue;
 
-    SFormula::SFormula()
-    {
-    }
-
-    bool SFormula::operator<( const SFormula &rhs ) const
-    {
-        return name() < rhs.name();
-    }
-
-    QString SFormula::name() const
-    {
-        auto retVal = fName;
-        if ( fImperial )
-            retVal += "-unit=imperial";
-        else
-            retVal += "-unit=metric";
-        if ( fSeaWater )
-            retVal += "-water=sea";
-        else
-            retVal += "-water=fresh";
-
-        if ( fNameValuePairs.has_value() )
+        if ( !variable->has_value() && !variable->dependenciesSatisfied() )
         {
-            for ( auto &&ii : fNameValuePairs.value() )
-            {
-                retVal += "-" + ii.first->name() + "=" + NUtilities::doubleToString( ii.second, 2 );
-            }
+            hasUnsetVar = true;
+            break;
         }
-        return retVal;
     }
+    if ( hasUnsetVar )
+        return {};
 
-    QString SFormula::formula() const
+    auto prevValue = fVariable->optValue();
+    if ( prevValue.has_value() )
+        fVariable->resetValue( imperial, seaWater, false, false );
+
+    calculator->computeVariableValues();
+
+    auto currValue = fVariable->optValue();
+    Q_ASSERT( !prevValue.has_value() || ( prevValue == currValue ) || fVariable->isIntermediate() );
+
+    auto valueString = fVariable->valueString( imperial, seaWater );
+
+    TFormula retVal;
+
+    if ( !valueString.isEmpty() )
     {
-        auto retVal = NUtilities::joinFormulas( imperial(), seaWater(), cleanedFormulas() );
-        if ( !retVal.has_value() )
-            return {};
-        return retVal.value();
+        retVal = std::make_shared< CFormula >( fVariable, R"__(\color{green}{)__" + valueString + R"__(})__" );
     }
 
-    TFormulaStringList SFormula::cleanedFormulas() const
-    {
-        auto retVal = this->formulas();
-        for ( auto &&ii : retVal )
-        {
-            ii->cleanupFormula();
-        }
-        return retVal;
-    }
-
-    void SFormula::setFormula( const QString &formula )
-    {
-        fFormulas.clear();
-        fFormulas.emplace_back( std::make_shared< CFormulaString >( formula ) );
-    }
-
-    bool SFormula::operator==( const SFormula &rhs ) const
-    {
-        //if ( fName != rhs.fName )
-        //    return false;
-        if ( fFormulas != rhs.fFormulas )
-            return false;
-        if ( fImperial != rhs.fImperial )
-            return false;
-        if ( fSeaWater != rhs.fSeaWater )
-            return false;
-
-        if ( fNameValuePairs.has_value() != rhs.fNameValuePairs.has_value() )
-            return false;
-
-        if ( fNameValuePairs.has_value() /* && rhs.fNameValuePair.has_value() */ )
-        {
-            if ( fNameValuePairs.value().size() != rhs.fNameValuePairs.value().size() )
-                return false;
-
-            auto ii = fNameValuePairs.value().begin();
-            auto jj = rhs.fNameValuePairs.value().begin();
-            for ( ; ii != fNameValuePairs.value().end() && jj != rhs.fNameValuePairs.value().end(); ++ii, ++jj )
-            {
-                if ( ( *ii ).first != ( *jj ).first )
-                    return false;
-
-                if ( ( *ii ).second.has_value() != ( *jj ).second.has_value() )
-                    return false;
-
-                if ( ( *ii ).second != ( *jj ).second )
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
+    if ( prevValue.has_value() && ( prevValue != currValue ) && !fVariable->isIntermediate() )
+        fVariable->setValue( prevValue );
+    return retVal;
 }

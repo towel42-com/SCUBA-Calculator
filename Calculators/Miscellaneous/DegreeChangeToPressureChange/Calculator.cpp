@@ -24,9 +24,9 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -65,17 +65,17 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
         };
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::pressureChangeForDegreeChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
+    return TFormulaList( { NUtilities::NConversions::pressureChangeForDegreeChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::degreeChangeForPressureChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
+    return TFormulaList( { NUtilities::NConversions::degreeChangeForPressureChangeFormula( getVariable( "t1" ), getVariable( "p1" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "p1" )
     {

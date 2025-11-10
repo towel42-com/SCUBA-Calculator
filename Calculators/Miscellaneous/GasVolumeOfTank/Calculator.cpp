@@ -2,7 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
-#include "Core/FormulaString.h"
+#include "Core/Formula.h"
 
 #include <memory>
 
@@ -20,8 +20,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -53,21 +53,21 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "gasVolume" ), R"__(<tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__" ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "gasVolume" ), R"__(<tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__" ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar == "gasVolume" )
         return myBaseFormulas( false, false );
     else if ( unsetVar == "currTankPressure" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(<ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__" ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), R"__(<ratedTankPressure> \times \frac{<gasVolume>}{<tankVolume>})__" ) } );
     else if ( unsetVar == "ratedTankPressure" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(<currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__" ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), R"__(<currTankPressure> \times \frac{<tankVolume>}{<gasVolume>})__" ) } );
     else if ( unsetVar == "tankVolume" )
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), R"__(<gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__" ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), R"__(<gasVolume> \times \frac{<ratedTankPressure>}{<currTankPressure>})__" ) } );
     return {};
 }
 

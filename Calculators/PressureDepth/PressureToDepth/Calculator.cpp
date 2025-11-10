@@ -21,9 +21,9 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
     virtual bool isWaterTypeBased() const override { return true; }
@@ -53,17 +53,17 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
         };
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::ataToDepthFormula( getVariable( "pressure" ), getVariable( "depth" ) ) } );
+    return TFormulaList( { NUtilities::NConversions::ataToDepthFormula( getVariable( "pressure" ), getVariable( "depth" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { NUtilities::NConversions::depthToATAFormula( getVariable( "pressure" ), getVariable( "depth" ) ) } );
+    return TFormulaList( { NUtilities::NConversions::depthToATAFormula( getVariable( "pressure" ), getVariable( "depth" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "depth" )
     {

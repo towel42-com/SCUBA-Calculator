@@ -24,37 +24,49 @@
 #define FORMULA_H
 
 #include "SCUBACalculatorFwd.h"
+#include <QString>
+#include <optional>
 
-namespace NUtilities
+class CFormula
 {
-    struct CALCULATORS_EXPORT SFormula
-    {
-        SFormula();
-        SFormula( const SFormula &rhs, const TOptionalVariableValuePairVector &nameValuePairs );
-        SFormula( const QString &name, const TFormulaString &formula, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
-        SFormula( const QString &name, const TFormulaStringList &formulas, bool imperial, bool seaWater, const TOptionalVariableValuePairVector &nameValuePairs = {} );
-        virtual ~SFormula() = default;
+public:
+    CFormula( TVariableInfo variable, const QString &formula );
+    CFormula( TConstVariableInfo variable, const QString &formula );
+    CFormula( const QString &formula );
 
-        virtual bool operator<( const SFormula &rhs ) const;
-        virtual QString name() const;
+    TFormula applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType );
+    QString equation( bool imperial, bool seaWater ) const;
+    [[nodiscard]] TFormula getFinalValueFormula( bool imperial, bool seaWater, CSCUBACalculator *calculator );
+    void cleanupFormula();
 
-        virtual bool imperial() const { return fImperial; }
-        virtual bool seaWater() const { return fSeaWater; }
-        virtual QString formula() const;
-        virtual TFormulaStringList formulas() const { return fFormulas; }
-        virtual TFormulaStringList cleanedFormulas() const;
+    TVariableInfo variable() const { return fVariable; }
+    QString formula() const { return fFormula; }
 
-        virtual void setFormula( const QString &formula );
-        virtual bool operator==( const SFormula &rhs ) const;
-        virtual bool operator!=( const SFormula &rhs ) const { return !operator==( rhs ); }
+    bool isBaseFormula() const;
+    void setBaseFormula( bool baseFormula ) { fBaseFormula = baseFormula; }
 
-    private:
-        QString fName;
-        TFormulaStringList fFormulas;
-        bool fImperial{ false };
-        bool fSeaWater{ false };
-        TOptionalVariableValuePairVector fNameValuePairs;
-    };
+    bool isFormula( const TFormula &rhs ) const { return operator==( rhs ); }
+    bool isFormula( const CFormula &rhs ) const { return operator==( rhs ); }
+    bool isFormula( const CFormula *rhs ) const { return operator==( rhs ); }
+
+    bool operator==( const CFormula &rhs ) const;
+    bool operator==( const CFormula *rhs ) const;
+    bool operator==( const TFormula &rhs ) const;
+
+private:
+    TVariableInfo fVariable;
+    QString fFormula;
+    bool fBaseFormula{ false };
 };
+
+inline bool operator==( const TFormula &lhs, const TFormula &rhs )
+{
+    return lhs->isFormula( rhs );
+}
+
+inline bool operator!=( const TFormula &lhs, const TFormula &rhs )
+{
+    return !operator==( lhs, rhs );
+}
 
 #endif

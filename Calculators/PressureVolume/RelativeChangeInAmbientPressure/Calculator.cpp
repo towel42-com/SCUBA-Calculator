@@ -1,7 +1,7 @@
 #include "Calculator.h"
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
-#include "Core/FormulaString.h"
+#include "Core/Formula.h"
 
 #include <memory>
 
@@ -19,8 +19,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -50,12 +50,12 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
         };
 }
 
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "relChange" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "relChange" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "relChange" )
     {
@@ -63,11 +63,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     }
     else if ( unsetVar == "p1" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
     }
     else if ( unsetVar == "p2" )
     {
-        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times <relChange>)__" ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p2> \times <relChange>)__" ) ) } );
     }
     return {};
 }

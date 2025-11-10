@@ -140,12 +140,6 @@ using TNamedValueItem = std::pair< QString, TOptionalDouble >;
 using TNamedValueItemList = std::list< TNamedValueItem >;
 using TOptionalNamedValueItemList = std::optional< TNamedValueItemList >;
 
-namespace NUtilities
-{
-    struct SFormula;
-}
-using TFormula = std::shared_ptr< NUtilities::SFormula >;
-using TFormulaList = std::list< TFormula >;
 using TStringList = std::list< QString >;
 using TValuesForVariablePair = std::pair< TVariableInfo, TOptionalDoubleVector >;
 using TValuesForVariablePairVector = std::vector< TValuesForVariablePair >;
@@ -157,13 +151,9 @@ using TVariableValuePairVectorVector = std::vector< TVariableValuePairVector >;
 using TNameValuePair = std::pair< QString, TOptionalDouble >;
 using TOptionalNameValuePair = std::optional< TNameValuePair >;
 
-class CGeneratedFormulaData;
-using TGeneratedFormulaData = std::shared_ptr< CGeneratedFormulaData >;
-using TFormulaMap = std::unordered_map< CSCUBACalculator *, TGeneratedFormulaData >;
-
-class CFormulaString;
-using TFormulaString = std::shared_ptr< CFormulaString >;
-using TFormulaStringList = std::list< TFormulaString >;
+class CFormula;
+using TFormula = std::shared_ptr< CFormula >;
+using TFormulaList = std::list< TFormula >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
 

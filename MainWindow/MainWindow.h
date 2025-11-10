@@ -41,26 +41,14 @@ public Q_SLOTS:
     void slotUnitsChanged();
     void slotWaterChanged();
     void slotResetCurrentPage();
-    void slotGenerateAllFormulas();
-    void slotGenerateUpdatedFormulas();
 
 private:
-    void generateFormulas( bool updatedOnly );
-    std::size_t generateSVGs( QProgressDialog *progress, const TFormulaMap &allFormulas, std::size_t numToBeRendered, std::size_t totalFormulas ) const;
-    std::pair< std::size_t, std::size_t > computeTotals( QProgressDialog *progress, TFormulaMap &allFormulas ) const;   // returns total, numToBeRendered
-    void saveJSONFiles( QProgressDialog *progress, const QDir &dir, const TFormulaMap &allFormulas, bool needUpdatingOnly ) const;
-
     CSCUBACalculator *currentCalculator() const;
     CSCUBACalculatorPage *currentCalculatorPage() const;
 
     void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
     void loadSettings();
     void saveSettings();
-
-    void loadCache( std::optional< QString > wildCard = {} );
-    void loadCacheForCalc( CSCUBACalculator *calc );
-    void loadCacheFiles( const QStringList &fileNames );
-    std::size_t loadCacheFile( QProgressDialog *progress, const QString &fileName, std::size_t numFiles, std::size_t currSVGNum, std::size_t currTotal );
 
     void showUnits( bool show );
     void showWaterType( bool show );
@@ -92,7 +80,6 @@ private:
     std::unordered_map< QWidget *, std::optional< QString > > fPageToFormulasMap;
 
     std::shared_ptr< NTowel42::CMathJaxQt6 > fRenderingEngine;
-    std::unordered_set< QString > fLoadedCacheFiles;
 };
 
 #endif

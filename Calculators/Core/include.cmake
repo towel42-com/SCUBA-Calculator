@@ -23,28 +23,24 @@
 set(qtproject_SRCS
     Constants.cpp
     Conversions.cpp
-    GeneratedFormulaData.cpp
+    Formula.cpp
     SCUBACalculator.cpp
     SCUBACalculatorPage.cpp
     Utilities.cpp
-    VariableInfo.cpp
-    Formula.cpp
     Units.cpp
-    FormulaString.cpp
+    VariableInfo.cpp
 )
 
 set(qtproject_H
-    SCUBACalculatorPage.h
     SCUBACalculator.h
+    SCUBACalculatorPage.h
 )
 
 set(project_H
-    GeneratedFormulaData.h
-    SCUBACalculatorFwd.h
-    VariableInfo.h
-    Utilities.h
     Formula.h
-    FormulaString.h
+    SCUBACalculatorFwd.h
+    Utilities.h
+    VariableInfo.h
 )
 
 set(qtproject_UIS

@@ -1,6 +1,6 @@
 #include "Utilities.h"
 #include "VariableInfo.h"
-#include "FormulaString.h"
+#include "Formula.h"
 
 #include <QString>
 #include <QObject>
@@ -32,11 +32,11 @@ namespace NUtilities
         return regEx.match( formula ).hasMatch();
     }
 
-    TFormulaStringList sortAndUniquifyFormulas( const TFormulaStringList &formulas )
+    TFormulaList sortAndUniquifyFormulas( const TFormulaList &formulas )
     {
         auto tmp = formulas;
 
-        std::unordered_map< TVariableInfo, TFormulaStringList::const_iterator > lastLocOfVar;
+        std::unordered_map< TVariableInfo, TFormulaList::const_iterator > lastLocOfVar;
 
         for ( auto &&ii = tmp.begin(); ii != tmp.end(); )
         {
@@ -55,7 +55,7 @@ namespace NUtilities
             }
         }
 
-        TFormulaStringList retVal;
+        TFormulaList retVal;
 
         // check for duplicates
         for ( auto &&ii = tmp.begin(); ii != tmp.end(); ++ii )
@@ -100,29 +100,29 @@ namespace NUtilities
         return ratio( valueString, numerator, denominator, tex );
     }
 
-    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator )
+    TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator )
     {
-        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator->fieldName(), denominator->fieldName(), true ) );
+        return std::make_shared< CFormula >( returnVariable, ratio( numerator->fieldName(), denominator->fieldName(), true ) );
     }
 
-    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator )
+    TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator )
     {
-        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator->fieldName(), denominator, true ) );
+        return std::make_shared< CFormula >( returnVariable, ratio( numerator->fieldName(), denominator, true ) );
     }
 
-    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator )
+    TFormula ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator )
     {
-        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator, denominator->fieldName(), true ) );
+        return std::make_shared< CFormula >( returnVariable, ratio( numerator, denominator->fieldName(), true ) );
     }
 
-    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator )
+    TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator )
     {
-        return std::make_shared< CFormulaString >( returnVariable, ratio( numerator->fieldName(), NUtilities::fieldNameForType( denominator ), true ) );
+        return std::make_shared< CFormula >( returnVariable, ratio( numerator->fieldName(), NUtilities::fieldNameForType( denominator ), true ) );
     }
 
-    TFormulaString ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator )
+    TFormula ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator )
     {
-        return std::make_shared< CFormulaString >( returnVariable, ratio( NUtilities::fieldNameForType( numerator ), denominator->fieldName(), true ) );
+        return std::make_shared< CFormula >( returnVariable, ratio( NUtilities::fieldNameForType( numerator ), denominator->fieldName(), true ) );
     }
 
     QString descForType( EVariableType type )
@@ -242,7 +242,7 @@ namespace NUtilities
         return retVal;
     }
 
-    std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulaStrings )
+    std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaList &formulaStrings )
     {
         if ( formulaStrings.empty() )
             return {};

@@ -77,8 +77,6 @@ public:
 
     virtual void resetVariables() /*final*/;
 
-    virtual std::shared_ptr< CGeneratedFormulaData > getAllFormulas( const std::function< bool( const QString &formula ) > &beenCreated ) /*final*/;
-
     virtual void initResources() const /*final*/;
 
 public:
@@ -105,10 +103,6 @@ protected:
     virtual const TVariableInfoList &getLHSVariables() const final;
     virtual const TVariableInfoList &getRHSVariables() const final;
 
-    TFormulaList getFormulaList();
-    TFormulaList getNamedFormulas() const;
-    TVariableValuePairVectorVector getAllVariableValueCombinations() const;
-
     virtual std::optional< std::pair< QString, QString > > fromToLabels() const { return {}; }
 
     virtual QStringList myCalculatorPath() const = 0;
@@ -117,11 +111,11 @@ protected:
     virtual QString myCalculatorName() const;
     virtual QString myReversedCalculatorName() const;
 
-    virtual TFormulaStringList getBaseFormulas() const final;   // for descriptive purposes
+    virtual TFormulaList getBaseFormulas() const final;   // for descriptive purposes
 
-    virtual std::optional< TFormulaStringList > getCurrentFormulas() const final;   // returns the current formula in use
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
-    virtual std::optional< TFormulaStringList > myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< TFormulaList > getCurrentFormulas() const final;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
+    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
     TVariableInfoList unsetVariables() const;
@@ -131,11 +125,11 @@ protected:
     virtual void notifyOfNewFormula( const QString &formula, bool finished ) const final;
     virtual void updateFields( QWidget *triggerWidget ) const final;
 
-    virtual QString finalizeFormulas( bool imperial, bool seaWater, const TFormulaStringList &formulas ) final;
-    virtual TFormulaStringList finalizeFormula( bool imperial, bool seaWater, const TFormulaString &formula ) final;
+    virtual QString finalizeFormulas( bool imperial, bool seaWater, const TFormulaList &formulas ) final;
+    virtual TFormulaList finalizeFormula( bool imperial, bool seaWater, const TFormula &formula ) final;
     QString postProcessFormula( const QString &retVal ) const;
 
-    virtual TFormulaString applyVariables( bool imperial, bool seaWater, const TFormulaString &formula, EFormulaType formulaType ) const final;
+    virtual TFormula applyVariables( bool imperial, bool seaWater, const TFormula &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const final;
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const = 0;
@@ -159,7 +153,7 @@ protected:
 
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;
     TVariableInfo getLastVariable( EVariableLoc side ) const;

@@ -2,7 +2,7 @@
 #include "CalculatorDef.h"
 #include "Core/VariableInfo.h"
 #include "Core/Utilities.h"
-#include "Core/FormulaString.h"
+#include "Core/Formula.h"
 
 #include <memory>
 
@@ -22,8 +22,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
     virtual void setupCustomDependencies() override;
@@ -244,28 +244,28 @@ function calculateWeight() {
     weightChart.update();
 }
 */
-std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    TFormulaStringList formulas;
+    TFormulaList formulas;
 
-    formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "baseLeadWeight" ), R"__(<yourWeight> \times 0.1)__" ) );
-    formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
-    formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "lead" ), R"__(<baseLeadWeight> + <adjustments>)__" ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "baseLeadWeight" ), R"__(<yourWeight> \times 0.1)__" ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "lead" ), R"__(<baseLeadWeight> + <adjustments>)__" ) );
 
     return formulas;
 }
 
-std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
-    TFormulaStringList formulas;
+    TFormulaList formulas;
 
     if ( unsetVar == "lead" )
         return myBaseFormulas( imperial, seaWater );
     else if ( unsetVar == "yourWeight" )
     {
-        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
-        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "baseLeadWeight" ), R"__(<lead> - <adjustments>)__" ) );
-        formulas.emplace_back( std::make_shared< CFormulaString >( getVariable( "yourWeight" ), R"__(\frac{<baseLeadWeight>}{0.1})__" ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "baseLeadWeight" ), R"__(<lead> - <adjustments>)__" ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "yourWeight" ), R"__(\frac{<baseLeadWeight>}{0.1})__" ) );
     }
 
     return formulas;
