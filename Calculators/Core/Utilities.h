@@ -108,7 +108,7 @@ namespace NUtilities
         CALCULATORS_EXPORT QString cubicFeetPerLiter( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex, bool description );
 
-        void foreachConstantType( const std::function< void( EVariableType ) > &onConstType );
+        void foreachConstantType( const std::function< bool( EVariableType ) > &onConstType );   // function returns true if the loop should continue
         QString constantString( bool imperial, bool seaWater, EVariableType constantType, bool description );
         TOptionalDouble constantValue( bool imperial, bool seaWater, EVariableType constantType );
     }
@@ -192,6 +192,8 @@ namespace NUtilities
     CALCULATORS_EXPORT QString descForType( EVariableType type );
     CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
     CALCULATORS_EXPORT bool isConstantVariable( EVariableType type );
+    CALCULATORS_EXPORT std::optional< EVariableType > typeForFieldName( const QString &fieldName );
+    CALCULATORS_EXPORT bool isConstantVariable( const QString &fieldName );
 
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
     CALCULATORS_EXPORT QString doubleToString( const TOptionalDouble &value, int numDecimal );

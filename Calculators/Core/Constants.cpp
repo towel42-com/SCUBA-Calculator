@@ -6,31 +6,31 @@ namespace NUtilities
 {
     namespace NConstants
     {
-        const char *kPressurePerDegreeConstFieldName = "pressurePerDegree";
-        const char *kWeightPerVolumeOfWaterConstFieldName = "weightPerVolumeOfWater";
-        const char *kVolumePerWeightOfWaterConstFieldName = "volumePerWeightOfWater";
-        const char *kIdealGasConstantFieldName = "idealGasConstant";
-        const char *kFN2AtSurfaceFieldName = "FN2AtSurface";
-        const char *kFO2AtSurfaceFieldName = "FO2AtSurface";
-        const char *kDepthToSingleATMConstFieldName = "depthToSingleAtmosphere";
-        const char *kFeetToMetersConstFieldName = "feetToMeters";
-        const char *kMetersToFeetConstFieldName = "metersToFeet";
-        const char *kLbsPerKgsConstFieldName = "lbsToKgs";
-        const char *kKgsPerLbsConstFieldName = "kgsToLbs";
-        const char *kFreshWaterToSeaWaterConstFieldName = "freshWaterToSeaWater";
-        const char *kSeaWaterToFreshWaterConstFieldName = "seaWaterToFreshWater";
-        const char *kPSIToBarConstFieldName = "psiToBar";
-        const char *kBarToPSIConstFieldName = "barToPSI";
-        const char *kAbsZeroOffsetConstFieldName = "absZeroOffset";
-        const char *kPressureAtSurfaceConstFieldName = "pressureAtSurface";
-        const char *kPressureLossPerAltitudeGainConstFieldName = "pressureLossPerAltitudeGain";
-        const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScuba";
-        const char *kFillRateAirConstFieldName = "fillRateAir";
-        const char *kFillRateO2ConstFieldName = "fillRateO2";
-        const char *kCubicFeetToLitersFieldName = "cubicFeetToLiters";
-        const char *kLitersToCubicFeetFieldName = "litersToCubicFeet";
-        const char *kSafetyStopDepthConstFieldName = "safetyStopConst";
-        const char *kWaterWeightAdjustmentFieldName = "waterWeightAdjustment";
+        const char *kPressurePerDegreeConstFieldName = "pressurePerDegreeConst";
+        const char *kWeightPerVolumeOfWaterConstFieldName = "weightPerVolumeOfWaterConst";
+        const char *kVolumePerWeightOfWaterConstFieldName = "volumePerWeightOfWaterConst";
+        const char *kIdealGasConstantFieldName = "idealGasConstantConst";
+        const char *kFN2AtSurfaceFieldName = "FN2AtSurfaceConst";
+        const char *kFO2AtSurfaceFieldName = "FO2AtSurfaceConst";
+        const char *kDepthToSingleATMConstFieldName = "depthToSingleAtmosphereConst";
+        const char *kFeetToMetersConstFieldName = "feetToMetersConst";
+        const char *kMetersToFeetConstFieldName = "metersToFeetConst";
+        const char *kLbsPerKgsConstFieldName = "lbsToKgsConst";
+        const char *kKgsPerLbsConstFieldName = "kgsToLbsConst";
+        const char *kFreshWaterToSeaWaterConstFieldName = "freshWaterToSeaWaterConst";
+        const char *kSeaWaterToFreshWaterConstFieldName = "seaWaterToFreshWaterConst";
+        const char *kPSIToBarConstFieldName = "psiToBarConst";
+        const char *kBarToPSIConstFieldName = "barToPSIConst";
+        const char *kAbsZeroOffsetConstFieldName = "absZeroOffsetConst";
+        const char *kPressureAtSurfaceConstFieldName = "pressureAtSurfaceConst";
+        const char *kPressureLossPerAltitudeGainConstFieldName = "pressureLossPerAltitudeGainConst";
+        const char *kBaseMETofSCUBAConstFieldName = "baseMETOfScubaConst";
+        const char *kFillRateAirConstFieldName = "fillRateAirConst";
+        const char *kFillRateO2ConstFieldName = "fillRateO2Const";
+        const char *kCubicFeetToLitersFieldName = "cubicFeetToLitersConst";
+        const char *kLitersToCubicFeetFieldName = "litersToCubicFeetConst";
+        const char *kSafetyStopDepthConstFieldName = "safetyStopConstConst";
+        const char *kWaterWeightAdjustmentFieldName = "waterWeightAdjustmentConst";
 
         double absZeroOffset( bool imperial )
         {
@@ -614,7 +614,7 @@ namespace NUtilities
             return {};
         }
 
-        void foreachConstantType( const std::function< void( EVariableType ) > &onConstType )
+        void foreachConstantType( const std::function< bool( EVariableType ) > &onConstType )
         {
             for ( auto &&currConstType : { //
                                            EVariableType::ePressurePerDegreeConst,   //
@@ -643,9 +643,37 @@ namespace NUtilities
                                            EVariableType::eSafetyStopDepthConst,
                                            EVariableType::eWaterWeightAdjustmentConst } )
             {
-                onConstType( currConstType );
+                auto cont = onConstType( currConstType );
+                if ( !cont )
+                    break;
             }
         }
+    }
+
+    std::optional< EVariableType > typeForFieldName( const QString &fieldName )
+    {
+        auto fullFieldName = "<" + fieldName + ">";
+        std::optional< EVariableType > retVal;
+        NConstants::foreachConstantType(   //
+            [ fullFieldName, fieldName, &retVal ]( EVariableType constType ) -> bool   //
+            {
+                auto currFieldName = NUtilities::fieldNameForType( constType );
+                if ( ( currFieldName == fieldName ) || ( currFieldName == fullFieldName ) )
+                {
+                    retVal = constType;
+                    return false;
+                }
+                return true;
+            } );
+        return retVal;
+    }
+
+    bool isConstantVariable( const QString &fieldName )
+    {
+        auto varType = typeForFieldName( fieldName );
+        if ( !varType.has_value() )
+            return false;
+        return isConstantVariable( varType.value() );
     }
 
     QString fieldNameForType( EVariableType type )
