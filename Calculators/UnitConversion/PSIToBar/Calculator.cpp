@@ -38,7 +38,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 std::optional< std::pair< QString, QString > > CCalculator::fromToLabels() const
 {
-    return std::make_pair(  tr( "PSI" ), tr( "BAR" ) );
+    return std::make_pair( tr( "PSI" ), tr( "BAR" ) );
 }
 
 QStringList CCalculator::myCalculatorPath() const
@@ -58,7 +58,6 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
             std::make_shared< CVariableInfo >( "psi", tr( "Pressure" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::ePressure, true ),   //
             std::make_shared< CVariableInfo >( "bar", tr( "Pressure" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::ePressure, false ),   //
         } );
-
     return retVal;
 }
 
@@ -90,12 +89,12 @@ void CCalculator::computeVariableValues()
     auto psi = getVariable( "psi" );
     auto bar = getVariable( "bar" );
 
-    if ( psi->has_value() && !bar->has_value() )
+    if ( !bar->has_value() && bar->dependenciesSatisfied() )
     {
         bar->setValue( NUtilities::NConversions::psiToBar( psi->value() ) );
     }
-    
-    if ( !psi->has_value() && bar->has_value() )
+
+    if ( !psi->has_value() && psi->dependenciesSatisfied() )
     {
         psi->setValue( NUtilities::NConversions::barToPSI( bar->value() ) );
     }

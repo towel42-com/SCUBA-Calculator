@@ -24,6 +24,7 @@ public:
     virtual QStringList myCalculatorPath() const override;
 
     virtual TVariableInfoList getMyVariables( bool *preReversed ) const override;
+
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
@@ -40,7 +41,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 std::optional< std::pair< QString, QString > > CCalculator::fromToLabels() const
 {
-    return std::make_pair( tr( "Gas Consumption Time" ), tr( "Gas Used" ) );
+    return std::make_pair( tr( "Gas Used" ), tr( "Gas Consumption Time" ) );
 }
 
 QString CCalculator::myCalculatorName() const
@@ -82,20 +83,14 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 {
     TVariableInfo retVal;
 
-    if ( updateFromSide == EVariableLoc::eLHS )
-    {
-        if ( getVariable( "p1" )->isWidget( triggerWidget ) )
-            retVal = getVariable( "p2" );
-        else if ( getVariable( "m1" )->isWidget( triggerWidget ) )
-            retVal = getVariable( "m2" );
-    }
-    else if ( updateFromSide == EVariableLoc::eRHS )
-    {
-        if ( getVariable( "p2" )->isWidget( triggerWidget ) )
-            retVal = getVariable( "p1" );
-        else if ( getVariable( "m2" )->isWidget( triggerWidget ) )
-            retVal = getVariable( "m1" );
-    }
+    if ( getVariable( "p1" )->isWidget( triggerWidget ) )
+        retVal = getVariable( "p2" );
+    else if ( getVariable( "m1" )->isWidget( triggerWidget ) )
+        retVal = getVariable( "m2" );
+    else if ( getVariable( "p2" )->isWidget( triggerWidget ) )
+        retVal = getVariable( "p1" );
+    else if ( getVariable( "m2" )->isWidget( triggerWidget ) )
+        retVal = getVariable( "m1" );
     else
         retVal = CSCUBACalculator::determineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
     return retVal;
@@ -140,22 +135,22 @@ void CCalculator::computeVariableValues()
     auto p2 = getVariable( "p2" );
     auto m2 = getVariable( "m2" );
 
-    if ( !p1->has_value() && m1->has_value() && p2->has_value() && m2->has_value() )
+    if ( !p1->has_value() && p1->dependenciesSatisfied() )
     {
         p1->setValue( p2->value() * ( m2->value() / m1->value() ) );
     }
-    
-    if ( p1->has_value() && m1->has_value() && !p2->has_value() && m2->has_value() )
+
+    if ( !p2->has_value() && p2->dependenciesSatisfied() )
     {
         p2->setValue( p1->value() * ( m1->value() / m2->value() ) );
     }
-    
-    if ( p1->has_value() && !m1->has_value() && p2->has_value() && m2->has_value() )
+
+    if ( !m1->has_value() && m1->dependenciesSatisfied() )
     {
         m1->setValue( m2->value() * ( p2->value() / p1->value() ) );
     }
-    
-    if ( p1->has_value() && m1->has_value() && p2->has_value() && !m2->has_value() )
+
+    if ( !m2->has_value() && m2->dependenciesSatisfied() )
     {
         m2->setValue( m1->value() * ( p1->value() / p2->value() ) );
     }

@@ -209,14 +209,65 @@ void CSCUBACalculator::initVariables()
     {
         if ( !preReversed && isReversed() )
             curr->reverseVariableLoc();
+
         fVariableMap[ curr->name() ] = curr;
         if ( curr->variableLoc() == EVariableLoc::eLHS )
             fLHSVariables.push_back( curr );
         else if ( curr->variableLoc() == EVariableLoc::eRHS )
             fRHSVariables.push_back( curr );
     }
+    setupDependencies();
+    setupCustomDependencies();
 
     Q_ASSERT( ( fLHSVariables.empty() && fRHSVariables.empty() ) || ( !fLHSVariables.empty() && !fRHSVariables.empty() ) );
+}
+
+void CSCUBACalculator::setupDependencies()
+{
+    for ( auto &&ii = fVariables.begin(); ii != fVariables.end(); ++ii )
+    {
+        if ( ( *ii )->isConstant() )
+            continue;
+
+        TVariableInfoList dependencies = fVariables;
+        dependencies.remove_if(   //
+            [ ii ]( const TVariableInfo &curr )   //
+            {
+                if ( curr->isConstant() )
+                    return true;
+                if ( curr == *ii )
+                    return true;
+                return false;
+            } );
+        ( *ii )->setDependencies( dependencies );
+    }
+}
+
+void CSCUBACalculator::setDependencies( const QString &varName, const QString &dep )
+{
+    setDependencies( varName, QStringList() << dep );
+}
+
+void CSCUBACalculator::setDependencies( const QString &varName, const QStringList &deps )
+{
+    auto var = getVariable( varName );
+    Q_ASSERT( var );
+    if ( !var )
+        return;
+    TVariableInfoList depVars;
+    for ( auto &&ii : deps )
+    {
+        auto dep = getVariable( ii );
+        Q_ASSERT( dep );
+        if ( !dep )
+            continue;
+        depVars.push_back( dep );
+    }
+    var->setDependencies( depVars );
+}
+
+void CSCUBACalculator::setupCustomDependencies()
+{
 }
 
 void CSCUBACalculator::resetVariables()
@@ -244,12 +295,14 @@ TVariableInfoList CSCUBACalculator::unsetVariables() const
     return retVal;
 }
 
-std::size_t CSCUBACalculator::numUnsetVariables() const
+std::size_t CSCUBACalculator::numUnsetVariables( QWidget *triggerWidget ) const
 {
     std::size_t retVal = 0;
     for ( auto &&ii : fVariables )
     {
         if ( !ii->isVariable() )
+            continue;
+        if ( triggerWidget && ii->isWidget( triggerWidget ) )
             continue;
         if ( !ii->has_value() )
             retVal++;
@@ -513,7 +566,7 @@ std::size_t CSCUBACalculator::numVariables( EVariableLoc side ) const
 
 void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
-    if ( numUnsetVariables() != 0 )
+    if ( numUnsetVariables( triggerWidget ) != 0 )
         return;
 
     if ( fLHSVariables.empty() || fRHSVariables.empty() )
@@ -610,7 +663,9 @@ std::optional< TFormulaStringList > CSCUBACalculator::getCurrentFormulas() const
     if ( !baseIsSame )
     {
         for ( auto &&ii : retVal )
+        {
             ii->setBaseFormula( true );
+        }
         retVal.insert( retVal.end(), formulasForVar.value().begin(), formulasForVar.value().end() );
     }
 

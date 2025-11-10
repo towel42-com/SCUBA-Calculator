@@ -178,6 +178,9 @@ public:
     [[nodiscard]] void setValue( TOptionalDouble value ) { fValue = value; }
 
     [[nodiscard]] bool isVariable() const { return fType == EVariableType::eVariable; }
+    [[nodiscard]] bool isIntermediate() const { return fType == EVariableType::eIntermediate; }
+    [[nodiscard]] bool isConstant() const;
+
     [[nodiscard]] bool isWidget( QWidget *widget ) const;
 
     void setDefaultRange( const SRange &range );
@@ -201,6 +204,9 @@ public:
     [[nodiscard]] std::optional< TOptionalDoubleVector > validValues( bool imperial, bool seaWater ) const;
 
     [[nodiscard]] bool hasCustomValue() const;
+
+    void setDependencies( const TVariableInfoList &dependencies );
+    bool dependenciesSatisfied() const;
 
 private:
     TOptionalNamedValueItemList getValues( bool imperial, bool seaWater ) const;
@@ -229,5 +235,6 @@ private:
     SVariableValue< TNamedValueItemList > fValues;
     std::optional< std::pair< EUnit, bool > > fUnitOverride;
     TOptionalDouble fValue;
+    TWeakVariableInfoList fDependencies;
 };
 #endif

@@ -21,6 +21,7 @@ public:
     virtual bool isWaterTypeBased() const override { return true; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
@@ -99,17 +100,17 @@ void CCalculator::computeVariableValues()
     auto maxPO2 = getVariable( "maxPO2" );
     auto fo2 = getVariable( "fo2" );
 
-    if ( !mod->has_value() && maxPO2->has_value() && fo2->has_value() )
+    if ( !mod->has_value() && mod->dependenciesSatisfied() )
     {
         mod->setValue( ( ( maxPO2->value() / fo2->value() ) - 1 ) * NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
-    
-    if ( mod->has_value() && !maxPO2->has_value() && fo2->has_value() )
+
+    if ( !maxPO2->has_value() && maxPO2->dependenciesSatisfied() )
     {
         maxPO2->setValue( fo2->value() * ( ( mod->value() / NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) + 1 ) );
     }
-    
-    if ( mod->has_value() && maxPO2->has_value() && !fo2->has_value() )
+
+    if ( !fo2->has_value() && fo2->dependenciesSatisfied() )
     {
         if ( mod->value() != 0.0 )
             fo2->setValue( maxPO2->value() / ( ( mod->value() / NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) + 1 ) );

@@ -81,17 +81,17 @@ void CCalculator::computeVariableValues()
     auto weightOfObject = getVariable( "weightOfObject" );
     auto volumeDisplaced = getVariable( "volumeDisplaced" );
 
-    if ( !buoyancy->has_value() && weightOfObject->has_value() && volumeDisplaced->has_value() )
+    if ( !buoyancy->has_value() && buoyancy->dependenciesSatisfied() )
     {
         buoyancy->setValue( weightOfObject->value() - ( volumeDisplaced->value() * NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) ) );
     }
 
-    if ( buoyancy->has_value() && !weightOfObject->has_value() && volumeDisplaced->has_value() )
+    if ( !weightOfObject->has_value() && weightOfObject->dependenciesSatisfied() )
     {
         weightOfObject->setValue( buoyancy->value() + ( volumeDisplaced->value() * NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) ) );
     }
 
-    if ( !buoyancy->has_value() && weightOfObject->has_value() && !volumeDisplaced->has_value() )
+    if ( !volumeDisplaced->has_value() && volumeDisplaced->dependenciesSatisfied() )
     {
         volumeDisplaced->setValue( ( weightOfObject->value() - buoyancy->value() ) / NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) );
     }

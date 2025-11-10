@@ -87,16 +87,16 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
 
 void CCalculator::computeVariableValues()
 {
-    auto cubicfeet = getVariable( "cubicfeet" );
+    auto cubicFeet = getVariable( "cubicfeet" );
     auto liters = getVariable( "liters" );
 
-    if ( cubicfeet->has_value() && !liters->has_value() )
+    if ( !liters->has_value() && liters->dependenciesSatisfied() )
     {
-        liters->setValue( NUtilities::NConversions::cubicFeetToLiters( cubicfeet->value() ) );
+        liters->setValue( NUtilities::NConversions::cubicFeetToLiters( cubicFeet->value() ) );
     }
-    
-    if ( !cubicfeet->has_value() && liters->has_value() )
+
+    if ( !cubicFeet->has_value() && cubicFeet->dependenciesSatisfied() )
     {
-        cubicfeet->setValue( NUtilities::NConversions::litersToCubicFeet( liters->value() ) );
+        cubicFeet->setValue( NUtilities::NConversions::litersToCubicFeet( liters->value() ) );
     }
 }

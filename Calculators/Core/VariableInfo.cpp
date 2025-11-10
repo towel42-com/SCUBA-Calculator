@@ -1,5 +1,7 @@
 #include "VariableInfo.h"
 #include "SCUBACalculatorPage.h"
+#include "SCUBACalculator.h"
+
 #include "Utilities.h"
 #include "SABUtils/DelayLineEdit.h"
 
@@ -315,6 +317,26 @@ bool CVariableInfo::hasCustomValue() const
     return false;
 }
 
+void CVariableInfo::setDependencies( const TVariableInfoList &dependencies )
+{
+    fDependencies.clear();
+    for ( auto &&ii : dependencies )
+    {
+        Q_ASSERT( ii.get() != this );
+        fDependencies.emplace_back( ii );
+    }
+}
+
+bool CVariableInfo::dependenciesSatisfied() const
+{
+    for ( auto &&ii : fDependencies )
+    {
+        if ( !ii.lock()->has_value() )
+            return false;
+    }
+    return true;
+}
+
 void CVariableInfo::updateValueFromField()
 {
     if ( fType != EVariableType::eVariable )
@@ -446,6 +468,11 @@ double CVariableInfo::value() const
         return fValue.value() / 100;
     }
     return fValue.value();
+}
+
+bool CVariableInfo::isConstant() const
+{
+    return NUtilities::isConstantVariable( fType );
 }
 
 bool CVariableInfo::isWidget( QWidget *widget ) const

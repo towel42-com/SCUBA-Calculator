@@ -26,6 +26,7 @@ public:
     virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
+    virtual void setupCustomDependencies() override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -111,8 +112,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
             { "3mm (Tropical Waters)", NUtilities::NConversions::kgsToLbs( 2.5 ) },
             { "5mm (Temperate Waters)", NUtilities::NConversions::kgsToLbs( 4.5 ) },
             { "7mm (Cool Waters)", NUtilities::NConversions::kgsToLbs( 7.0 ) },   //
-            { "Tri-Lam Dry Suit ()", NUtilities::NConversions::kgsToLbs( 10.0 ) },   //
-            { "Neoprene Dry Suit ()", NUtilities::NConversions::kgsToLbs( 12.0 ) },   //
+            { "Tri-Lam Dry Suit", NUtilities::NConversions::kgsToLbs( 10.0 ) },   //
+            { "Neoprene Dry Suit", NUtilities::NConversions::kgsToLbs( 12.0 ) },   //
         } ) ) );
 
     pos++;
@@ -135,6 +136,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 
     return retVal;
 }
+
 /*'
 * https://swimmingcalculators.com/scuba-diving-weight-calculator/
 
@@ -269,6 +271,15 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     return formulas;
 }
 
+void CCalculator::setupCustomDependencies()
+{
+    setDependencies( "baseLeadWeight", "yourWeight" );
+    setDependencies( "yourWeight", "baseLeadWeight" );
+    setDependencies( "adjustments", { "experience", "exposureSuit", "tankMaterial", "additionalEquipment" } );
+    setDependencies( "lead", { "adjustments", "baseLeadWeight" } );
+    setDependencies( "yourWeight", "baseLeadWeight" );
+}
+
 void CCalculator::computeVariableValues()
 {
     auto lead = getVariable( "lead" );
@@ -280,46 +291,34 @@ void CCalculator::computeVariableValues()
     auto adjustments = getVariable( "adjustments" );
     auto baseLeadWeight = getVariable( "baseLeadWeight" );
 
-    auto waterAdjustment = NUtilities::NConstants::waterWeightAdjustment( imperial(), seaWater() );
-
-    TOptionalDouble baseLeadWeightValue;
-    if ( yourWeight->has_value() )
+    if ( !baseLeadWeight->has_value() && baseLeadWeight->dependenciesSatisfied() )
     {
-        baseLeadWeightValue = yourWeight->value() * 0.1;
+        baseLeadWeight->setValue( yourWeight->value() * 0.1 );
     }
 
-    if ( !baseLeadWeight->has_value() && baseLeadWeightValue.has_value() )
-    {
-        baseLeadWeight->setValue( baseLeadWeightValue );
-    }
-
-    if ( !adjustments->has_value() && experience->has_value() && exposureSuit->has_value() && tankMaterial->has_value() && additionalEquipment->has_value() )
+    if ( !adjustments->has_value() && adjustments->dependenciesSatisfied() )
     {
         auto experienceAdjustment = experience->value();
         auto exposureSuitAdjustment = exposureSuit->value();
         auto tankMaterialAdjustment = tankMaterial->value();
         auto additionalEquipmentAdjustment = additionalEquipment->value();
+        auto waterAdjustment = NUtilities::NConstants::waterWeightAdjustment( imperial(), seaWater() );
 
         auto adjustmentsValue = experienceAdjustment + waterAdjustment + exposureSuitAdjustment + tankMaterialAdjustment + additionalEquipmentAdjustment;
         adjustments->setValue( adjustmentsValue );
     }
 
-    if ( adjustments->has_value() && !baseLeadWeight->has_value() && lead->has_value() )
+    if ( !lead->has_value() && lead->dependenciesSatisfied() )
+    {
+        lead->setValue( baseLeadWeight->value() + adjustments->value() );
+    }
+
+    if ( !baseLeadWeight->has_value() && lead->has_value() && adjustments->has_value() )
     {
         baseLeadWeight->setValue( lead->value() - adjustments->value() );
     }
 
-    if ( adjustments->has_value() && baseLeadWeight->has_value() && !lead->has_value() )
-    {
-        lead->setValue( baseLeadWeightValue.value() + adjustments->value() );
-    }
-
-    if ( adjustments->has_value() && !baseLeadWeight->has_value() && lead->has_value() )
-    {
-        baseLeadWeight->setValue( lead->value() - adjustments->value() );
-    }
-
-    if ( !yourWeight->has_value() && baseLeadWeight->has_value() )
+    if ( !yourWeight->has_value() && yourWeight->dependenciesSatisfied() )
     {
         yourWeight->setValue( baseLeadWeight->value() / 0.1 );
     }

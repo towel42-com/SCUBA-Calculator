@@ -125,7 +125,7 @@ protected:
 
     void initVariables();
     TVariableInfoList unsetVariables() const;
-    std::size_t numUnsetVariables() const;
+    std::size_t numUnsetVariables( QWidget *triggerWidget = nullptr ) const;
     bool allVariablesUnset() const;
 
     virtual void notifyOfNewFormula( const QString &formula, bool finished ) const final;
@@ -138,7 +138,10 @@ protected:
     virtual TFormulaString applyVariables( bool imperial, bool seaWater, const TFormulaString &formula, EFormulaType formulaType ) const final;
 
     virtual TVariableInfoList getMyVariables() const final;
-    virtual TVariableInfoList getMyVariables( bool *preReversed ) const=0;
+    virtual TVariableInfoList getMyVariables( bool *preReversed ) const = 0;
+
+    virtual void setupDependencies() final;
+    virtual void setupCustomDependencies();
 
     virtual void determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
 
@@ -149,6 +152,9 @@ protected:
     virtual bool valuesSetProperly() const;
 
 protected:
+    virtual void setDependencies( const QString &varName, const QString &deps ) final;
+    virtual void setDependencies( const QString &varName, const QStringList &deps ) final;
+
     virtual int numAllowedUnset() const { return 1; }
 
     TVariableInfoList getUnsetVariables() const;

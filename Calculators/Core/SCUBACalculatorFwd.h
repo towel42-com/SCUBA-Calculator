@@ -132,7 +132,9 @@ using TConstVariableInfo = std::shared_ptr< const CVariableInfo >;
 using TConstVariableInfoList = std::list< TConstVariableInfo >;
 
 using TVariableInfo = std::shared_ptr< CVariableInfo >;
+using TWeakVariableInfo = std::weak_ptr< CVariableInfo >;
 using TVariableInfoList = std::list< TVariableInfo >;
+using TWeakVariableInfoList = std::list< TWeakVariableInfo >;
 
 using TNamedValueItem = std::pair< QString, TOptionalDouble >;
 using TNamedValueItemList = std::list< TNamedValueItem >;

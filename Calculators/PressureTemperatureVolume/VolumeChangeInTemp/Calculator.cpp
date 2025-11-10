@@ -23,6 +23,7 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
@@ -137,25 +138,25 @@ void CCalculator::computeVariableValues()
     auto v2 = getVariable( "v2" );
     auto t2 = getVariable( "t2" );
 
-    if ( !v1->has_value() && t1->has_value() && v2->has_value() && t2->has_value() )
+    if ( !v1->has_value() && v1->dependenciesSatisfied() )
     {
         // V1 = V2 * ( t1/t2 );
         v1->setValue( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) ) );
     }
 
-    if ( v1->has_value() && t1->has_value() && !v2->has_value() && t2->has_value() )
+    if ( !v2->has_value() && v2->dependenciesSatisfied() )
     {
         // V2 = V1 * ( t2/t1 );
         v2->setValue( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) ) );
     }
 
-    if ( v1->has_value() && !t1->has_value() && v2->has_value() && t2->has_value() )
+    if ( !t1->has_value() && t1->dependenciesSatisfied() )
     {
         // T1 = t2*(V1/v2)
         t1->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( v1->value() / v2->value() ) ) );
     }
 
-    if ( v1->has_value() && t1->has_value() && v2->has_value() && !t2->has_value() )
+    if ( !t2->has_value() && t2->dependenciesSatisfied() )
     {
         // T2 = t1*(V2/v1)
         t2->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( v2->value() / v1->value() ) ) );

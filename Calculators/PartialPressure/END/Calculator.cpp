@@ -76,17 +76,17 @@ void CCalculator::computeVariableValues()
     auto end = getVariable( "end" );
 
     auto depthToSingleATM = NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() );
-    if ( !end->has_value() && depth->has_value() && fhe->has_value() )
+    if ( !end->has_value() && end->dependenciesSatisfied() )
     {
         end->setValue( ( ( depth->value() + depthToSingleATM ) * ( 1.0 - fhe->value() ) ) - depthToSingleATM );
     }
     
-    if ( end->has_value() && depth->has_value() && !fhe->has_value() )
+    if ( !fhe->has_value() && fhe->dependenciesSatisfied() )
     {
         fhe->setValue( 1.0 - ( end->value() + depthToSingleATM ) / ( depth->value() + depthToSingleATM ) );
     }
     
-    if ( end->has_value() && !depth->has_value() && fhe->has_value() )
+    if ( !depth->has_value() && depth->dependenciesSatisfied() )
     {
         depth->setValue( ( ( end->value() + depthToSingleATM ) / ( 1.0 - fhe->value() ) ) - depthToSingleATM );
     }

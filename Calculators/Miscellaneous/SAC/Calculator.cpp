@@ -41,6 +41,7 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    virtual void setupCustomDependencies() override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
@@ -83,17 +84,6 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-/*
-    if ( ( !sac->has_value() || !rmv->has_value() ) && pressureUsed->has_value() )
-    {
-        auto ata = NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() );
-        auto psiPerMin = pressureUsed->value() / time->value();
-        auto sacValue = psiPerMin / ata;
-
-        sac->setValue( sacValue );
-        rmv->setValue( NUtilities::NConversions::sacToRMV( sacValue, tankVolume->value(), tankPressure->value() ) );
-    }
-*/
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     TFormulaStringList formulas = { NUtilities::NConversions::depthToATAFormula( getVariable( "ata" ), getVariable( "depth" ) ) };
@@ -115,6 +105,16 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     return {};
 }
 
+void CCalculator::setupCustomDependencies()
+{
+    setDependencies( "pressureUsed", { "gasConsumed", "tankPressure", "tankVolume" } );
+    setDependencies( "sac", { "tankVolume", "tankPressure", "rmv" } );
+    setDependencies( "rmv", { "tankVolume", "tankPressure", "sac" } );
+    setDependencies( "gasConsumed", { "pressureUsed", "tankVolume", "tankPressure" } );
+    setDependencies( "ata", "depth" );
+    setDependencies( "psiPerMin", { "pressureUsed", "time" } );
+}
+
 void CCalculator::computeVariableValues()
 {
     auto depth = getVariable( "depth" );
@@ -128,34 +128,43 @@ void CCalculator::computeVariableValues()
     auto psiPerMin = getVariable( "psiPerMin" );
     auto ata = getVariable( "ata" );
 
-    if ( tankVolume->has_value() && tankPressure->has_value() )
+    if ( !rmv->has_value() && rmv->dependenciesSatisfied() )
     {
-        if ( sac->has_value() && !rmv->has_value() )
-        {
-            rmv->setValue( NUtilities::NConversions::sacToRMV( sac->value(), tankVolume->value(), tankPressure->value() ) );
-        }
-        else if ( !sac->has_value() && rmv->has_value() )
-        {
-            sac->setValue( NUtilities::NConversions::rmvToSAC( rmv->value(), tankVolume->value(), tankPressure->value() ) );
-        }
+        rmv->setValue( NUtilities::NConversions::sacToRMV( sac->value(), tankVolume->value(), tankPressure->value() ) );
     }
 
-    if ( !pressureUsed->has_value() && gasConsumed->has_value() )
+    if ( !sac->has_value() && sac->dependenciesSatisfied() )
+    {
+        sac->setValue( NUtilities::NConversions::rmvToSAC( rmv->value(), tankVolume->value(), tankPressure->value() ) );
+    }
+
+    if ( !pressureUsed->has_value() && pressureUsed->dependenciesSatisfied() )
     {
         pressureUsed->setValue( gasConsumed->value() * tankPressure->value() / tankVolume->value() );
     }
 
-    if ( pressureUsed->has_value() && !gasConsumed->has_value() )
+    if ( !gasConsumed->has_value() && gasConsumed->dependenciesSatisfied() )
     {
         gasConsumed->setValue( ( pressureUsed->value() * tankVolume->value() ) / tankPressure->value() );
     }
 
-    if ( ( !sac->has_value() || !rmv->has_value() ) && pressureUsed->has_value() )
+    if ( !ata->has_value() && ata->dependenciesSatisfied() )
     {
         ata->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
-        psiPerMin->setValue( pressureUsed->value() / time->value() );
+    }
 
+    if ( !psiPerMin->has_value() && psiPerMin->dependenciesSatisfied() )
+    {
+        psiPerMin->setValue( pressureUsed->value() / time->value() );
+    }
+
+    if ( !sac->has_value() && psiPerMin->has_value() && ata->has_value() )
+    {
         sac->setValue( psiPerMin->value() / ata->value() );
+    }
+
+    if ( !rmv->has_value() && sac->has_value() && tankVolume->has_value() && tankPressure->has_value() )
+    {
         rmv->setValue( NUtilities::NConversions::sacToRMV( sac->value(), tankVolume->value(), tankPressure->value() ) );
     }
 }

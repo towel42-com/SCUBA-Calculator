@@ -22,12 +22,14 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
+    virtual void setupCustomDependencies() override;
 };
 
 extern "C" CSCUBACalculator *instantiateCalculator()
@@ -99,6 +101,12 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     return {};
 }
 
+void CCalculator::setupCustomDependencies()
+{
+    setDependencies( "calories", { "weight", "depth", "temp", "activityLevel", "duration" } );
+    setDependencies( "duration", { "weight", "depth", "temp", "activityLevel", "calories" } );
+}
+
 void CCalculator::computeVariableValues()
 {
     auto calories = getVariable( "calories" );
@@ -109,13 +117,13 @@ void CCalculator::computeVariableValues()
     auto temp = getVariable( "temp" );
     auto activityLevel = getVariable( "activityLevel" );
 
-    if ( !calories->has_value() && weight->has_value() && depth->has_value() && temp->has_value() && activityLevel->has_value() && duration->has_value() )
+    if ( !calories->has_value() && calories->dependenciesSatisfied() )
     {
-        calories->setValue( NUtilities::NConversions::NCaloriesComputer::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value()/100.0, duration->value() ) );
+        calories->setValue( NUtilities::NConversions::NCaloriesComputer::computeCalories( imperial(), seaWater(), weight->value(), depth->value(), temp->value(), activityLevel->value() / 100.0, duration->value() ) );
     }
-    
-    if ( calories->has_value() && weight->has_value() && depth->has_value() && temp->has_value() && activityLevel->has_value() && !duration->has_value() )
+
+    if ( !duration->has_value() && duration->dependenciesSatisfied() )
     {
-        duration->setValue( NUtilities::NConversions::NCaloriesComputer::computeDuration( imperial(), seaWater(), calories->value(), weight->value(), depth->value(), temp->value(), activityLevel->value()/100.0 ) );
+        duration->setValue( NUtilities::NConversions::NCaloriesComputer::computeDuration( imperial(), seaWater(), calories->value(), weight->value(), depth->value(), temp->value(), activityLevel->value() / 100.0 ) );
     }
 }

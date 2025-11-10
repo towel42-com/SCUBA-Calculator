@@ -38,7 +38,7 @@ extern "C" CSCUBACalculator *instantiateCalculator()
 
 std::optional< std::pair< QString, QString > > CCalculator::fromToLabels() const
 {
-    return std::make_pair(  tr( "Feet" ), tr( "Meters" ) );
+    return std::make_pair( tr( "Feet" ), tr( "Meters" ) );
 }
 
 QStringList CCalculator::myCalculatorPath() const
@@ -90,12 +90,12 @@ void CCalculator::computeVariableValues()
     auto feet = getVariable( "feet" );
     auto meters = getVariable( "meters" );
 
-    if ( feet->has_value() && !meters->has_value() )
+    if ( !meters->has_value() && meters->dependenciesSatisfied() )
     {
         meters->setValue( NUtilities::NConversions::feetToMeters( feet->value() ) );
     }
-    
-    if ( !feet->has_value() && meters->has_value() )
+
+    if ( !feet->has_value() && feet->dependenciesSatisfied() )
     {
         feet->setValue( NUtilities::NConversions::metersToFeet( meters->value() ) );
     }

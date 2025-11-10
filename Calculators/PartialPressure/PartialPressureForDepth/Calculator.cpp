@@ -21,6 +21,7 @@ public:
     virtual bool isWaterTypeBased() const override { return true; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    virtual void setupCustomDependencies() override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
@@ -92,6 +93,14 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     return {};
 }
 
+void CCalculator::setupCustomDependencies()
+{
+    setDependencies( "ata", "depth" );
+    setDependencies( "partialPressureAtDepth", { "ata", "partialPressureAtSurface" } );
+    setDependencies( "depth", { "partialPressureAtDepth", "partialPressureAtSurface" } );
+    setDependencies( "partialPressureAtSurface", { "partialPressureAtDepth", "ata" } );
+}
+
 void CCalculator::computeVariableValues()
 {
     auto ata = getVariable( "ata" );
@@ -99,23 +108,24 @@ void CCalculator::computeVariableValues()
     auto depth = getVariable( "depth" );
     auto partialPressureAtSurface = getVariable( "partialPressureAtSurface" );
 
-    if ( !ata->has_value() && depth->has_value() )
+    if ( !ata->has_value() && ata->dependenciesSatisfied() )
     {
         ata->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
     }
 
-    if ( !partialPressureAtDepth->has_value() && ata->has_value() && partialPressureAtSurface->has_value() )
+    if ( !partialPressureAtDepth->has_value() && partialPressureAtDepth->dependenciesSatisfied() )
     {
         partialPressureAtDepth->setValue( ata->value() * partialPressureAtSurface->value() );
     }
 
-    if ( !depth->has_value() && partialPressureAtDepth->has_value() )
+    if ( !depth->has_value() && depth->dependenciesSatisfied() )
     {
         depth->setValue( NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) * ( ( ( partialPressureAtDepth->value() / partialPressureAtSurface->value() ) ) - 1 ) );
     }
 
-    if ( !partialPressureAtSurface->has_value() && partialPressureAtDepth->has_value() && ata->has_value() )
+    if ( !partialPressureAtSurface->has_value() && partialPressureAtSurface->dependenciesSatisfied() )
     {
-        partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
+        if ( ata->value() != 0.0 )
+            partialPressureAtSurface->setValue( partialPressureAtDepth->value() / ata->value() );
     }
 }

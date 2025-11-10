@@ -74,13 +74,13 @@ void CCalculator::computeVariableValues()
 {
     auto negativeBuoyancy = getVariable( "negativeBuoyancy" );
     auto volumeDisplaced = getVariable( "volumeDisplaced" );
-    
-    if ( !volumeDisplaced->has_value() && negativeBuoyancy->has_value() )
+
+    if ( !volumeDisplaced->has_value() && volumeDisplaced->dependenciesSatisfied() )
     {
         volumeDisplaced->setValue( negativeBuoyancy->value() / NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) );
     }
 
-    if ( volumeDisplaced->has_value() && !negativeBuoyancy->has_value() )
+    if ( !negativeBuoyancy->has_value() && negativeBuoyancy->dependenciesSatisfied() )
     {
         negativeBuoyancy->setValue( volumeDisplaced->value() * NUtilities::NConstants::weightPerVolumeOfWater( imperial(), seaWater() ) );
     }

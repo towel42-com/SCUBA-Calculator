@@ -52,7 +52,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 
 std::optional< TFormulaStringList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "relChange>" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
+    return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( "relChange" ), QString( R"__(\frac{<p2>}{<p1>})__" ) ) } );
 }
 
 std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -63,11 +63,11 @@ std::optional< TFormulaStringList > CCalculator::getFormulasForVar( const QStrin
     }
     else if ( unsetVar == "p1" )
     {
-        TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(\frac{<p2>}{<relChange>})__" ) ) } );
     }
     else if ( unsetVar == "p2" )
     {
-        TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times <relChange>)__" ) ) } );
+        return TFormulaStringList( { std::make_shared< CFormulaString >( getVariable( unsetVar ), QString( R"__(<p2> \times <relChange>)__" ) ) } );
     }
     return {};
 }
@@ -78,17 +78,17 @@ void CCalculator::computeVariableValues()
     auto p1 = getVariable( "p1" );
     auto p2 = getVariable( "p2" );
 
-    if ( !relChange->has_value() && p1->has_value() && p2->has_value() )
+    if ( !relChange->has_value() && relChange->dependenciesSatisfied() )
     {
         relChange->setValue( p2->value() / p1->value() );
     }
-    
-    if ( relChange->has_value() && !p1->has_value() && p2->has_value() )
+
+    if ( !p1->has_value() && p1->dependenciesSatisfied() )
     {
         p1->setValue( p2->value() / relChange->value() );
     }
-    
-    if ( relChange->has_value() && p1->has_value() && !p2->has_value() )
+
+    if ( !p2->has_value() && p2->dependenciesSatisfied() )
     {
         p2->setValue( relChange->value() * p1->value() );
     }

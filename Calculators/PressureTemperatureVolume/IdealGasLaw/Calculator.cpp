@@ -90,25 +90,25 @@ void CCalculator::computeVariableValues()
     auto numMoles = getVariable( "numMoles" );
     auto t = getVariable( "t" );
 
-    if ( !p->has_value() && v->has_value() && numMoles->has_value() && t->has_value() )
+    if ( !p->has_value() && p->dependenciesSatisfied() )
     {
         // p = nrt/v
         p->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) / v->value() );
     }
     
-    if ( p->has_value() && !v->has_value() && numMoles->has_value() && t->has_value() )
+    if ( !v->has_value() && v->dependenciesSatisfied() )
     {
         // v = nrt/p
         v->setValue( numMoles->value() * NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) / p->value() );
     }
     
-    if ( p->has_value() && v->has_value() && !numMoles->has_value() && t->has_value() )
+    if ( !numMoles->has_value() && numMoles->dependenciesSatisfied() )
     {
         // n = pv/rt
         numMoles->setValue( ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t->value() ) ) );
     }
     
-    if ( p->has_value() && v->has_value() && numMoles->has_value() && !t->has_value() )
+    if ( !t->has_value() && t->dependenciesSatisfied() )
     {
         // t = pv/nr
         t->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), ( p->value() * v->value() ) / ( NUtilities::NConstants::idealGasConstant( imperial() ) * numMoles->value() ) ) );

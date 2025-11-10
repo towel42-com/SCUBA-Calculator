@@ -23,6 +23,7 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
@@ -137,25 +138,25 @@ void CCalculator::computeVariableValues()
     auto p2 = getVariable( "p2" );
     auto t2 = getVariable( "t2" );
 
-    if ( !p1->has_value() && t1->has_value() && p2->has_value() && t2->has_value() )
+    if ( !p1->has_value() && p1->dependenciesSatisfied() )
     {
         // p1 = p2 * ( t1/t2 );
         p1->setValue( ( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) * ( ( p2->value() + NUtilities::NConstants::pressureAtSurface( imperial() ) ) / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) ) ) - NUtilities::NConstants::pressureAtSurface( imperial() ) );
     }
 
-    if ( p1->has_value() && t1->has_value() && !p2->has_value() && t2->has_value() )
+    if ( !p2->has_value() && p2->dependenciesSatisfied() )
     {
         // p2 = p1 * ( t2/t1 );
         p2->setValue( ( NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) * ( ( p1->value() + NUtilities::NConstants::pressureAtSurface( imperial() ) ) / NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) ) ) - NUtilities::NConstants::pressureAtSurface( imperial() ) );
     }
 
-    if ( p1->has_value() && !t1->has_value() && p2->has_value() && t2->has_value() )
+    if ( !t1->has_value() && t1->dependenciesSatisfied() )
     {
         // T1 = t2*(t1/t2)
         t1->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), ( ( p1->value() + NUtilities::NConstants::pressureAtSurface( imperial() ) ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t2->value() ) ) / ( p2->value() + NUtilities::NConstants::pressureAtSurface( imperial() ) ) ) );
     }
 
-    if ( p1->has_value() && t1->has_value() && p2->has_value() && !t2->has_value() )
+    if ( !t2->has_value() && t2->dependenciesSatisfied() )
     {
         // T2 = t1*(t2/t1)
         t2->setValue( NUtilities::NConversions::fromAbsZeroBasedTemp( imperial(), ( ( p2->value() + NUtilities::NConstants::pressureAtSurface( imperial() ) ) * NUtilities::NConversions::toAbsZeroBasedTemp( imperial(), t1->value() ) ) / ( p1->value() + NUtilities::NConstants::pressureAtSurface( imperial() ) ) ) );

@@ -90,12 +90,12 @@ void CCalculator::computeVariableValues()
     auto pounds = getVariable( "pounds" );
     auto kiloGrams = getVariable( "kiloGrams" );
 
-    if ( pounds->has_value() && !kiloGrams->has_value() )
+    if ( kiloGrams->has_value() && !kiloGrams->dependenciesSatisfied() )
     {
         kiloGrams->setValue( NUtilities::NConversions::lbsToKGs( pounds->value() ) );
     }
     
-    if ( !pounds->has_value() && kiloGrams->has_value() )
+    if ( !pounds->has_value() && !pounds->dependenciesSatisfied() )
     {
         pounds->setValue( NUtilities::NConversions::kgsToLbs( kiloGrams->value() ) );
     }

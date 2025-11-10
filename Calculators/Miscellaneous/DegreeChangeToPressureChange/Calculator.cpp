@@ -94,11 +94,11 @@ void CCalculator::computeVariableValues()
     auto p1 = getVariable( "p1" );
     auto t1 = getVariable( "t1" );
 
-    if ( !p1->has_value() && t1->has_value() )
+    if ( !p1->has_value() && p1->dependenciesSatisfied() )
     {
         p1->setValue( NUtilities::NConversions::pressureChangeForDegreeChange( imperial(), t1->value() ) );
     }
-    if ( !t1->has_value() && p1->has_value() )
+    if ( !t1->has_value() && t1->dependenciesSatisfied() )
     {
         t1->setValue( NUtilities::NConversions::degreeChangeForPressureChange( imperial(), p1->value() ) );
     }

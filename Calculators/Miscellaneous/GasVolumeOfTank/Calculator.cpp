@@ -78,22 +78,22 @@ void CCalculator::computeVariableValues()
     auto ratedTankPressure = getVariable( "ratedTankPressure" );
     auto tankVolume = getVariable( "tankVolume" );
 
-    if ( !gasVolume->has_value() && tankVolume->has_value() && currTankPressure->has_value() && ratedTankPressure->has_value() )
+    if ( !gasVolume->has_value() && gasVolume->dependenciesSatisfied() )
     {
         gasVolume->setValue( tankVolume->value() * ( currTankPressure->value() / ratedTankPressure->value() ) );
     }
     
-    if ( gasVolume->has_value() && tankVolume->has_value() && !currTankPressure->has_value() && ratedTankPressure->has_value() )
+    if ( !currTankPressure->has_value() && currTankPressure->dependenciesSatisfied() )
     {
         currTankPressure->setValue( ratedTankPressure->value() * ( gasVolume->value() / tankVolume->value() ) );
     }
     
-    if ( gasVolume->has_value() && tankVolume->has_value() && currTankPressure->has_value() && !ratedTankPressure->has_value() )
+    if ( !ratedTankPressure->has_value() && ratedTankPressure->dependenciesSatisfied() )
     {
         ratedTankPressure->setValue( currTankPressure->value() * ( tankVolume->value() / gasVolume->value() ) );
     }
     
-    if ( gasVolume->has_value() && !tankVolume->has_value() && currTankPressure->has_value() && ratedTankPressure->has_value() )
+    if ( !tankVolume->has_value() && tankVolume->dependenciesSatisfied() )
     {
         tankVolume->setValue( gasVolume->value() * ( ratedTankPressure->value() / currTankPressure->value() ) );
     }

@@ -82,12 +82,12 @@ void CCalculator::computeVariableValues()
     auto freshWater = getVariable( "freshWater" );
     auto seaWater = getVariable( "seaWater" );
 
-    if ( freshWater->has_value() && !seaWater->has_value() )
+    if ( !seaWater->has_value() && seaWater->dependenciesSatisfied() )
     {
         seaWater->setValue( NUtilities::NConversions::depthFreshwaterToSeawater( freshWater->value() ) );
     }
     
-    if ( !freshWater->has_value() && seaWater->has_value() )
+    if ( !freshWater->has_value() && freshWater->dependenciesSatisfied() )
     {
         freshWater->setValue( NUtilities::NConversions::depthSeawaterToFreshwater( seaWater->value() ) );
     }

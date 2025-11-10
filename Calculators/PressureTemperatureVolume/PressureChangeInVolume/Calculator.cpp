@@ -23,6 +23,7 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
@@ -135,23 +136,23 @@ void CCalculator::computeVariableValues()
     auto p2 = getVariable( "p2" );
     auto v2 = getVariable( "v2" );
 
-    if ( !p1->has_value() && v1->has_value() && p2->has_value() && v2->has_value() )
+    if ( !p1->has_value() && p1->dependenciesSatisfied() )
     {
         p1->setValue( p2->value() * ( v2->value() / v1->value() ) );
     }
 
-    if ( p1->has_value() && v1->has_value() && !p2->has_value() && v2->has_value() )
+    if ( !p2->has_value() && p2->dependenciesSatisfied() )
     {
         p2->setValue( p1->value() * ( v1->value() / v2->value() ) );
     }
 
-    if ( p1->has_value() && !v1->has_value() && p2->has_value() && v2->has_value() )
+    if ( !v1->has_value() && v1->dependenciesSatisfied() )
     {
         // v1 = v2 * (p2/p1)
         v1->setValue( v2->value() * ( p2->value() / p1->value() ) );
     }
 
-    if ( p1->has_value() && v1->has_value() && p2->has_value() && !v2->has_value() )
+    if ( !v2->has_value() && v2->dependenciesSatisfied() )
     {
         // v2 = v1 * (p1/p2)
         v2->setValue( v1->value() * ( p1->value() / p2->value() ) );

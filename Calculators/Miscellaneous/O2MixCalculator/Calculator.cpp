@@ -5,6 +5,7 @@
 #include "Core/FormulaString.h"
 
 #include <memory>
+#include <cmath>
 
 class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
 {
@@ -19,6 +20,7 @@ public:
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
+    virtual void setupCustomDependencies() override;
 
     virtual std::optional< TFormulaStringList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
     virtual std::optional< TFormulaStringList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
@@ -50,7 +52,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
             std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
             std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
             std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "o2_t", tr( "Approximate Time to fill with 100% O2" ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "o2_t", tr( "Time to fill with 100% O2" ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
         } );
     auto pos = std::next( retVal.begin() );
@@ -129,6 +131,17 @@ function check()
 }
 */
 
+void CCalculator::setupCustomDependencies()
+{
+    setDependencies( "mix1", { "p1", "p2", "mix2", "o2_p" } );
+    setDependencies( "p1", { "p2", "mix1", "mix2", "o2_p" } );
+    setDependencies( "mix2", { "p1", "p2", "mix1", "o2_p" } );
+    setDependencies( "p2", { "p1", "mix1", "mix2", "o2_p" } );
+    setDependencies( "o2_p", { "p1", "p2", "mix1", "mix2" } );
+    setDependencies( "o2_t", { "p1", "o2_p" } );
+    setDependencies( "air_t", { "p2", "o2_p" } );
+}
+
 void CCalculator::computeVariableValues()
 {
     auto mix1 = getVariable( "mix1" );
@@ -140,7 +153,7 @@ void CCalculator::computeVariableValues()
     auto o2_t = getVariable( "o2_t" );
     auto air_t = getVariable( "air_t" );
 
-    if ( mix1->has_value() && p1->has_value() && mix2->has_value() && p2->has_value() )
+    if ( !o2_p->has_value() && o2_p->dependenciesSatisfied() )
     {
         if ( ( mix1->value() == mix2->value() ) && ( mix1->value() == NUtilities::NConstants::percentO2AtSurface() ) )
         {
@@ -152,33 +165,33 @@ void CCalculator::computeVariableValues()
         o2_p->setValue( std::ceil( ( ( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) ) - ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / NUtilities::NConstants::percentN2AtSurface() ) + p1->value() ) );
     }
 
-    if ( !mix1->has_value() && p1->has_value() && mix2->has_value() && p2->has_value() && o2_p->has_value() )
+    if ( !mix1->has_value() && mix1->dependenciesSatisfied() )
     {
         mix1->setValue( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) ) - ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) / p1->value() ) + NUtilities::NConstants::percentO2AtSurface() );
     }
 
-    if ( mix1->has_value() && !p1->has_value() && mix2->has_value() && p2->has_value() && o2_p->has_value() )
+    if ( !p1->has_value() && p1->dependenciesSatisfied() )
     {
         p1->setValue( ( p2->value() * ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) - NUtilities::NConstants::percentN2AtSurface() * o2_p->value() ) / ( ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) + NUtilities::NConstants::percentN2AtSurface() ) );
         return;
     }
 
-    if ( mix1->has_value() && p1->has_value() && !mix2->has_value() && p2->has_value() && o2_p->has_value() )
+    if ( !mix2->has_value() && mix2->dependenciesSatisfied() )
     {
         mix2->setValue( ( ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) + ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / p2->value() ) + NUtilities::NConstants::percentO2AtSurface() );
     }
 
-    if ( mix1->has_value() && p1->has_value() && mix2->has_value() && !p2->has_value() && o2_p->has_value() )
+    if ( !p2->has_value() && p2->dependenciesSatisfied() )
     {
         p2->setValue( ( ( ( o2_p->value() + p1->value() ) * NUtilities::NConstants::percentN2AtSurface() ) + ( p1->value() * ( mix1->value() - NUtilities::NConstants::percentO2AtSurface() ) ) ) / ( mix2->value() - NUtilities::NConstants::percentO2AtSurface() ) );
     }
 
-    if ( !o2_t->has_value() && o2_p->has_value() && p1->has_value() )
+    if ( !o2_t->has_value() && o2_t->dependenciesSatisfied() )
     {
         o2_t->setValue( std::ceil( ( o2_p->value() - p1->value() ) / NUtilities::NConstants::fillRateO2( imperial() ) ) );
     }
 
-    if ( !air_t->has_value() && o2_p->has_value() && p2->has_value() )
+    if ( !air_t->has_value() && air_t->dependenciesSatisfied() )
     {
         air_t->setValue( std::ceil( ( p2->value() - o2_p->value() ) / NUtilities::NConstants::fillRateAir( imperial() ) ) );
     }

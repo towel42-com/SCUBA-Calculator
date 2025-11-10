@@ -81,17 +81,17 @@ void CCalculator::computeVariableValues()
     auto fn2 = getVariable( "fn2" );
     auto depth = getVariable( "depth" );
 
-    if ( !ead->has_value() && fn2->has_value() && depth->has_value() )
+    if ( !ead->has_value() && ead->dependenciesSatisfied() )
     {
         ead->setValue( ( ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) * ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }
     
-    if ( ead->has_value() && !fn2->has_value() && depth->has_value() )
+    if ( !fn2->has_value() && fn2->dependenciesSatisfied() )
     {
         fn2->setValue( ( NUtilities::NConstants::percentN2AtSurface() * ( ead->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) ) / ( depth->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) );
     }
     
-    if ( ead->has_value() && fn2->has_value() && !depth->has_value() )
+    if ( !depth->has_value() && depth->dependenciesSatisfied() )
     {
         depth->setValue( ( ( ead->value() + NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) ) / ( fn2->value() / NUtilities::NConstants::percentN2AtSurface() ) ) - NUtilities::NConstants::singleATMPerDepth( imperial(), seaWater() ) );
     }

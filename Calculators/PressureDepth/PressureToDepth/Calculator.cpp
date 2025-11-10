@@ -81,12 +81,12 @@ void CCalculator::computeVariableValues()
     auto pressure = getVariable( "pressure" );
     auto depth = getVariable( "depth" );
 
-    if ( pressure->has_value() && !depth->has_value() )
+    if ( !depth->has_value() && depth->dependenciesSatisfied() )
     {
         depth->setValue( NUtilities::NConversions::ataToDepth( imperial(), seaWater(), pressure->value() ) );
     }
     
-    if ( !pressure->has_value() && depth->has_value() )
+    if ( !pressure->has_value() && pressure->dependenciesSatisfied() )
     {
         pressure->setValue( NUtilities::NConversions::depthToATA( imperial(), seaWater(), depth->value() ) );
     }
