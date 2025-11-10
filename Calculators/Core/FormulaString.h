@@ -32,7 +32,6 @@ class CFormulaString
 public:
     CFormulaString( TVariableInfo variable, const QString &formula );
     CFormulaString( TConstVariableInfo variable, const QString &formula );
-    ;
     CFormulaString( const QString &formula );
 
     TFormulaString applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType );
@@ -43,7 +42,7 @@ public:
     TVariableInfo variable() const { return fVariable; }
     QString formula() const { return fFormula; }
 
-    bool isBaseFormula() const { return fBaseFormula; }
+    bool isBaseFormula() const;
     void setBaseFormula( bool baseFormula ) { fBaseFormula = baseFormula; }
 
     bool isFormula( const TFormulaString &rhs ) const { return operator==( rhs ); }

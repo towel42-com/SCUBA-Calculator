@@ -31,6 +31,7 @@ CFormulaString::CFormulaString( TVariableInfo variable, const QString &formula )
     fVariable( variable ),
     fFormula( formula )
 {
+    Q_ASSERT( fVariable );
 }
 
 CFormulaString::CFormulaString( TConstVariableInfo variable, const QString &formula ) :
@@ -54,6 +55,7 @@ TFormulaString CFormulaString::applyVariables( bool imperial, bool seaWater, con
         [ &, this ]( EVariableType currConst )   //
         {   //
             finalizedFormula = CVariableInfo::updateFormula( imperial, seaWater, finalizedFormula, currConst, ( formulaType == EFormulaType::eBaseFormula ) );
+            return true;
         } );
     return std::make_shared< CFormulaString >( fVariable, finalizedFormula );
 }
@@ -74,6 +76,13 @@ void CFormulaString::cleanupFormula()
     fFormula = NTowel42::cleanupFormula( fFormula );
 }
 
+bool CFormulaString::isBaseFormula() const
+{
+    if ( !fVariable )
+        return false;
+    return fBaseFormula && !fVariable->isIntermediate();
+}
+
 bool CFormulaString::operator==( const TFormulaString &rhs ) const
 {
     return operator==( rhs.get() );
@@ -91,18 +100,28 @@ bool CFormulaString::operator==( const CFormulaString &rhs ) const
 {
     return ( fVariable == rhs.fVariable )   //
            && ( fFormula == rhs.fFormula );   //
-        //&& ( fBaseFormula == rhs.fBaseFormula );
+    //&& ( fBaseFormula == rhs.fBaseFormula );
 }
 
 TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWater, CSCUBACalculator *calculator )
 {
+    if ( !fVariable )
+        return {};
+
     auto variables = NUtilities::getVariables( fFormula );
 
     bool hasUnsetVar = false;
     for ( auto &&ii : variables )
     {
         auto variable = calculator->getVariable( ii );
-        if ( variable && !variable->has_value() )
+        if ( !variable && NUtilities::isConstantVariable( ii ) )
+            continue;
+
+        Q_ASSERT( variable || ( !variable && NUtilities::isConstantVariable( ii ) ) );
+        if ( !variable )
+            continue;
+
+        if ( !variable->has_value() && !variable->dependenciesSatisfied() )
         {
             hasUnsetVar = true;
             break;
@@ -118,7 +137,7 @@ TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWate
     calculator->computeVariableValues();
 
     auto currValue = fVariable->optValue();
-    Q_ASSERT( !prevValue.has_value() || ( prevValue == currValue ) );
+    Q_ASSERT( !prevValue.has_value() || ( prevValue == currValue ) || fVariable->isIntermediate() );
 
     auto valueString = fVariable->valueString( imperial, seaWater );
 
@@ -129,7 +148,7 @@ TFormulaString CFormulaString::getFinalValueFormula( bool imperial, bool seaWate
         retVal = std::make_shared< CFormulaString >( fVariable, R"__(\color{green}{)__" + valueString + R"__(})__" );
     }
 
-    if ( prevValue.has_value() && ( prevValue != currValue ) )
+    if ( prevValue.has_value() && ( prevValue != currValue ) && !fVariable->isIntermediate() )
         fVariable->setValue( prevValue );
     return retVal;
 }
