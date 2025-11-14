@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SCUBACALCULATOR_H
-#define SCUBACALCULATOR_H
+#ifndef CALCULATORBASE_H
+#define CALCULATORBASE_H
 
 #include <unordered_map>
 #include <unordered_set>
@@ -160,7 +160,7 @@ protected:
     std::size_t numVariables( EVariableLoc side ) const;
 
 protected:
-    CSCUBACalculatorPage *fPage{ nullptr };
+    CCalculatorPage *fPage{ nullptr };
     TUpdateFormulaFunc fUpdateFormulaFunc;
     TVariableInfoList fLHSVariables;
     TVariableInfoList fRHSVariables;

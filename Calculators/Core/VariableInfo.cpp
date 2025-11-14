@@ -42,7 +42,7 @@ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariabl
     setUnitOverride( unitType, imperial );
 }
 
-bool CVariableInfo::createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout )
+bool CVariableInfo::createWidgets( CCalculatorPage *page, QFormLayout *formLayout )
 {
     if ( fType != EVariableType::eVariable )
         return false;

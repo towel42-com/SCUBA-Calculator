@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SCUBACALCULATORPAGE_H
-#define SCUBACALCULATORPAGE_H
+#ifndef CALCULATORPAGE_H
+#define CALCULATORPAGE_H
 
 #include "CalculatorFwd.h"
 
@@ -31,7 +31,7 @@
 class QFrame;
 class QGroupBox;
 
-class CSCUBACalculatorPage : public QWidget
+class CCalculatorPage : public QWidget
 {
     friend class CVariableInfo;
 
@@ -42,10 +42,10 @@ public:
     Q_PROPERTY( bool showUnits READ showUnits );
     Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
 
-    CSCUBACalculatorPage( CCalculatorBase *calculator, QWidget *parent );
-    virtual ~CSCUBACalculatorPage();
+    CCalculatorPage( CCalculatorBase *calculator, QWidget *parent );
+    virtual ~CCalculatorPage();
 
-    static std::tuple< CSCUBACalculatorPage *, std::size_t > constructPage( CCalculatorBase *calculator, QWidget *parent );
+    static std::tuple< CCalculatorPage *, std::size_t > constructPage( CCalculatorBase *calculator, QWidget *parent );
 
 public:
     virtual void init( bool imperial, bool seaWater ) final;
@@ -74,7 +74,7 @@ Q_SIGNALS:
     void sigUpdateValues();
 
 private:
-    static std::pair< QGroupBox *, std::size_t > loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page );
+    static std::pair< QGroupBox *, std::size_t > loadVariables( const QString &name, const TVariableInfoList &variables, CCalculatorPage *page );
     virtual CCalculatorBase *calculator() final { return fCalculator; }
 
     virtual void setUpdateFromSide( EVariableLoc updateFromSide ) final;

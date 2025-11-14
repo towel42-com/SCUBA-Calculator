@@ -156,7 +156,7 @@ public:
 
     [[nodiscard]] EVariableLoc variableLoc() const { return fVariableLocation; }
 
-    bool createWidgets( CSCUBACalculatorPage *page, QFormLayout *formLayout );
+    bool createWidgets( CCalculatorPage *page, QFormLayout *formLayout );
 
     void updateLabels( bool imperial, bool seaWater );
     void updateValuesAndRanges( bool imperial, bool seaWater );   // if the values or range need updating due to conditions

@@ -11,18 +11,18 @@
 #include <list>
 #include <utility>
 
-CSCUBACalculatorPage::CSCUBACalculatorPage( CCalculatorBase *calculator, QWidget *parent ) :
+CCalculatorPage::CCalculatorPage( CCalculatorBase *calculator, QWidget *parent ) :
     QWidget( parent ),
     fCalculator( calculator )
 {
-    connect( this, &CSCUBACalculatorPage::sigUpdateValues, [ = ]() { updateValues( nullptr ); } );
+    connect( this, &CCalculatorPage::sigUpdateValues, [ = ]() { updateValues( nullptr ); } );
 }
 
-CSCUBACalculatorPage::~CSCUBACalculatorPage()
+CCalculatorPage::~CCalculatorPage()
 {
 }
 
-void CSCUBACalculatorPage::init( bool imperial, bool seaWater )
+void CCalculatorPage::init( bool imperial, bool seaWater )
 {
     fImperial = imperial;
     fSeaWater = seaWater;
@@ -30,25 +30,25 @@ void CSCUBACalculatorPage::init( bool imperial, bool seaWater )
     updateValues( nullptr );
 }
 
-void CSCUBACalculatorPage::setImperial( bool imperial )
+void CCalculatorPage::setImperial( bool imperial )
 {
     fImperial = imperial;
     updateValues( nullptr );
 }
 
-void CSCUBACalculatorPage::setSeaWater( bool seaWater )
+void CCalculatorPage::setSeaWater( bool seaWater )
 {
     fSeaWater = seaWater;
     emit sigUpdateValues();
 }
 
-void CSCUBACalculatorPage::updateValues( QWidget *triggerWidget )
+void CCalculatorPage::updateValues( QWidget *triggerWidget )
 {
     fNeedsInit = false;
     calculator()->compute( updateFromSide(), triggerWidget );
 }
 
-void CSCUBACalculatorPage::addWidgets( EVariableLoc side, const std::list< QWidget * > &widgets )
+void CCalculatorPage::addWidgets( EVariableLoc side, const std::list< QWidget * > &widgets )
 {
     for ( auto &&ii : widgets )
     {
@@ -56,34 +56,34 @@ void CSCUBACalculatorPage::addWidgets( EVariableLoc side, const std::list< QWidg
     }
 }
 
-void CSCUBACalculatorPage::addWidget( EVariableLoc side, QWidget *widget )
+void CCalculatorPage::addWidget( EVariableLoc side, QWidget *widget )
 {
     fVariables[ widget ] = side;
 
     NSABUtils::setupWidgetChanged( widget, [ = ]( QObject *object ) { slotWidgetChanged( dynamic_cast< QWidget * >( object ) ); } );
 }
 
-bool CSCUBACalculatorPage::showUnits() const
+bool CCalculatorPage::showUnits() const
 {
     return fCalculator->showUnits();
 }
 
-bool CSCUBACalculatorPage::isWaterTypeBased() const
+bool CCalculatorPage::isWaterTypeBased() const
 {
     return fCalculator->isWaterTypeBased();
 }
 
-bool CSCUBACalculatorPage::needsInit() const
+bool CCalculatorPage::needsInit() const
 {
     return fNeedsInit;
 }
 
-void CSCUBACalculatorPage::setUpdateFromSide( EVariableLoc updateFromSide )
+void CCalculatorPage::setUpdateFromSide( EVariableLoc updateFromSide )
 {
     fUpdateFromSide = updateFromSide;
 }
 
-void CSCUBACalculatorPage::slotWidgetChanged( QWidget *widget )
+void CCalculatorPage::slotWidgetChanged( QWidget *widget )
 {
     auto pos = fVariables.find( widget );
     if ( pos == fVariables.end() )
@@ -92,13 +92,13 @@ void CSCUBACalculatorPage::slotWidgetChanged( QWidget *widget )
     updateValues( widget );
 }
 
-std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::constructPage( CCalculatorBase *calculator, QWidget *parent )
+std::tuple< CCalculatorPage *, std::size_t > CCalculatorPage::constructPage( CCalculatorBase *calculator, QWidget *parent )
 {
     if ( !calculator )
         return { nullptr, 0 };
     std::size_t numVariables = 0;
 
-    auto retVal = new CSCUBACalculatorPage( calculator, parent );
+    auto retVal = new CCalculatorPage( calculator, parent );
     auto formLayout = new QVBoxLayout( retVal );
     formLayout->setSpacing( 0 );
     formLayout->setContentsMargins( 0, 0, 0, 0 );
@@ -116,7 +116,7 @@ std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::construc
     return { retVal, numVariables };
 }
 
-std::pair< QGroupBox *, std::size_t > CSCUBACalculatorPage::loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page )
+std::pair< QGroupBox *, std::size_t > CCalculatorPage::loadVariables( const QString &name, const TVariableInfoList &variables, CCalculatorPage *page )
 {
     std::size_t numVariables = 0;
     for ( auto &&curr : variables )

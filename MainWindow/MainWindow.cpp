@@ -189,7 +189,7 @@ void CMainWindow::addCalculator( CCalculatorBase *calculator )
     fImpl->stackedWidget->addWidget( page );
     fPageToItem[ page ] = leaf;
 
-    calculator->setUpdateFormulaFunc( [ = ]( CSCUBACalculatorPage *calcPage, const QString &formula, bool finished )   //
+    calculator->setUpdateFormulaFunc( [ = ]( CCalculatorPage *calcPage, const QString &formula, bool finished )   //
                                       {   //
                                           this->setFormulaForPage( calcPage, formula, finished );
                                       } );
@@ -265,13 +265,13 @@ CCalculatorBase *CMainWindow::currentCalculator() const
     return getCalculator( page );
 }
 
-CSCUBACalculatorPage *CMainWindow::currentCalculatorPage() const
+CCalculatorPage *CMainWindow::currentCalculatorPage() const
 {
     auto page = fImpl->stackedWidget->currentWidget();
     if ( page == fBlankPage )
         return nullptr;
 
-    return dynamic_cast< CSCUBACalculatorPage * >( page );
+    return dynamic_cast< CCalculatorPage * >( page );
 }
 
 void CMainWindow::slotUnitsChanged()
@@ -312,7 +312,7 @@ void CMainWindow::slotWaterChanged()
 void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
 {
     auto calculator = getCalculator( item );
-    auto page = dynamic_cast< CSCUBACalculatorPage * >( calculator ? calculator->getPage( nullptr ) : nullptr );
+    auto page = dynamic_cast< CCalculatorPage * >( calculator ? calculator->getPage( nullptr ) : nullptr );
     bool needsInit = page ? page->needsInit() : false;
 
     if ( page )
@@ -327,7 +327,7 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
     setCurrentPage( item, page, needsInit );
 }
 
-void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage )
+void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CCalculatorPage *page, bool initPage )
 {
     bool showUnits = page != nullptr;
     bool isWaterTypeBased = page != nullptr;
@@ -381,7 +381,7 @@ void CMainWindow::setMathJaxWidgetsVisible( bool visible )
     fImpl->formulaGroupBox->setMathJaxVisible( visible );
 }
 
-void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool finished )
+void CMainWindow::setFormulaForPage( CCalculatorPage *page, const QString &formula, bool finished )
 {
     //Q_ASSERT( !NUtilities::hasVariable( formula ) );
 
@@ -406,7 +406,7 @@ void CMainWindow::setFormulaForPage( CSCUBACalculatorPage *page, const QString &
         loadFormulasForPage( page );
 }
 
-void CMainWindow::loadFormulasForPage( CSCUBACalculatorPage *page )
+void CMainWindow::loadFormulasForPage( CCalculatorPage *page )
 {
     if ( !page )
     {

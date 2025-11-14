@@ -44,9 +44,9 @@ public Q_SLOTS:
 
 private:
     CCalculatorBase *currentCalculator() const;
-    CSCUBACalculatorPage *currentCalculatorPage() const;
+    CCalculatorPage *currentCalculatorPage() const;
 
-    void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
+    void setCurrentPage( QTreeWidgetItem *item, CCalculatorPage *page, bool initPage );
     void loadSettings();
     void saveSettings();
 
@@ -54,7 +54,7 @@ private:
     void showWaterType( bool show );
     void addCalculator( CCalculatorBase *calculator );
 
-    void loadFormulasForPage( CSCUBACalculatorPage *page );
+    void loadFormulasForPage( CCalculatorPage *page );
 
     bool renderSVG( const QString &formula );
     std::optional< QString > formulaForPage( QWidget *page );
@@ -64,7 +64,7 @@ private:
     void setMathJaxWidgetsVisible( bool visible );
 
 private:
-    void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool finished );
+    void setFormulaForPage( CCalculatorPage *page, const QString &formula, bool finished );
 
     CCalculatorBase *getCalculator( QTreeWidgetItem *leaf ) const;
     CCalculatorBase *getCalculator( QWidget *page ) const;

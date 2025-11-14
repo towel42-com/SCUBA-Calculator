@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-project( SCUBACalculatorCore )
+project( CalculatorCore )
 
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )

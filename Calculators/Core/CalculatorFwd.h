@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef SCUBACALCULATOR_FWD_H
-#define SCUBACALCULATOR_FWD_H
+#ifndef CALCULATOR_FWD_H
+#define CALCULATOR_FWD_H
 
 #if defined( WINDOWS ) || defined( WIN32 ) || defined( Q_OS_WINDOWS )
     #ifdef CALCULATORS_INTERNAL
@@ -46,7 +46,7 @@
 #include <QString>
 #include <QLoggingCategory>
 
-class CSCUBACalculatorPage;
+class CCalculatorPage;
 class CCalculatorBase;
 class QWidget;
 class QLabel;
@@ -59,7 +59,7 @@ enum class EFormulaType;
 using TOptionalDouble = std::optional< double >;
 using TOptionalDoubleVector = std::vector< TOptionalDouble >;
 
-using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, bool finished ) >;
+using TUpdateFormulaFunc = std::function< void( CCalculatorPage *, const QString &, bool finished ) >;
 using TInstantiateCalcFunc = CCalculatorBase *(*)();
 
 constexpr char kInstantiateCalcFuncName[] = "instantiateCalculator";
@@ -155,6 +155,6 @@ class CFormula;
 using TFormula = std::shared_ptr< CFormula >;
 using TFormulaList = std::list< TFormula >;
 
-CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( ScubaCalculator );
+CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( Calculator );
 
 #endif

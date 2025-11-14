@@ -42,7 +42,7 @@ SET( project_pub_DEPS
     Qt6::Gui
     Qt6::Widgets
     Qt6::SvgWidgets
-    SCUBACalculatorCore
+    CalculatorCore
     SABUtils
     ${project_pub_DEPS}
 )

@@ -13,7 +13,7 @@
 // https://swimmingcalculators.com/scuba-diving-calculator/
 // https://swimmingcalculators.com/scuba-diving-weight-calculator/
 
-Q_LOGGING_CATEGORY( ScubaCalculator, "Towel42.ScubaCalculator", QtMsgType::QtInfoMsg )
+Q_LOGGING_CATEGORY( Calculator, "Towel42.Calculator", QtMsgType::QtInfoMsg )
 
 CCalculatorBase::CCalculatorBase( QObject *parent ) :
     QObject( parent )
@@ -59,7 +59,7 @@ QWidget *CCalculatorBase::getPage( QWidget *parent )
 {
     if ( !fPage )
     {
-        std::tie( fPage, fNumVariables ) = CSCUBACalculatorPage::constructPage( this, parent );
+        std::tie( fPage, fNumVariables ) = CCalculatorPage::constructPage( this, parent );
     }
     return fPage;
 }
@@ -150,7 +150,7 @@ bool CCalculatorBase::seaWater() const
 void CCalculatorBase::notifyOfNewFormula( const QString &formula, bool finished ) const
 {
     if ( fUpdateFormulaFunc )
-        fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, finished );
+        fUpdateFormulaFunc( dynamic_cast< CCalculatorPage * >( getPage() ), formula, finished );
 }
 
 TVariableInfoList &CCalculatorBase::getVariables()
