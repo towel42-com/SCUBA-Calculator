@@ -70,7 +70,7 @@ bool CCalculatorPage::showUnits() const
 
 bool CCalculatorPage::isWaterTypeBased() const
 {
-    return fCalculator->isWaterTypeBased();
+    return fCalculator->showWaterType();
 }
 
 bool CCalculatorPage::needsInit() const

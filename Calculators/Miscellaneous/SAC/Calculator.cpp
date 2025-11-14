@@ -11,7 +11,7 @@ class CALCULATORS_EXPORT CCalculator : public CCalculatorBase
 public:
     CCalculator() { setObjectName( "SAC, RMV and Gas Consumption" ); }
     virtual ~CCalculator() override {}
-    virtual bool isWaterTypeBased() const override { return true; }
+    virtual bool showWaterType() const override { return true; }
     virtual bool valuesSetProperly() const override
     {
         auto unsetVars = unsetVariables();

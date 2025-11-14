@@ -26,7 +26,7 @@ public:
     virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
-    virtual bool isWaterTypeBased() const override { return true; }
+    virtual bool showWaterType() const override { return true; }
 };
 
 extern "C" CCalculatorBase *instantiateCalculator()

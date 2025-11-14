@@ -83,7 +83,7 @@ public:
     // used inside the DLL
     virtual void compute( EVariableLoc updateFromSide, QWidget *triggerWidget ) final;
     virtual bool showUnits() const { return true; }
-    virtual bool isWaterTypeBased() const { return false; }
+    virtual bool showWaterType() const { return false; }
 
     virtual TVariableInfoList &getLHSVariables() final;
     virtual TVariableInfoList &getRHSVariables() final;

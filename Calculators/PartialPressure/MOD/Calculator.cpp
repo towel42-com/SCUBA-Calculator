@@ -18,7 +18,7 @@ public:
     virtual QString calculatorProjectName() const override { return kProjectName; }
     virtual QString calculatorGroupName() const override { return kGroupName; }
 
-    virtual bool isWaterTypeBased() const override { return true; }
+    virtual bool showWaterType() const override { return true; }
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     

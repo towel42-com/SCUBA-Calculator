@@ -13,7 +13,7 @@ public:
     CCalculator() { setObjectName( "Calories" ); }
     virtual ~CCalculator() override {}
 
-    virtual bool isWaterTypeBased() const override { return true; }
+    virtual bool showWaterType() const override { return true; }
 
     virtual QString myCalculatorName() const override;
     virtual QStringList myCalculatorPath() const override;
