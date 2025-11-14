@@ -1,8 +1,8 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "Calculators/Core/SCUBACalculator.h"
-#include "Calculators/Core/SCUBACalculatorPage.h"
+#include "Calculators/Core/CalculatorBase.h"
+#include "Calculators/Core/CalculatorPage.h"
 
 #include "T42-MathJaxQt6/include/MathJaxQt6.h"
 #include "SABUtils/utils.h"
@@ -166,7 +166,7 @@ void CMainWindow::loadCalculators()
     slotSelectCalculator( nullptr );
 }
 
-void CMainWindow::addCalculator( CSCUBACalculator *calculator )
+void CMainWindow::addCalculator( CCalculatorBase *calculator )
 {
     auto path = calculator->calculatorPath();
     if ( path.isEmpty() )
@@ -240,7 +240,7 @@ QTreeWidgetItem *CMainWindow::findItem( QTreeWidgetItem *parent, const QStringLi
     return findItem( foundChild, path.mid( 1 ), createIfNecessary );
 }
 
-CSCUBACalculator *CMainWindow::getCalculator( QTreeWidgetItem *leaf ) const
+CCalculatorBase *CMainWindow::getCalculator( QTreeWidgetItem *leaf ) const
 {
     auto pos = fCalculators.find( leaf );
     if ( pos != fCalculators.end() )
@@ -248,7 +248,7 @@ CSCUBACalculator *CMainWindow::getCalculator( QTreeWidgetItem *leaf ) const
     return nullptr;
 }
 
-CSCUBACalculator *CMainWindow::getCalculator( QWidget *page ) const
+CCalculatorBase *CMainWindow::getCalculator( QWidget *page ) const
 {
     auto pos = fPageToItem.find( page );
     if ( pos == fPageToItem.end() )
@@ -256,7 +256,7 @@ CSCUBACalculator *CMainWindow::getCalculator( QWidget *page ) const
     return getCalculator( ( *pos ).second );
 }
 
-CSCUBACalculator *CMainWindow::currentCalculator() const
+CCalculatorBase *CMainWindow::currentCalculator() const
 {
     auto page = fImpl->stackedWidget->currentWidget();
     if ( page == fBlankPage )

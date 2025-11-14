@@ -6,7 +6,7 @@
 
 #include <memory>
 
-class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
+class CALCULATORS_EXPORT CCalculator : public CCalculatorBase
 {
 public:
     CCalculator() { setObjectName( "SAC, RMV and Gas Consumption" ); }
@@ -50,7 +50,7 @@ public:
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 };
 
-extern "C" CSCUBACalculator *instantiateCalculator()
+extern "C" CCalculatorBase *instantiateCalculator()
 {
     return new CCalculator;
 }

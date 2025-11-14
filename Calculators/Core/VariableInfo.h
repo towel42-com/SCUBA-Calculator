@@ -24,7 +24,7 @@
 #ifndef VARIABLEINFO_H
 #define VARIABLEINFO_H
 
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 #include <QString>
 #include <QStringList>
 #include <list>

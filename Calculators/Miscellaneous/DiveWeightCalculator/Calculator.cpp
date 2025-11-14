@@ -6,7 +6,7 @@
 
 #include <memory>
 
-class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
+class CALCULATORS_EXPORT CCalculator : public CCalculatorBase
 {
 public:
     CCalculator() { setObjectName( "DiveWeightCalculator" ); }
@@ -29,7 +29,7 @@ public:
     virtual void setupCustomDependencies() override;
 };
 
-extern "C" CSCUBACalculator *instantiateCalculator()
+extern "C" CCalculatorBase *instantiateCalculator()
 {
     return new CCalculator;
 }

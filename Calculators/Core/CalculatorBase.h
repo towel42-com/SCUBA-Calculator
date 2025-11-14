@@ -25,7 +25,7 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 #include <QStringList>
 #include <QString>
 #include <QObject>
@@ -40,7 +40,7 @@ namespace NTowel42
 class QWidget;
 class QFrame;
 
-class CALCULATORS_EXPORT CSCUBACalculator : public QObject
+class CALCULATORS_EXPORT CCalculatorBase : public QObject
 {
     Q_OBJECT;
 
@@ -50,8 +50,8 @@ class CALCULATORS_EXPORT CSCUBACalculator : public QObject
 
 public:
     // used inside the DLL
-    CSCUBACalculator( QObject *parent = nullptr );
-    virtual ~CSCUBACalculator();
+    CCalculatorBase( QObject *parent = nullptr );
+    virtual ~CCalculatorBase();
 
 public:
     // used outside the DLL
@@ -60,7 +60,7 @@ public:
 
     virtual bool isReversible() const { return false; }
     virtual bool isReversed() const { return fReversed.second; }
-    virtual void setIsReversed( CSCUBACalculator *nonReversedCalc, bool isReversed ) /*final*/;
+    virtual void setIsReversed( CCalculatorBase *nonReversedCalc, bool isReversed ) /*final*/;
 
     virtual QStringList calculatorPath() const /*final*/;
     virtual QString calculatorName() const /*final*/;
@@ -168,9 +168,9 @@ protected:
 
     std::unordered_map< QString, TVariableInfo > fVariableMap;
     std::size_t fNumVariables{ 0 };   // if there are constants in the variable list, this value will not equal fVariables.size();
-    std::pair< CSCUBACalculator *, bool > fReversed{ nullptr, false };
+    std::pair< CCalculatorBase *, bool > fReversed{ nullptr, false };
 };
 
-extern "C" CALCULATORS_EXPORT CSCUBACalculator *instantiateCalculator();
+extern "C" CALCULATORS_EXPORT CCalculatorBase *instantiateCalculator();
 
 #endif

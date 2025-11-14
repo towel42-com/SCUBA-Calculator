@@ -23,7 +23,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 
 namespace NUtilities
 {

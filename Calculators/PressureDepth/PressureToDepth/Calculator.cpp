@@ -5,7 +5,7 @@
 
 #include <memory>
 
-class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
+class CALCULATORS_EXPORT CCalculator : public CCalculatorBase
 {
 public:
     CCalculator() { setObjectName( "PressureToDepth" ); }
@@ -29,7 +29,7 @@ public:
     virtual bool isWaterTypeBased() const override { return true; }
 };
 
-extern "C" CSCUBACalculator *instantiateCalculator()
+extern "C" CCalculatorBase *instantiateCalculator()
 {
     return new CCalculator;
 }

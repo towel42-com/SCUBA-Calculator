@@ -6,7 +6,7 @@
 
 #include <memory>
 
-class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
+class CALCULATORS_EXPORT CCalculator : public CCalculatorBase
 {
 public:
     CCalculator() { setObjectName( "CombinedGasLaw" ); }
@@ -28,7 +28,7 @@ public:
     virtual void computeVariableValues() override;   // updates all values
 };
 
-extern "C" CSCUBACalculator *instantiateCalculator()
+extern "C" CCalculatorBase *instantiateCalculator()
 {
     return new CCalculator;
 }
@@ -79,7 +79,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
             retVal = getVariable( "v1" );
     }
     else
-        retVal = CSCUBACalculator::determineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
+        retVal = CCalculatorBase::determineVariableToUnset( updateFromSide, triggerWidget, preDefaultBehavior );
     return retVal;
 }
 

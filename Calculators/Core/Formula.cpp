@@ -19,12 +19,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 
 #include "Formula.h"
 #include "Utilities.h"
 #include "VariableInfo.h"
-#include "SCUBACalculator.h"
+#include "CalculatorBase.h"
 #include "include/MathJaxQt6.h"
 
 CFormula::CFormula( TVariableInfo variable, const QString &formula ) :
@@ -103,7 +103,7 @@ bool CFormula::operator==( const CFormula &rhs ) const
     //&& ( fBaseFormula == rhs.fBaseFormula );
 }
 
-TFormula CFormula::getFinalValueFormula( bool imperial, bool seaWater, CSCUBACalculator *calculator )
+TFormula CFormula::getFinalValueFormula( bool imperial, bool seaWater, CCalculatorBase *calculator )
 {
     if ( !fVariable )
         return {};

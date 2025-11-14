@@ -4,7 +4,7 @@
 #include <QString>
 #include <QObject>
 
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 
 #include <memory>
 

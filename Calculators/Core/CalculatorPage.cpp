@@ -1,5 +1,5 @@
-#include "SCUBACalculatorPage.h"
-#include "SCUBACalculator.h"
+#include "CalculatorPage.h"
+#include "CalculatorBase.h"
 #include "VariableInfo.h"
 #include "SABUtils/WidgetChanged.h"
 
@@ -11,7 +11,7 @@
 #include <list>
 #include <utility>
 
-CSCUBACalculatorPage::CSCUBACalculatorPage( CSCUBACalculator *calculator, QWidget *parent ) :
+CSCUBACalculatorPage::CSCUBACalculatorPage( CCalculatorBase *calculator, QWidget *parent ) :
     QWidget( parent ),
     fCalculator( calculator )
 {
@@ -92,7 +92,7 @@ void CSCUBACalculatorPage::slotWidgetChanged( QWidget *widget )
     updateValues( widget );
 }
 
-std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::constructPage( CSCUBACalculator *calculator, QWidget *parent )
+std::tuple< CSCUBACalculatorPage *, std::size_t > CSCUBACalculatorPage::constructPage( CCalculatorBase *calculator, QWidget *parent )
 {
     if ( !calculator )
         return { nullptr, 0 };

@@ -23,7 +23,7 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 #include <QString>
 #include <optional>
 
@@ -36,7 +36,7 @@ public:
 
     TFormula applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType );
     QString equation( bool imperial, bool seaWater ) const;
-    [[nodiscard]] TFormula getFinalValueFormula( bool imperial, bool seaWater, CSCUBACalculator *calculator );
+    [[nodiscard]] TFormula getFinalValueFormula( bool imperial, bool seaWater, CCalculatorBase *calculator );
     void cleanupFormula();
 
     TVariableInfo variable() const { return fVariable; }

@@ -1,6 +1,6 @@
 #include "VariableInfo.h"
-#include "SCUBACalculatorPage.h"
-#include "SCUBACalculator.h"
+#include "CalculatorPage.h"
+#include "CalculatorBase.h"
 
 #include "Utilities.h"
 #include "SABUtils/DelayLineEdit.h"

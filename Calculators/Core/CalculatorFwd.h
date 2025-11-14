@@ -47,7 +47,7 @@
 #include <QLoggingCategory>
 
 class CSCUBACalculatorPage;
-class CSCUBACalculator;
+class CCalculatorBase;
 class QWidget;
 class QLabel;
 class QLineEdit;
@@ -60,7 +60,7 @@ using TOptionalDouble = std::optional< double >;
 using TOptionalDoubleVector = std::vector< TOptionalDouble >;
 
 using TUpdateFormulaFunc = std::function< void( CSCUBACalculatorPage *, const QString &, bool finished ) >;
-using TInstantiateCalcFunc = CSCUBACalculator *(*)();
+using TInstantiateCalcFunc = CCalculatorBase *(*)();
 
 constexpr char kInstantiateCalcFuncName[] = "instantiateCalculator";
 

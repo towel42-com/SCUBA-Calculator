@@ -23,7 +23,7 @@
 #ifndef SCUBACALCULATORPAGE_H
 #define SCUBACALCULATORPAGE_H
 
-#include "SCUBACalculatorFwd.h"
+#include "CalculatorFwd.h"
 
 #include <QWidget>
 #include <tuple>
@@ -42,10 +42,10 @@ public:
     Q_PROPERTY( bool showUnits READ showUnits );
     Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
 
-    CSCUBACalculatorPage( CSCUBACalculator *calculator, QWidget *parent );
+    CSCUBACalculatorPage( CCalculatorBase *calculator, QWidget *parent );
     virtual ~CSCUBACalculatorPage();
 
-    static std::tuple< CSCUBACalculatorPage *, std::size_t > constructPage( CSCUBACalculator *calculator, QWidget *parent );
+    static std::tuple< CSCUBACalculatorPage *, std::size_t > constructPage( CCalculatorBase *calculator, QWidget *parent );
 
 public:
     virtual void init( bool imperial, bool seaWater ) final;
@@ -61,7 +61,7 @@ public:
 
     virtual bool needsInit() const;
 
-    virtual const CSCUBACalculator *calculator() const final { return fCalculator; }
+    virtual const CCalculatorBase *calculator() const final { return fCalculator; }
 
 protected:
     virtual void addWidgets( EVariableLoc varLocation, const std::list< QWidget * > &widgets );
@@ -75,7 +75,7 @@ Q_SIGNALS:
 
 private:
     static std::pair< QGroupBox *, std::size_t > loadVariables( const QString &name, const TVariableInfoList &variables, CSCUBACalculatorPage *page );
-    virtual CSCUBACalculator *calculator() final { return fCalculator; }
+    virtual CCalculatorBase *calculator() final { return fCalculator; }
 
     virtual void setUpdateFromSide( EVariableLoc updateFromSide ) final;
     virtual EVariableLoc updateFromSide() const final { return fUpdateFromSide; }
@@ -85,7 +85,7 @@ private:
     bool fImperial{ false };
     bool fSeaWater{ false };
     EVariableLoc fUpdateFromSide{ EVariableLoc::eRHS };
-    CSCUBACalculator *fCalculator{ nullptr };
+    CCalculatorBase *fCalculator{ nullptr };
     std::unordered_map< QObject *, EVariableLoc > fVariables;
 };
 

@@ -7,7 +7,7 @@
 
 ////https://swimmingcalculators.com/scuba-diving-calculator/
 
-class CALCULATORS_EXPORT CCalculator : public CSCUBACalculator
+class CALCULATORS_EXPORT CCalculator : public CCalculatorBase
 {
 public:
     CCalculator() { setObjectName( "Calories" ); }
@@ -32,7 +32,7 @@ public:
     virtual void setupCustomDependencies() override;
 };
 
-extern "C" CSCUBACalculator *instantiateCalculator()
+extern "C" CCalculatorBase *instantiateCalculator()
 {
     return new CCalculator;
 }

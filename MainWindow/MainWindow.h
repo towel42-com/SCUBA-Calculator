@@ -9,7 +9,7 @@
 class QDir;
 class QProgressDialog;
 
-#include "Calculators/Core/ScubaCalculatorFwd.h"
+#include "Calculators/Core/CalculatorFwd.h"
 namespace Ui
 {
     class CMainWindow;
@@ -21,7 +21,7 @@ namespace NTowel42
     class CMathJaxQt6GroupBox;
 }
 
-class CSCUBACalculator;
+class CCalculatorBase;
 class QTreeWidgetItem;
 class CMainWindow : public QMainWindow
 {
@@ -43,7 +43,7 @@ public Q_SLOTS:
     void slotResetCurrentPage();
 
 private:
-    CSCUBACalculator *currentCalculator() const;
+    CCalculatorBase *currentCalculator() const;
     CSCUBACalculatorPage *currentCalculatorPage() const;
 
     void setCurrentPage( QTreeWidgetItem *item, CSCUBACalculatorPage *page, bool initPage );
@@ -52,7 +52,7 @@ private:
 
     void showUnits( bool show );
     void showWaterType( bool show );
-    void addCalculator( CSCUBACalculator *calculator );
+    void addCalculator( CCalculatorBase *calculator );
 
     void loadFormulasForPage( CSCUBACalculatorPage *page );
 
@@ -66,8 +66,8 @@ private:
 private:
     void setFormulaForPage( CSCUBACalculatorPage *page, const QString &formula, bool finished );
 
-    CSCUBACalculator *getCalculator( QTreeWidgetItem *leaf ) const;
-    CSCUBACalculator *getCalculator( QWidget *page ) const;
+    CCalculatorBase *getCalculator( QTreeWidgetItem *leaf ) const;
+    CCalculatorBase *getCalculator( QWidget *page ) const;
     QTreeWidgetItem *getItemForPage( QWidget *page ) const;
 
     QTreeWidgetItem *findItem( QTreeWidgetItem *parent, const QStringList &path, bool createIfNecessary );
@@ -75,7 +75,7 @@ private:
 
     QWidget *fBlankPage{ nullptr };
 
-    std::unordered_map< QTreeWidgetItem *, CSCUBACalculator * > fCalculators;
+    std::unordered_map< QTreeWidgetItem *, CCalculatorBase * > fCalculators;
     std::unordered_map< QWidget *, QTreeWidgetItem * > fPageToItem;
     std::unordered_map< QWidget *, std::optional< QString > > fPageToFormulasMap;
 

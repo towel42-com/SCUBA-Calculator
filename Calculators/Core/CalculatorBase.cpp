@@ -1,5 +1,5 @@
-#include "SCUBACalculator.h"
-#include "SCUBACalculatorPage.h"
+#include "CalculatorBase.h"
+#include "CalculatorPage.h"
 #include "VariableInfo.h"
 #include "Utilities.h"
 #include "Formula.h"
@@ -15,33 +15,33 @@
 
 Q_LOGGING_CATEGORY( ScubaCalculator, "Towel42.ScubaCalculator", QtMsgType::QtInfoMsg )
 
-CSCUBACalculator::CSCUBACalculator( QObject *parent ) :
+CCalculatorBase::CCalculatorBase( QObject *parent ) :
     QObject( parent )
 {
 }
 
-CSCUBACalculator::~CSCUBACalculator()
+CCalculatorBase::~CCalculatorBase()
 {
 }
 
-QString CSCUBACalculator::myCalculatorName() const
-{
-    Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for non reversible calculators." );
-    return {};
-}
-
-QString CSCUBACalculator::myReversedCalculatorName() const
+QString CCalculatorBase::myCalculatorName() const
 {
     Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for non reversible calculators." );
     return {};
 }
 
-std::optional< TFormulaList > CSCUBACalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+QString CCalculatorBase::myReversedCalculatorName() const
+{
+    Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for non reversible calculators." );
+    return {};
+}
+
+std::optional< TFormulaList > CCalculatorBase::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return {};
 }
 
-TFormulaList CSCUBACalculator::getBaseFormulas() const
+TFormulaList CCalculatorBase::getBaseFormulas() const
 {
     auto retVal = ( isReversed() ) ? myReversedBaseFormulas( imperial(), seaWater() ) : myBaseFormulas( imperial(), seaWater() );
     if ( retVal.has_value() )
@@ -49,13 +49,13 @@ TFormulaList CSCUBACalculator::getBaseFormulas() const
     return {};
 }
 
-QWidget *CSCUBACalculator::getPage() const
+QWidget *CCalculatorBase::getPage() const
 {
     Q_ASSERT( fPage );
     return fPage;
 }
 
-QWidget *CSCUBACalculator::getPage( QWidget *parent )
+QWidget *CCalculatorBase::getPage( QWidget *parent )
 {
     if ( !fPage )
     {
@@ -64,14 +64,14 @@ QWidget *CSCUBACalculator::getPage( QWidget *parent )
     return fPage;
 }
 
-void CSCUBACalculator::init( bool imperial, bool seaWater )
+void CCalculatorBase::init( bool imperial, bool seaWater )
 {
     setObjectName( calculatorName() );
     if ( fPage )
         fPage->init( imperial, seaWater );
 }
 
-void CSCUBACalculator::setIsReversed( CSCUBACalculator *nonReversedCalc, bool isReversed )
+void CCalculatorBase::setIsReversed( CCalculatorBase *nonReversedCalc, bool isReversed )
 {
     fReversed = { nonReversedCalc, isReversed };
     if ( fReversed.second )
@@ -87,7 +87,7 @@ void CSCUBACalculator::setIsReversed( CSCUBACalculator *nonReversedCalc, bool is
     }
 }
 
-QStringList CSCUBACalculator::calculatorPath() const
+QStringList CCalculatorBase::calculatorPath() const
 {
     QStringList retVal;
     if ( isReversed() )
@@ -102,7 +102,7 @@ QStringList CSCUBACalculator::calculatorPath() const
     return retVal;
 }
 
-QString CSCUBACalculator::calculatorName() const
+QString CCalculatorBase::calculatorName() const
 {
     auto labels = fromToLabels();
     if ( isReversible() && labels.has_value() )
@@ -116,44 +116,44 @@ QString CSCUBACalculator::calculatorName() const
     return ( isReversed() ) ? myReversedCalculatorName() : myCalculatorName();
 }
 
-void CSCUBACalculator::setImperial( bool imperial )
+void CCalculatorBase::setImperial( bool imperial )
 {
     if ( fPage )
         fPage->setImperial( imperial );
 }
 
-void CSCUBACalculator::setSeaWater( bool seaWater )
+void CCalculatorBase::setSeaWater( bool seaWater )
 {
     if ( fPage )
         fPage->setSeaWater( seaWater );
 }
 
-void CSCUBACalculator::setUpdateFormulaFunc( const TUpdateFormulaFunc &func )
+void CCalculatorBase::setUpdateFormulaFunc( const TUpdateFormulaFunc &func )
 {
     fUpdateFormulaFunc = func;
 }
 
-bool CSCUBACalculator::imperial() const
+bool CCalculatorBase::imperial() const
 {
     if ( fPage )
         return fPage->imperial();
     return false;
 }
 
-bool CSCUBACalculator::seaWater() const
+bool CCalculatorBase::seaWater() const
 {
     if ( fPage )
         return fPage->seaWater();
     return false;
 }
 
-void CSCUBACalculator::notifyOfNewFormula( const QString &formula, bool finished ) const
+void CCalculatorBase::notifyOfNewFormula( const QString &formula, bool finished ) const
 {
     if ( fUpdateFormulaFunc )
         fUpdateFormulaFunc( dynamic_cast< CSCUBACalculatorPage * >( getPage() ), formula, finished );
 }
 
-TVariableInfoList &CSCUBACalculator::getVariables()
+TVariableInfoList &CCalculatorBase::getVariables()
 {
     if ( fVariables.empty() )
     {
@@ -162,12 +162,12 @@ TVariableInfoList &CSCUBACalculator::getVariables()
     return fVariables;
 }
 
-const TVariableInfoList &CSCUBACalculator::getVariables() const
+const TVariableInfoList &CCalculatorBase::getVariables() const
 {
     return fVariables;
 }
 
-TVariableInfoList &CSCUBACalculator::getRHSVariables()
+TVariableInfoList &CCalculatorBase::getRHSVariables()
 {
     if ( fVariables.empty() )
     {
@@ -176,12 +176,12 @@ TVariableInfoList &CSCUBACalculator::getRHSVariables()
     return fRHSVariables;
 }
 
-const TVariableInfoList &CSCUBACalculator::getRHSVariables() const
+const TVariableInfoList &CCalculatorBase::getRHSVariables() const
 {
     return fRHSVariables;
 }
 
-TVariableInfoList &CSCUBACalculator::getLHSVariables()
+TVariableInfoList &CCalculatorBase::getLHSVariables()
 {
     if ( fVariables.empty() )
     {
@@ -190,12 +190,12 @@ TVariableInfoList &CSCUBACalculator::getLHSVariables()
     return fLHSVariables;
 }
 
-const TVariableInfoList &CSCUBACalculator::getLHSVariables() const
+const TVariableInfoList &CCalculatorBase::getLHSVariables() const
 {
     return fLHSVariables;
 }
 
-void CSCUBACalculator::initVariables()
+void CCalculatorBase::initVariables()
 {
     fLHSVariables.clear();
     fRHSVariables.clear();
@@ -220,7 +220,7 @@ void CSCUBACalculator::initVariables()
     Q_ASSERT( ( fLHSVariables.empty() && fRHSVariables.empty() ) || ( !fLHSVariables.empty() && !fRHSVariables.empty() ) );
 }
 
-void CSCUBACalculator::setupDependencies()
+void CCalculatorBase::setupDependencies()
 {
     for ( auto &&ii = fVariables.begin(); ii != fVariables.end(); ++ii )
     {
@@ -241,12 +241,12 @@ void CSCUBACalculator::setupDependencies()
     }
 }
 
-void CSCUBACalculator::setDependencies( const QString &varName, const QString &dep )
+void CCalculatorBase::setDependencies( const QString &varName, const QString &dep )
 {
     setDependencies( varName, QStringList() << dep );
 }
 
-void CSCUBACalculator::setDependencies( const QString &varName, const QStringList &deps )
+void CCalculatorBase::setDependencies( const QString &varName, const QStringList &deps )
 {
     auto var = getVariable( varName );
     Q_ASSERT( var );
@@ -264,11 +264,11 @@ void CSCUBACalculator::setDependencies( const QString &varName, const QStringLis
     var->setDependencies( depVars );
 }
 
-void CSCUBACalculator::setupCustomDependencies()
+void CCalculatorBase::setupCustomDependencies()
 {
 }
 
-void CSCUBACalculator::resetVariables()
+void CCalculatorBase::resetVariables()
 {
     for ( auto &&ii = fVariables.begin(); ii != fVariables.end(); ++ii )
     {
@@ -280,7 +280,7 @@ void CSCUBACalculator::resetVariables()
     notifyOfNewFormula( formula, true );
 }
 
-TVariableInfoList CSCUBACalculator::unsetVariables() const
+TVariableInfoList CCalculatorBase::unsetVariables() const
 {
     TVariableInfoList retVal;
     for ( auto &&ii : fVariables )
@@ -293,7 +293,7 @@ TVariableInfoList CSCUBACalculator::unsetVariables() const
     return retVal;
 }
 
-std::size_t CSCUBACalculator::numUnsetVariables( QWidget *triggerWidget ) const
+std::size_t CCalculatorBase::numUnsetVariables( QWidget *triggerWidget ) const
 {
     std::size_t retVal = 0;
     for ( auto &&ii : fVariables )
@@ -308,7 +308,7 @@ std::size_t CSCUBACalculator::numUnsetVariables( QWidget *triggerWidget ) const
     return retVal;
 }
 
-bool CSCUBACalculator::allVariablesUnset() const
+bool CCalculatorBase::allVariablesUnset() const
 {
     for ( auto &&ii : fVariables )
     {
@@ -322,7 +322,7 @@ bool CSCUBACalculator::allVariablesUnset() const
     return true;
 }
 
-TConstVariableInfo CSCUBACalculator::getVariable( const QString &varName ) const
+TConstVariableInfo CCalculatorBase::getVariable( const QString &varName ) const
 {
     auto pos = fVariableMap.find( varName );
     if ( pos == fVariableMap.end() )
@@ -330,30 +330,30 @@ TConstVariableInfo CSCUBACalculator::getVariable( const QString &varName ) const
     return ( *pos ).second;
 }
 
-TVariableInfo CSCUBACalculator::getVariable( const QString &varName )
+TVariableInfo CCalculatorBase::getVariable( const QString &varName )
 {
-    auto retVal = const_cast< const CSCUBACalculator * >( this )->getVariable( varName );
+    auto retVal = const_cast< const CCalculatorBase * >( this )->getVariable( varName );
     if ( !retVal )
         return {};
     return std::const_pointer_cast< CVariableInfo >( retVal );
 }
 
-TVariableInfoList CSCUBACalculator::getMyVariables() const
+TVariableInfoList CCalculatorBase::getMyVariables() const
 {
     bool preReversed = false;
     return getMyVariables( &preReversed );
 }
 
-TVariableInfo CSCUBACalculator::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
+TVariableInfo CCalculatorBase::determineVariableToUnset( EVariableLoc /*updateFromSide*/, QWidget * /*triggerWidget*/, bool /*preDefaultBehavior*/ )
 {
     return {};
 }
 
-void CSCUBACalculator::initResources() const
+void CCalculatorBase::initResources() const
 {
 }
 
-TVariableInfo CSCUBACalculator::getLastVariable( EVariableLoc side ) const
+TVariableInfo CCalculatorBase::getLastVariable( EVariableLoc side ) const
 {
     auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
 
@@ -365,7 +365,7 @@ TVariableInfo CSCUBACalculator::getLastVariable( EVariableLoc side ) const
     return {};
 }
 
-TVariableInfo CSCUBACalculator::getFirstVariable( EVariableLoc side ) const
+TVariableInfo CCalculatorBase::getFirstVariable( EVariableLoc side ) const
 {
     auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
     for ( auto &&ii : variables )
@@ -376,7 +376,7 @@ TVariableInfo CSCUBACalculator::getFirstVariable( EVariableLoc side ) const
     return {};
 }
 
-std::size_t CSCUBACalculator::numVariables( EVariableLoc side ) const
+std::size_t CCalculatorBase::numVariables( EVariableLoc side ) const
 {
     auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
     std::size_t retVal = 0;
@@ -388,7 +388,7 @@ std::size_t CSCUBACalculator::numVariables( EVariableLoc side ) const
     return retVal;
 }
 
-void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget )
+void CCalculatorBase::determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
     if ( numUnsetVariables( triggerWidget ) != 0 )
         return;
@@ -437,7 +437,7 @@ void CSCUBACalculator::determineVariableToUnset( EVariableLoc updateFromSide, QW
     }
 }
 
-void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWidget )
+void CCalculatorBase::compute( EVariableLoc updateFromSide, QWidget *triggerWidget )
 {
     auto &&variables = getVariables();
     bool imperial = this->imperial();
@@ -462,7 +462,7 @@ void CSCUBACalculator::compute( EVariableLoc updateFromSide, QWidget *triggerWid
     updateFields( triggerWidget );
 }
 
-std::optional< TFormulaList > CSCUBACalculator::getCurrentFormulas() const
+std::optional< TFormulaList > CCalculatorBase::getCurrentFormulas() const
 {
     auto baseFormulas = getBaseFormulas();
 
@@ -498,18 +498,18 @@ std::optional< TFormulaList > CSCUBACalculator::getCurrentFormulas() const
     return retVal;
 }
 
-void CSCUBACalculator::computeValues()
+void CCalculatorBase::computeValues()
 {
     computeVariableValues();
 }
 
-bool CSCUBACalculator::valuesSetProperly() const
+bool CCalculatorBase::valuesSetProperly() const
 {
     auto numUnset = numUnsetVariables();
     return ( numUnset == numAllowedUnset() );
 }
 
-TVariableInfoList CSCUBACalculator::getUnsetVariables() const
+TVariableInfoList CCalculatorBase::getUnsetVariables() const
 {
     TVariableInfoList retVal;
     for ( auto &&ii : fVariables )
@@ -524,7 +524,7 @@ TVariableInfoList CSCUBACalculator::getUnsetVariables() const
     return retVal;
 }
 
-TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
+TVariableInfo CCalculatorBase::getFirstUnsetVariable() const
 {
     auto unset = getUnsetVariables();
     if ( unset.empty() )
@@ -532,7 +532,7 @@ TVariableInfo CSCUBACalculator::getFirstUnsetVariable() const
     return unset.front();
 }
 
-void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
+void CCalculatorBase::updateFields( QWidget *triggerWidget ) const
 {
     auto &&variables = getVariables();
 
@@ -543,7 +543,7 @@ void CSCUBACalculator::updateFields( QWidget *triggerWidget ) const
     }
 }
 
-TFormulaList CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, const TFormula &formula )
+TFormulaList CCalculatorBase::finalizeFormula( bool imperial, bool seaWater, const TFormula &formula )
 {
     if ( !formula )
         return { formula };
@@ -570,7 +570,7 @@ TFormulaList CSCUBACalculator::finalizeFormula( bool imperial, bool seaWater, co
     return retVal;
 }
 
-QString CSCUBACalculator::finalizeFormulas( bool imperial, bool seaWater, const TFormulaList &formulas )
+QString CCalculatorBase::finalizeFormulas( bool imperial, bool seaWater, const TFormulaList &formulas )
 {
     QString retVal;
 
@@ -590,7 +590,7 @@ QString CSCUBACalculator::finalizeFormulas( bool imperial, bool seaWater, const 
     return retVal;
 }
 
-QString CSCUBACalculator::postProcessFormula( const QString &formula ) const
+QString CCalculatorBase::postProcessFormula( const QString &formula ) const
 {
     auto retVal = formula;
 
@@ -609,7 +609,7 @@ QString CSCUBACalculator::postProcessFormula( const QString &formula ) const
     return retVal;
 }
 
-TFormula CSCUBACalculator::applyVariables( bool imperial, bool seaWater, const TFormula &formula, EFormulaType formulaType ) const
+TFormula CCalculatorBase::applyVariables( bool imperial, bool seaWater, const TFormula &formula, EFormulaType formulaType ) const
 {
     return formula->applyVariables( imperial, seaWater, getVariables(), formulaType );
 }
