@@ -60,11 +60,11 @@ function(AddToCalculatorList calculator groupName)
     )
     
     file( GLOB 
-        _JSON_FILES  
+        _FORMULA_JSON_FILES  
         ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json
     )
 
-    foreach( jsonFile ${_JSON_FILES} )
+    foreach( jsonFile ${_FORMULA_JSON_FILES} )
         string(REGEX MATCH "formulas([^./]*).json" MATCHIT "${jsonFile}")
         
         if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
@@ -79,15 +79,36 @@ function(AddToCalculatorList calculator groupName)
                 QT_RESOURCE_ALIAS ${_ALIAS}
         )
     endforeach()
+
+    file( GLOB 
+        _CALC_JSON_FILE
+        ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json
+    )
     
-#    qt6_add_resources(${PROJECT_NAME} "calculator"
-#        PREFIX
-#            "/formulas"
-#        FILES
-#            ${_JSON_FILES}
-#        OUTPUT_TARGETS 
-#            QRC_OTHER_TARGETS    
-#    )
+    foreach( jsonFile ${_CALC_JSON_FILE} )
+        string(REGEX MATCH "calculator([^./]*).json" MATCHIT "${jsonFile}")
+        
+        if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
+            SET( _FN_SUFFIX ${CMAKE_MATCH_1} )
+        endif()
+        
+        SET( _ALIAS ./${PROJECT_NAME}${_FN_SUFFIX}.json )
+        #MESSAGE( STATUS "File: ${jsonFile} Alias: ${_ALIAS}" )
+        set_source_files_properties( 
+            ${jsonFile}
+            PROPERTIES
+                QT_RESOURCE_ALIAS ${_ALIAS}
+        )
+    endforeach()
+    qt6_add_resources(${PROJECT_NAME} "calculator"
+        PREFIX
+            "/formulas"
+        FILES
+            ${_FORMULA_JSON_FILES}
+            ${_CALC_JSON_FILE}
+        OUTPUT_TARGETS 
+            QRC_OTHER_TARGETS    
+    )
 endfunction()
 
 add_subdirectory( Core )
