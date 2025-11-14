@@ -63,18 +63,18 @@ TVariableInfoList CCalculator::getMyVariables( bool *preReversed ) const
 {
     *preReversed = true;
     auto retVal = TVariableInfoList( {
-        std::make_shared< CVariableInfo >( "p1", tr( "Gas Consumption 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "m1", tr( "Time 1" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "p1", tr( "Gas Consumption 1" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "m1", tr( "Time 1" ), EUnit::eTime, EVariableLoc::eRHS ),   //
     } );
     if ( isReversed() )
     {
-        retVal.push_back( std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ) );
-        retVal.push_back( std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ) );
+        retVal.push_back( std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EUnit::eTime, EVariableLoc::eRHS ) );
+        retVal.push_back( std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EUnit::ePressure, EVariableLoc::eLHS ) );
     }
     else
     {
-        retVal.push_back( std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eLHS ) );
-        retVal.push_back( std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ) );
+        retVal.push_back( std::make_shared< CVariableInfo >( "m2", tr( "Time 2" ), EUnit::eTime, EVariableLoc::eLHS ) );
+        retVal.push_back( std::make_shared< CVariableInfo >( "p2", tr( "Gas Consumption 2" ), EUnit::ePressure, EVariableLoc::eRHS ) );
     }
     return retVal;
 }

@@ -52,7 +52,7 @@ TFormula CFormula::applyVariables( bool imperial, bool seaWater, const TVariable
         finalizedFormula = curr->updateFormula( imperial, seaWater, finalizedFormula, formulaType );
     }
     NUtilities::NConstants::foreachConstantType(   //
-        [ &, this ]( EVariableType currConst )   //
+        [ &, this ]( EConstantType currConst )   //
         {   //
             finalizedFormula = CVariableInfo::updateFormula( imperial, seaWater, finalizedFormula, currConst, ( formulaType == EFormulaType::eBaseFormula ) );
             return true;

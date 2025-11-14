@@ -45,10 +45,10 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "tankVolume", tr( "Tank Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "ratedTankPressure", tr( "Tank Pressure Rating" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "currTankPressure", tr( "Current Tank Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "gasVolume", tr( "Gas Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "tankVolume", tr( "Tank Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "ratedTankPressure", tr( "Tank Pressure Rating" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "currTankPressure", tr( "Current Tank Pressure" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "gasVolume", tr( "Gas Volume" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
         } );
     return retVal;
 }

@@ -49,9 +49,9 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "mod", tr( "Maximum Operating Depth (MOD)" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
             std::make_shared< CVariableInfo >( "maxPO2", tr( "Maximum PO2" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { 0.21, 2.0, 1.4, 0.1 } ) ) ),   //
-            std::make_shared< CVariableInfo >( "fo2", tr( "FO2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "fo2", tr( "FO2" ), EUnit::ePercent, EVariableLoc::eRHS ),   //
         } );
     return retVal;
 }
@@ -73,7 +73,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "mod" ), QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "mod" ), QString( R"__([(\frac{<maxPO2>}{<fo2>})-1] \times %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -84,11 +84,11 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     }
     else if ( unsetVar == "maxPO2" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<fo2> \times [(\frac{<mod>}{%1})+1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<fo2> \times [(\frac{<mod>}{%1})+1])__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ) ) } );
     }
     else if ( unsetVar == "fo2" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{%1})+1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{<maxPO2>}{(\frac{<mod>}{%1})+1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ) ) } );
     }
 
     return {};

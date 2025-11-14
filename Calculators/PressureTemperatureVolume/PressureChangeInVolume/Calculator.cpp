@@ -58,10 +58,10 @@ TVariableInfoList CCalculator::getMyVariables( bool *preReversed ) const
     *preReversed = true;
 
     auto retVal = TVariableInfoList( {
-        std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-        std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS )   //
+        std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+        std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EUnit::eVolume, EVariableLoc::eRHS )   //
     } );
 
     if ( isReversed() )

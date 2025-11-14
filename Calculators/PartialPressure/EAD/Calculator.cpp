@@ -47,15 +47,15 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "ead", tr( "Equivalent Air Depth EAD" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "fn2", tr( "FN2" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "ead", tr( "Equivalent Air Depth EAD" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "fn2", tr( "FN2" ), EUnit::ePercent, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
         };
 }
 
 std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "ead" ), QString( R"__([(\frac{<fn2>}{%2}) \times (<depth> + %1)] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "ead" ), QString( R"__([(\frac{<fn2>}{%2}) \times (<depth> + %1)] - %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -66,11 +66,11 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     }
     else if ( unsetVar == "fn2" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{[%2 \times (<ead>+<%1>)]}{(<depth>+%1)})__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{[%2 \times (<ead>+<%1>)]}{(<depth>+%1)})__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) } );
     }
     else if ( unsetVar == "depth" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([\frac{<ead>+%1}{\frac{<fn2>}{%2}}]-%1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([\frac{<ead>+%1}{\frac{<fn2>}{%2}}]-%1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) } );
     }
     return {};
 }

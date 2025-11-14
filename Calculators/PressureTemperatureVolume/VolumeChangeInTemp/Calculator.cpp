@@ -58,10 +58,10 @@ TVariableInfoList CCalculator::getMyVariables( bool *preReversed ) const
     *preReversed = true;
 
     auto retVal = TVariableInfoList( {
-        std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
-        std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+        std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
     } );
 
     if ( isReversed() )
@@ -101,7 +101,7 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bo
 
 std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "t2" ), QString( R"__([(<t1> + %1) \times \frac{<v2>}{<v1>}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "t2" ), QString( R"__([(<t1> + %1) \times \frac{<v2>}{<v1>}] - %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -114,12 +114,12 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     else if ( unsetVar == "v1" )
     {
         // V1 = V2 * ( t1/t2 );
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "t1" )
     {
         // T1 = t2*(V1/v2)
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([(<t2> + %1) \times \frac{<v1>}{<v2>}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([(<t2> + %1) \times \frac{<v1>}{<v2>}] - %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "t2" )
     {

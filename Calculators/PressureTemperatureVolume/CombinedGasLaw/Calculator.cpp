@@ -47,12 +47,12 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EUnit::eAbsZeroTemperature, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
         };
 }
 
@@ -92,19 +92,19 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
 {
     if ( unsetVar == "p1" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>} \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p2> \times \frac{<v2>}{<v1>} \times \frac{<t1> + %1}{<t2> + %1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "p2" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p1> \times \frac{<v1>}{<v2>} \times \frac{<t2> + %1}{<t1> + %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<p1> \times \frac{<v1>}{<v2>} \times \frac{<t2> + %1}{<t1> + %1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "v1" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1} \times \frac{<p2>}{<p1>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v2> \times \frac{<t1> + %1}{<t2> + %1} \times \frac{<p2>}{<p1>})__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "v2" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v1> \times \frac{<t2> + %1}{<t1> + %1} \times \frac{<p1>}{<p2>})__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<v1> \times \frac{<t2> + %1}{<t1> + %1} \times \frac{<p1>}{<p2>})__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ) ) } );
     }
     else if ( unsetVar == "t1" )
     {

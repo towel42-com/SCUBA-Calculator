@@ -47,15 +47,15 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "buoyancy", tr( "Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "weightOfObject", tr( "Weight" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "volumeDisplaced", tr( "Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "buoyancy", tr( "Buoyancy" ), EUnit::eWeight, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "weightOfObject", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "volumeDisplaced", tr( "Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
         };
 }
 
 std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "buoyancy" ), QString( R"__(<weightOfObject> - [<volumeDisplaced> \times %1])__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "buoyancy" ), QString( R"__(<weightOfObject> - [<volumeDisplaced> \times %1])__" ).arg( NUtilities::fieldNameForType( EConstantType::eWeightPerVolumeOfWaterConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -66,11 +66,11 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     }
     else if ( unsetVar == "weightOfObject" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<buoyancy> + <volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<buoyancy> + <volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eWeightPerVolumeOfWaterConst ) ) ) } );
     }
     else if ( unsetVar == "volumeDisplaced" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__((<weightOfObject> - <buoyancy>) \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__((<weightOfObject> - <buoyancy>) \times %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eVolumePerWeightOfWaterConst ) ) ) } );
     }
     return {};
 }

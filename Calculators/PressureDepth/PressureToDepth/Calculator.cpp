@@ -48,8 +48,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "depth", tr( "depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "pressure", tr( "Pressure" ), EVariableType::eVariable, EUnit::eAtmospheres, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "depth" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "pressure", tr( "Pressure" ), EUnit::eAtmospheres, EVariableLoc::eRHS ),   //
         };
 }
 

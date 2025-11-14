@@ -108,9 +108,9 @@ namespace NUtilities
         CALCULATORS_EXPORT QString cubicFeetPerLiter( bool useAbbreviations, bool tex, bool description );
         CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex, bool description );
 
-        void foreachConstantType( const std::function< bool( EVariableType ) > &onConstType );   // function returns true if the loop should continue
-        QString constantString( bool imperial, bool seaWater, EVariableType constantType, bool description );
-        TOptionalDouble constantValue( bool imperial, bool seaWater, EVariableType constantType );
+        void foreachConstantType( const std::function< bool( EConstantType ) > &onConstType );   // function returns true if the loop should continue
+        QString constantString( bool imperial, bool seaWater, EConstantType constantType, bool description );
+        TOptionalDouble constantValue( bool imperial, bool seaWater, EConstantType constantType );
     }
 
     namespace NConversions
@@ -189,10 +189,9 @@ namespace NUtilities
 
     CALCULATORS_EXPORT std::optional< QString > joinFormulas( bool imperial, bool seaWater, const TFormulaList &formulas );
     CALCULATORS_EXPORT QString equation( bool imperial, bool seaWater, const TFormula &formula );
-    CALCULATORS_EXPORT QString descForType( EVariableType type );
-    CALCULATORS_EXPORT QString fieldNameForType( EVariableType type );
-    CALCULATORS_EXPORT bool isConstantVariable( EVariableType type );
-    CALCULATORS_EXPORT std::optional< EVariableType > typeForFieldName( const QString &fieldName );
+    CALCULATORS_EXPORT QString descForType( EConstantType type );
+    CALCULATORS_EXPORT QString fieldNameForType( EConstantType type );
+    CALCULATORS_EXPORT std::optional< EConstantType > typeForFieldName( const QString &fieldName );
     CALCULATORS_EXPORT bool isConstantVariable( const QString &fieldName );
 
     CALCULATORS_EXPORT std::size_t numEmpty( const TOptionalDoubleVector &values );
@@ -201,8 +200,8 @@ namespace NUtilities
     CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator );
     CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const QString &denominator );
     CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const QString &numerator, const TConstVariableInfo &denominator );
-    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EVariableType denominator );
-    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, EVariableType numerator, const TConstVariableInfo &denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, EConstantType denominator );
+    CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, EConstantType numerator, const TConstVariableInfo &denominator );
     CALCULATORS_EXPORT TFormula ratioFormula( const TConstVariableInfo &returnVariable, const TConstVariableInfo &numerator, const TConstVariableInfo &denominator );
 
     CALCULATORS_EXPORT QString ratio( const QString &numerator, const QString &denominator, bool tex );

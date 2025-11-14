@@ -224,15 +224,15 @@ void CCalculatorBase::setupDependencies()
 {
     for ( auto &&ii = fVariables.begin(); ii != fVariables.end(); ++ii )
     {
-        if ( ( *ii )->isConstant() )
-            continue;
+        //if ( ( *ii )->isConstant() )
+        //    continue;
 
         TVariableInfoList dependencies = fVariables;
         dependencies.remove_if(   //
             [ ii ]( const TVariableInfo &curr )   //
             {
-                if ( curr->isConstant() )
-                    return true;
+                //if ( curr->isConstant() )
+                //    return true;
                 if ( curr == *ii )
                     return true;
                 return false;

@@ -490,158 +490,150 @@ namespace NUtilities
                 4 );
         }
 
-        QString constantString( bool imperial, bool seaWater, EVariableType constantType, bool description )
+        QString constantString( bool imperial, bool seaWater, EConstantType constantType, bool description )
         {
             switch ( constantType )
             {
-                case EVariableType::eIntermediate:
-                case EVariableType::eVariable:
-                    Q_ASSERT( isConstantVariable( constantType ) );
-                    break;
-                case EVariableType::ePressurePerDegreeConst:
+                case EConstantType::ePressurePerDegreeConst:
                     return pressureChangePerDegreeChange( imperial, true, true, description );
-                case EVariableType::eWeightPerVolumeOfWaterConst:
+                case EConstantType::eWeightPerVolumeOfWaterConst:
                     return weightPerVolumeOfWater( imperial, seaWater, true, true, description );
-                case EVariableType::eVolumePerWeightOfWaterConst:
+                case EConstantType::eVolumePerWeightOfWaterConst:
                     return volumePerWeightOfWater( imperial, seaWater, true, true, description );
-                case EVariableType::eIdealGasConst:
+                case EConstantType::eIdealGasConst:
                     return idealGasConstant( imperial, true, true, description );
-                case EVariableType::eFN2AtSurfaceConst:
+                case EConstantType::eFN2AtSurfaceConst:
                     return percentN2AtSurface( imperial, true, true, description );
-                case EVariableType::eFO2AtSurfaceConst:
+                case EConstantType::eFO2AtSurfaceConst:
                     return percentO2AtSurface( imperial, true, true, description );
-                case EVariableType::eDepthToSingleATMConst:
+                case EConstantType::eDepthToSingleATMConst:
                     return singleATMPerDepth( imperial, seaWater, true, true, description );
-                case EVariableType::eFeetToMetersConst:
+                case EConstantType::eFeetToMetersConst:
                     return metersPerFoot( true, true, description );
-                case EVariableType::eMetersToFeetConst:
+                case EConstantType::eMetersToFeetConst:
                     return feetPerMeter( true, true, description );
-                case EVariableType::eLbsPerKgsConst:
+                case EConstantType::eLbsPerKgsConst:
                     return lbsPerKGs( true, true, description );
-                case EVariableType::eKgsPerLbsConst:
+                case EConstantType::eKgsPerLbsConst:
                     return kgsPerLbs( true, true, description );
-                case EVariableType::eFreshWaterToSeaWaterConst:
+                case EConstantType::eFreshWaterToSeaWaterConst:
                     return freshWaterToSeaWater( imperial, true, true, description );
-                case EVariableType::eSeaWaterToFreshWaterConst:
+                case EConstantType::eSeaWaterToFreshWaterConst:
                     return seaWaterToFreshWater( imperial, true, true, description );
-                case EVariableType::ePSIToBarConst:
+                case EConstantType::ePSIToBarConst:
                     return barPerPSI( true, true, description );
-                case EVariableType::eBarToPSIConst:
+                case EConstantType::eBarToPSIConst:
                     return psiPerBAR( true, true, description );
-                case EVariableType::eAbsZeroOffsetConst:
+                case EConstantType::eAbsZeroOffsetConst:
                     return absZeroOffset( imperial, true, true, description );
-                case EVariableType::ePressureAtSurfaceConst:
+                case EConstantType::ePressureAtSurfaceConst:
                     return pressureAtSurface( imperial, true, true, description );
-                case EVariableType::ePressureLossPerAltitudeGainConst:
+                case EConstantType::ePressureLossPerAltitudeGainConst:
                     return pressureLossPerAltitudeGain( imperial, true, true, description );
-                case EVariableType::eSafetyStopDepthConst:
+                case EConstantType::eSafetyStopDepthConst:
                     return safetyStopDepth( imperial, seaWater, true, true, description );
-                case EVariableType::eWaterWeightAdjustmentConst:
+                case EConstantType::eWaterWeightAdjustmentConst:
                     return waterWeightAdjustment( imperial, seaWater, true, true, description );
-                case EVariableType::eBaseMETofSCUBAConst:
+                case EConstantType::eBaseMETofSCUBAConst:
                     return scubaMET( true, true, description );
-                case EVariableType::eFillRateO2Const:
+                case EConstantType::eFillRateO2Const:
                     return fillRateO2( imperial, true, true, description );
-                case EVariableType::eFillRateAirConst:
+                case EConstantType::eFillRateAirConst:
                     return fillRateAir( imperial, true, true, description );
-                case EVariableType::eCubicFeetToLitersConst:
+                case EConstantType::eCubicFeetToLitersConst:
                     return litersPerCubicFoot( true, true, description );
-                case EVariableType::eLitersToCubicFeetConst:
+                case EConstantType::eLitersToCubicFeetConst:
                     return cubicFeetPerLiter( true, true, description );
             }
             return {};
         }
 
-        TOptionalDouble constantValue( bool imperial, bool seaWater, EVariableType constantType )
+        TOptionalDouble constantValue( bool imperial, bool seaWater, EConstantType constantType )
         {
             switch ( constantType )
             {
-                case EVariableType::eIntermediate:
-                case EVariableType::eVariable:
-                    Q_ASSERT( isConstantVariable( constantType ) );
-                    break;
-                case EVariableType::ePressurePerDegreeConst:
+                case EConstantType::ePressurePerDegreeConst:
                     return pressureChangePerDegreeChange( imperial );
-                case EVariableType::eWeightPerVolumeOfWaterConst:
+                case EConstantType::eWeightPerVolumeOfWaterConst:
                     return weightPerVolumeOfWater( imperial, seaWater );
-                case EVariableType::eVolumePerWeightOfWaterConst:
+                case EConstantType::eVolumePerWeightOfWaterConst:
                     return volumePerWeightOfWater( imperial, seaWater );
-                case EVariableType::eIdealGasConst:
+                case EConstantType::eIdealGasConst:
                     return idealGasConstant( imperial );
-                case EVariableType::eFN2AtSurfaceConst:
+                case EConstantType::eFN2AtSurfaceConst:
                     return percentN2AtSurface();
-                case EVariableType::eFO2AtSurfaceConst:
+                case EConstantType::eFO2AtSurfaceConst:
                     return percentO2AtSurface();
-                case EVariableType::eDepthToSingleATMConst:
+                case EConstantType::eDepthToSingleATMConst:
                     return singleATMPerDepth( imperial, seaWater );
-                case EVariableType::eFeetToMetersConst:
+                case EConstantType::eFeetToMetersConst:
                     return metersPerFoot();
-                case EVariableType::eMetersToFeetConst:
+                case EConstantType::eMetersToFeetConst:
                     return feetPerMeters();
-                case EVariableType::eLbsPerKgsConst:
+                case EConstantType::eLbsPerKgsConst:
                     return lbsPerKGs();
-                case EVariableType::eKgsPerLbsConst:
+                case EConstantType::eKgsPerLbsConst:
                     return kgsPerLbs();
-                case EVariableType::eFreshWaterToSeaWaterConst:
+                case EConstantType::eFreshWaterToSeaWaterConst:
                     return freshWaterToSeaWater();
-                case EVariableType::eSeaWaterToFreshWaterConst:
+                case EConstantType::eSeaWaterToFreshWaterConst:
                     return seaWaterToFreshWater();
-                case EVariableType::ePSIToBarConst:
+                case EConstantType::ePSIToBarConst:
                     return barPerPSI();
-                case EVariableType::eBarToPSIConst:
+                case EConstantType::eBarToPSIConst:
                     return psiPerBAR();
-                case EVariableType::eAbsZeroOffsetConst:
+                case EConstantType::eAbsZeroOffsetConst:
                     return absZeroOffset( imperial );
-                case EVariableType::ePressureAtSurfaceConst:
+                case EConstantType::ePressureAtSurfaceConst:
                     return pressureAtSurface( imperial );
-                case EVariableType::ePressureLossPerAltitudeGainConst:
+                case EConstantType::ePressureLossPerAltitudeGainConst:
                     return pressureLossPerAltitudeGain( imperial );
-                case EVariableType::eSafetyStopDepthConst:
+                case EConstantType::eSafetyStopDepthConst:
                     return safetyStopDepth( imperial, seaWater );
-                case EVariableType::eWaterWeightAdjustmentConst:
+                case EConstantType::eWaterWeightAdjustmentConst:
                     return waterWeightAdjustment( imperial, seaWater );
-                case EVariableType::eBaseMETofSCUBAConst:
+                case EConstantType::eBaseMETofSCUBAConst:
                     return scubaMET();
-                case EVariableType::eFillRateO2Const:
+                case EConstantType::eFillRateO2Const:
                     return fillRateO2( imperial );
-                case EVariableType::eFillRateAirConst:
+                case EConstantType::eFillRateAirConst:
                     return fillRateAir( imperial );
-                case EVariableType::eCubicFeetToLitersConst:
+                case EConstantType::eCubicFeetToLitersConst:
                     return litersPerCubicFoot();
-                case EVariableType::eLitersToCubicFeetConst:
+                case EConstantType::eLitersToCubicFeetConst:
                     return cubicFeetPerLiter();
             }
             return {};
         }
 
-        void foreachConstantType( const std::function< bool( EVariableType ) > &onConstType )
+        void foreachConstantType( const std::function< bool( EConstantType ) > &onConstType )
         {
             for ( auto &&currConstType : { //
-                                           EVariableType::ePressurePerDegreeConst,   //
-                                           EVariableType::eWeightPerVolumeOfWaterConst,   //
-                                           EVariableType::eVolumePerWeightOfWaterConst,   //
-                                           EVariableType::eIdealGasConst,   //
-                                           EVariableType::eFN2AtSurfaceConst,
-                                           EVariableType::eFO2AtSurfaceConst,
-                                           EVariableType::eDepthToSingleATMConst,
-                                           EVariableType::eFeetToMetersConst,
-                                           EVariableType::eMetersToFeetConst,
-                                           EVariableType::eLbsPerKgsConst,
-                                           EVariableType::eKgsPerLbsConst,
-                                           EVariableType::eFreshWaterToSeaWaterConst,
-                                           EVariableType::eSeaWaterToFreshWaterConst,
-                                           EVariableType::ePSIToBarConst,
-                                           EVariableType::eBarToPSIConst,
-                                           EVariableType::eAbsZeroOffsetConst,
-                                           EVariableType::ePressureAtSurfaceConst,
-                                           EVariableType::ePressureLossPerAltitudeGainConst,
-                                           EVariableType::eBaseMETofSCUBAConst,
-                                           EVariableType::eFillRateO2Const,
-                                           EVariableType::eFillRateAirConst,
-                                           EVariableType::eCubicFeetToLitersConst,
-                                           EVariableType::eLitersToCubicFeetConst,
-                                           EVariableType::eSafetyStopDepthConst,
-                                           EVariableType::eWaterWeightAdjustmentConst } )
+                                           EConstantType::ePressurePerDegreeConst,   //
+                                           EConstantType::eWeightPerVolumeOfWaterConst,   //
+                                           EConstantType::eVolumePerWeightOfWaterConst,   //
+                                           EConstantType::eIdealGasConst,   //
+                                           EConstantType::eFN2AtSurfaceConst,
+                                           EConstantType::eFO2AtSurfaceConst,
+                                           EConstantType::eDepthToSingleATMConst,
+                                           EConstantType::eFeetToMetersConst,
+                                           EConstantType::eMetersToFeetConst,
+                                           EConstantType::eLbsPerKgsConst,
+                                           EConstantType::eKgsPerLbsConst,
+                                           EConstantType::eFreshWaterToSeaWaterConst,
+                                           EConstantType::eSeaWaterToFreshWaterConst,
+                                           EConstantType::ePSIToBarConst,
+                                           EConstantType::eBarToPSIConst,
+                                           EConstantType::eAbsZeroOffsetConst,
+                                           EConstantType::ePressureAtSurfaceConst,
+                                           EConstantType::ePressureLossPerAltitudeGainConst,
+                                           EConstantType::eBaseMETofSCUBAConst,
+                                           EConstantType::eFillRateO2Const,
+                                           EConstantType::eFillRateAirConst,
+                                           EConstantType::eCubicFeetToLitersConst,
+                                           EConstantType::eLitersToCubicFeetConst,
+                                           EConstantType::eSafetyStopDepthConst,
+                                           EConstantType::eWaterWeightAdjustmentConst } )
             {
                 auto cont = onConstType( currConstType );
                 if ( !cont )
@@ -650,12 +642,12 @@ namespace NUtilities
         }
     }
 
-    std::optional< EVariableType > typeForFieldName( const QString &fieldName )
+    std::optional< EConstantType > typeForFieldName( const QString &fieldName )
     {
         auto fullFieldName = "<" + fieldName + ">";
-        std::optional< EVariableType > retVal;
+        std::optional< EConstantType > retVal;
         NConstants::foreachConstantType(   //
-            [ fullFieldName, fieldName, &retVal ]( EVariableType constType ) -> bool   //
+            [ fullFieldName, fieldName, &retVal ]( EConstantType constType ) -> bool   //
             {
                 auto currFieldName = NUtilities::fieldNameForType( constType );
                 if ( ( currFieldName == fieldName ) || ( currFieldName == fullFieldName ) )
@@ -673,90 +665,87 @@ namespace NUtilities
         auto varType = typeForFieldName( fieldName );
         if ( !varType.has_value() )
             return false;
-        return isConstantVariable( varType.value() );
+        return true;
     }
 
-    QString fieldNameForType( EVariableType type )
+    QString fieldNameForType( EConstantType type )
     {
         QString retVal;
         switch ( type )
         {
-            case EVariableType::eIntermediate:
-            case EVariableType::eVariable:
-                return {};
-            case EVariableType::ePressurePerDegreeConst:
+            case EConstantType::ePressurePerDegreeConst:
                 retVal = NConstants::kPressurePerDegreeConstFieldName;
                 break;
-            case EVariableType::eWeightPerVolumeOfWaterConst:
+            case EConstantType::eWeightPerVolumeOfWaterConst:
                 retVal = NConstants::kWeightPerVolumeOfWaterConstFieldName;
                 break;
-            case EVariableType::eVolumePerWeightOfWaterConst:
+            case EConstantType::eVolumePerWeightOfWaterConst:
                 retVal = NConstants::kVolumePerWeightOfWaterConstFieldName;
                 break;
-            case EVariableType::eIdealGasConst:
+            case EConstantType::eIdealGasConst:
                 retVal = NConstants::kIdealGasConstantFieldName;
                 break;
-            case EVariableType::eFN2AtSurfaceConst:
+            case EConstantType::eFN2AtSurfaceConst:
                 retVal = NConstants::kFN2AtSurfaceFieldName;
                 break;
-            case EVariableType::eFO2AtSurfaceConst:
+            case EConstantType::eFO2AtSurfaceConst:
                 retVal = NConstants::kFO2AtSurfaceFieldName;
                 break;
-            case EVariableType::eDepthToSingleATMConst:
+            case EConstantType::eDepthToSingleATMConst:
                 retVal = NConstants::kDepthToSingleATMConstFieldName;
                 break;
-            case EVariableType::eFeetToMetersConst:
+            case EConstantType::eFeetToMetersConst:
                 retVal = NConstants::kFeetToMetersConstFieldName;
                 break;
-            case EVariableType::eMetersToFeetConst:
+            case EConstantType::eMetersToFeetConst:
                 retVal = NConstants::kMetersToFeetConstFieldName;
                 break;
-            case EVariableType::eLbsPerKgsConst:
+            case EConstantType::eLbsPerKgsConst:
                 retVal = NConstants::kLbsPerKgsConstFieldName;
                 break;
-            case EVariableType::eKgsPerLbsConst:
+            case EConstantType::eKgsPerLbsConst:
                 retVal = NConstants::kKgsPerLbsConstFieldName;
                 break;
-            case EVariableType::eFreshWaterToSeaWaterConst:
+            case EConstantType::eFreshWaterToSeaWaterConst:
                 retVal = NConstants::kFreshWaterToSeaWaterConstFieldName;
                 break;
-            case EVariableType::eSeaWaterToFreshWaterConst:
+            case EConstantType::eSeaWaterToFreshWaterConst:
                 retVal = NConstants::kSeaWaterToFreshWaterConstFieldName;
                 break;
-            case EVariableType::ePSIToBarConst:
+            case EConstantType::ePSIToBarConst:
                 retVal = NConstants::kPSIToBarConstFieldName;
                 break;
-            case EVariableType::eBarToPSIConst:
+            case EConstantType::eBarToPSIConst:
                 retVal = NConstants::kBarToPSIConstFieldName;
                 break;
-            case EVariableType::eAbsZeroOffsetConst:
+            case EConstantType::eAbsZeroOffsetConst:
                 retVal = NConstants::kAbsZeroOffsetConstFieldName;
                 break;
-            case EVariableType::ePressureAtSurfaceConst:
+            case EConstantType::ePressureAtSurfaceConst:
                 retVal = NConstants::kPressureAtSurfaceConstFieldName;
                 break;
-            case EVariableType::ePressureLossPerAltitudeGainConst:
+            case EConstantType::ePressureLossPerAltitudeGainConst:
                 retVal = NConstants::kPressureLossPerAltitudeGainConstFieldName;
                 break;
-            case EVariableType::eSafetyStopDepthConst:
+            case EConstantType::eSafetyStopDepthConst:
                 retVal = NConstants::kSafetyStopDepthConstFieldName;
                 break;
-            case EVariableType::eWaterWeightAdjustmentConst:
+            case EConstantType::eWaterWeightAdjustmentConst:
                 retVal = NConstants::kWaterWeightAdjustmentFieldName;
                 break;
-            case EVariableType::eBaseMETofSCUBAConst:
+            case EConstantType::eBaseMETofSCUBAConst:
                 retVal = NConstants::kBaseMETofSCUBAConstFieldName;
                 break;
-            case EVariableType::eFillRateAirConst:
+            case EConstantType::eFillRateAirConst:
                 retVal = NConstants::kFillRateAirConstFieldName;
                 break;
-            case EVariableType::eFillRateO2Const:
+            case EConstantType::eFillRateO2Const:
                 retVal = NConstants::kFillRateO2ConstFieldName;
                 break;
-            case EVariableType::eCubicFeetToLitersConst:
+            case EConstantType::eCubicFeetToLitersConst:
                 retVal = NConstants::kCubicFeetToLitersFieldName;
                 break;
-            case EVariableType::eLitersToCubicFeetConst:
+            case EConstantType::eLitersToCubicFeetConst:
                 retVal = NConstants::kLitersToCubicFeetFieldName;
                 break;
         };

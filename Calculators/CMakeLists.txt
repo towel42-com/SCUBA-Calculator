@@ -21,6 +21,45 @@
 # SOFTWARE.
 
 
+function(AddJSONToCalculator calculator jsonFilesGlobString baseName )
+
+   file( GLOB 
+        _JSON_FILES  
+        ${jsonFilesGlobString}
+    )
+    
+    if ( NOT _JSON_FILES OR ( "${_JSON_FILES}" STREQUAL "" ) )
+        return()
+    endif()
+
+    foreach( jsonFile ${_JSON_FILES} )
+        string(REGEX MATCH "${baseName}([^./]*).json" MATCHIT "${jsonFile}")
+        
+        if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
+            SET( _FN_SUFFIX ${CMAKE_MATCH_1} )
+        endif()
+        
+        SET( _ALIAS ./${PROJECT_NAME}${_FN_SUFFIX}.json )
+        #MESSAGE( STATUS "File: ${jsonFile} Alias: ${_ALIAS}" )
+        set_source_files_properties( 
+            ${jsonFile}
+            PROPERTIES
+                QT_RESOURCE_ALIAS ${_ALIAS}
+        )
+    endforeach()
+
+    qt6_add_resources(${PROJECT_NAME} "${baseName}"
+        PREFIX
+            "/${baseName}"
+        FILES
+            ${_JSON_FILES}
+        OUTPUT_TARGETS 
+            QRC_OTHER_TARGETS    
+    )
+    
+    target_sources( ${calculator} PUBLIC ${_JSON_FILES} )
+endfunction()
+
 function(AddToCalculatorList calculator groupName)
     get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
     list(APPEND _CURR "${calculator}")
@@ -59,56 +98,8 @@ function(AddToCalculatorList calculator groupName)
         COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
     )
     
-    file( GLOB 
-        _FORMULA_JSON_FILES  
-        ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json
-    )
-
-    foreach( jsonFile ${_FORMULA_JSON_FILES} )
-        string(REGEX MATCH "formulas([^./]*).json" MATCHIT "${jsonFile}")
-        
-        if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
-            SET( _FN_SUFFIX ${CMAKE_MATCH_1} )
-        endif()
-        
-        SET( _ALIAS ./${PROJECT_NAME}${_FN_SUFFIX}.json )
-        #MESSAGE( STATUS "File: ${jsonFile} Alias: ${_ALIAS}" )
-        set_source_files_properties( 
-            ${jsonFile}
-            PROPERTIES
-                QT_RESOURCE_ALIAS ${_ALIAS}
-        )
-    endforeach()
-
-    file( GLOB 
-        _CALC_JSON_FILE
-        ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json
-    )
-    
-    foreach( jsonFile ${_CALC_JSON_FILE} )
-        string(REGEX MATCH "calculator([^./]*).json" MATCHIT "${jsonFile}")
-        
-        if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
-            SET( _FN_SUFFIX ${CMAKE_MATCH_1} )
-        endif()
-        
-        SET( _ALIAS ./${PROJECT_NAME}${_FN_SUFFIX}.json )
-        #MESSAGE( STATUS "File: ${jsonFile} Alias: ${_ALIAS}" )
-        set_source_files_properties( 
-            ${jsonFile}
-            PROPERTIES
-                QT_RESOURCE_ALIAS ${_ALIAS}
-        )
-    endforeach()
-    qt6_add_resources(${PROJECT_NAME} "calculator"
-        PREFIX
-            "/formulas"
-        FILES
-            ${_FORMULA_JSON_FILES}
-            ${_CALC_JSON_FILE}
-        OUTPUT_TARGETS 
-            QRC_OTHER_TARGETS    
-    )
+    AddJSONToCalculator( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json formulas)
+    AddJSONToCalculator( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json calculator)
 endfunction()
 
 add_subdirectory( Core )

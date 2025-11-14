@@ -51,15 +51,20 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
             std::make_shared< CVariableInfo >( "p1", tr( "Starting Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
             std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
             std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
-            std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "o2_t", tr( "Time to fill with 100% O2" ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ), EVariableType::eIntermediate, EUnit::eTime, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "o2_t", tr( "Time to fill with 100% O2" ), EUnit::eTime, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ),  EUnit::eTime, EVariableLoc::eLHS ),   //
         } );
     auto pos = std::next( retVal.begin() );
     ( *pos )->addRange( false, {}, SRange( { 0.0, NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
     pos++;
     pos++;
     ( *pos )->addRange( false, {}, SRange( { NUtilities::NConversions::psiToBar( 1000 ), NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
+
+    pos = std::prev( std::prev( retVal.end() ) );
+    ( *pos )->setIsIntermediate( true );
+    pos++;
+    ( *pos )->setIsIntermediate( true );
     return retVal;
 }
 
@@ -67,9 +72,9 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bo
 {
     TFormulaList formulas;
 
-    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "o2_p" ), QString( R"__(\frac{(<p2> \times (<mix2> - %1) ) - ( <p1> \times ( <mix1> - %1 ) )}{%2} - <p1>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
-    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "o2_t" ), QString( R"__(\frac{<o2_p> - <p1>}{%1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) ) ) );
-    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "air_t" ), QString( R"__(\frac{<p2>-<o2_p>}{%1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) ) ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "o2_p" ), QString( R"__(\frac{(<p2> \times (<mix2> - %1) ) - ( <p1> \times ( <mix1> - %1 ) )}{%2} - <p1>)__" ).arg( NUtilities::fieldNameForType( EConstantType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "o2_t" ), QString( R"__(\frac{<o2_p> - <p1>}{%1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eFillRateO2Const ) ) ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "air_t" ), QString( R"__(\frac{<p2>-<o2_p>}{%1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eFillRateAirConst ) ) ) );
 
     return formulas;
 }
@@ -83,24 +88,24 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     }
     else if ( unsetVar == "mix1" )
     {
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{( <p2> \times (<mix2> - %1) ) - ((<o2_p> + <p1>) \times %2)}{<p1>} + %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{( <p2> \times (<mix2> - %1) ) - ((<o2_p> + <p1>) \times %2)}{<p1>} + %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) );
     }
     else if ( unsetVar == "p1" )
     {
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{<p2>(<mix2> - %1) - %2 \times <o2_p>}{(<mix1> - %1) + %2})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{<p2>(<mix2> - %1) - %2 \times <o2_p>}{(<mix1> - %1) + %2})__" ).arg( NUtilities::fieldNameForType( EConstantType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) );
     }
     else if ( unsetVar == "mix2" )
     {
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<p2>} + %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<p2>} + %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) );
     }
     else if ( unsetVar == "p2" )
     {
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<mix2> - %1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EVariableType::eFN2AtSurfaceConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(\frac{((<o2_p> + <p1>) \times %2) + ( <p1> \times ( <mix1> - %1 ) )}{<mix2> - %1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eFO2AtSurfaceConst ) ).arg( NUtilities::fieldNameForType( EConstantType::eFN2AtSurfaceConst ) ) ) );
     }
     if ( !formulas.empty() )
     {
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "o2_t" ), QString( R"__(\frac{<o2_p> - <p1>}{%1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateO2Const ) ) ) );
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "air_t" ), QString( R"__(\frac{<p2>-<o2_p>}{%1})__" ).arg( NUtilities::fieldNameForType( EVariableType::eFillRateAirConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "o2_t" ), QString( R"__(\frac{<o2_p> - <p1>}{%1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eFillRateO2Const ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "air_t" ), QString( R"__(\frac{<p2>-<o2_p>}{%1})__" ).arg( NUtilities::fieldNameForType( EConstantType::eFillRateAirConst ) ) ) );
     }
     return formulas;
 }

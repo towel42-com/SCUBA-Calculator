@@ -83,10 +83,8 @@ enum class EUnit
     ePressurePerMinute
 };
 
-enum class EVariableType
+enum class EConstantType
 {
-    eIntermediate,
-    eVariable,
     ePressurePerDegreeConst,
     eWeightPerVolumeOfWaterConst,
     eVolumePerWeightOfWaterConst,

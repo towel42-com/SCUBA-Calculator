@@ -47,14 +47,14 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "volumeDisplaced", tr( "Volume Displaced" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "negativeBuoyancy", tr( "Negative Buoyancy" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
         };
 }
 
 std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "volumeDisplaced" ), QString( R"__(<negativeBuoyancy> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eVolumePerWeightOfWaterConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "volumeDisplaced" ), QString( R"__(<negativeBuoyancy> \times %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eVolumePerWeightOfWaterConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -65,7 +65,7 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     }
     else if ( unsetVar == "negativeBuoyancy" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWeightPerVolumeOfWaterConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(<volumeDisplaced> \times %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eWeightPerVolumeOfWaterConst ) ) ) } );
     }
     return {};
 }

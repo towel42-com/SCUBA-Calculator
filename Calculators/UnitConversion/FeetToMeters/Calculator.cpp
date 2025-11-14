@@ -55,8 +55,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "feet", tr( "Length" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::eLength, true ),   //
-            std::make_shared< CVariableInfo >( "meters", tr( "Length" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::eLength, false ),   //
+            std::make_shared< CVariableInfo >( "feet", tr( "Length" ), EUnit::eLength, EVariableLoc::eRHS, true ),   //
+            std::make_shared< CVariableInfo >( "meters", tr( "Length" ), EUnit::eLength, EVariableLoc::eLHS, false ),   //
         } );
 
     return retVal;

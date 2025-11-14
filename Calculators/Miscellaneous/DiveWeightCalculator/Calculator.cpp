@@ -48,8 +48,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "lead", tr( "Lead Needed" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "yourWeight", tr( "Your Weight" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "lead", tr( "Lead Needed" ), EUnit::eWeight, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "yourWeight", tr( "Your Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >(
                 "experience", tr( "Diving Experience Adjustment" ), EUnit::eWeight, EVariableLoc::eRHS,   //
                 SBaseInfo< TNamedValueItemList >(
@@ -90,8 +90,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         { tr( "Medium (Camera, Lights, SMB)" ), 1.0 },
                         { tr( "Heavy (Camera System, Multiple Accessories)" ), 2.0 },
                     } ) ) ),   //
-            std::make_shared< CVariableInfo >( "baseLeadWeight", tr( "Base Lead Weight" ), EVariableType::eIntermediate, EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "adjustments", tr( "Total Adjustments" ), EVariableType::eIntermediate, EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "baseLeadWeight", tr( "Base Lead Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "adjustments", tr( "Total Adjustments" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
         } );
 
     auto pos = std::next( std::next( retVal.begin() ) );
@@ -134,6 +134,10 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
             { "Heavy (Camera System, Multiple Accessories)", NUtilities::NConversions::kgsToLbs( 2.0 ) },
         } ) ) );
 
+    pos = std::prev( std::prev( retVal.end() ) );
+    ( *pos )->setIsIntermediate( true );
+    pos++;
+    ( *pos )->setIsIntermediate( true );
     return retVal;
 }
 
@@ -249,7 +253,7 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bo
     TFormulaList formulas;
 
     formulas.emplace_back( std::make_shared< CFormula >( getVariable( "baseLeadWeight" ), R"__(<yourWeight> \times 0.1)__" ) );
-    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
+    formulas.emplace_back( std::make_shared< CFormula >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EConstantType::eWaterWeightAdjustmentConst ) ) ) );
     formulas.emplace_back( std::make_shared< CFormula >( getVariable( "lead" ), R"__(<baseLeadWeight> + <adjustments>)__" ) );
 
     return formulas;
@@ -263,7 +267,7 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
         return myBaseFormulas( imperial, seaWater );
     else if ( unsetVar == "yourWeight" )
     {
-        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EVariableType::eWaterWeightAdjustmentConst ) ) ) );
+        formulas.emplace_back( std::make_shared< CFormula >( getVariable( "adjustments" ), QString( R"__(%1 + <experience> + <exposureSuit> + <tankMaterial> + <additionalEquipment>)__" ).arg( NUtilities::fieldNameForType( EConstantType::eWaterWeightAdjustmentConst ) ) ) );
         formulas.emplace_back( std::make_shared< CFormula >( getVariable( "baseLeadWeight" ), R"__(<lead> - <adjustments>)__" ) );
         formulas.emplace_back( std::make_shared< CFormula >( getVariable( "yourWeight" ), R"__(\frac{<baseLeadWeight>}{0.1})__" ) );
     }

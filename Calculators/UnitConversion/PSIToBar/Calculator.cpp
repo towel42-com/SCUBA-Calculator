@@ -55,8 +55,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "psi", tr( "Pressure" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::ePressure, true ),   //
-            std::make_shared< CVariableInfo >( "bar", tr( "Pressure" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::ePressure, false ),   //
+            std::make_shared< CVariableInfo >( "psi", tr( "Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, true ),   //
+            std::make_shared< CVariableInfo >( "bar", tr( "Pressure" ), EUnit::ePressure, EVariableLoc::eLHS, false ),   //
         } );
     return retVal;
 }

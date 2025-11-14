@@ -15,36 +15,35 @@
 #include <optional>
 #include <algorithm>
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EUnit unitType, EVariableLoc variableLocation ) :
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation ) :
     fName( name ),
     fDescription( desc ),
-    fType( type ),
     fUnit( unitType ),
     fVariableLocation( variableLocation )
 {
 }
 
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial ) :
+    CVariableInfo( name, desc, EUnit::eNone, variableLocation )
+{
+    setUnitOverride( unitType, imperial );
+}
+
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo ) :
-    CVariableInfo( name, desc, EVariableType::eVariable, unitType, variableLocation )
+    CVariableInfo( name, desc, unitType, variableLocation )
 {
     addRange( rangeInfo );
 }
 
 CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &valuesInfo ) :
-    CVariableInfo( name, desc, EVariableType::eVariable, unitType, variableLocation )
+    CVariableInfo( name, desc, unitType, variableLocation )
 {
     addValues( valuesInfo );
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EVariableType type, EVariableLoc variableLocation, EUnit unitType, bool imperial ) :
-    CVariableInfo( name, desc, type, EUnit::eNone, variableLocation )
-{
-    setUnitOverride( unitType, imperial );
-}
-
 bool CVariableInfo::createWidgets( CCalculatorPage *page, QFormLayout *formLayout )
 {
-    if ( fType != EVariableType::eVariable )
+    if ( !isVariable() )
         return false;
 
     fLabel = new QLabel( page );
@@ -99,7 +98,7 @@ bool CVariableInfo::createWidgets( CCalculatorPage *page, QFormLayout *formLayou
 
 void CVariableInfo::updateLabels( bool imperial, bool seaWater )
 {
-    if ( fType != EVariableType::eVariable )
+    if ( !isVariable() )
         return;
 
     Q_ASSERT( fField && fUnitLabel );
@@ -181,7 +180,7 @@ void CVariableInfo::resetValue( bool imperial, bool seaWater, bool updateUI, boo
 TOptionalDouble CVariableInfo::optValue() const
 {
     TOptionalDouble retVal;
-    if ( fType == EVariableType::eVariable )
+    if ( isVariable() )
     {
         if ( lineEdit() && !lineEdit()->text().isEmpty() )
             retVal = valueForString( lineEdit()->text() );
@@ -196,8 +195,10 @@ TOptionalDouble CVariableInfo::optValue() const
                 retVal = valueForString( le->text() );
         }
     }
-    else if ( fType == EVariableType::eIntermediate )
+    else if ( isIntermediate() )
+    {
         retVal = fValue;
+    }
     return retVal;
 }
 
@@ -339,7 +340,7 @@ bool CVariableInfo::dependenciesSatisfied() const
 
 void CVariableInfo::updateValueFromField()
 {
-    if ( fType != EVariableType::eVariable )
+    if ( !isVariable() )
         return;
 
     fValue.reset();
@@ -370,9 +371,6 @@ TOptionalDouble CVariableInfo::valueForString( const QString &text ) const
 
 QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const
 {
-    if ( NUtilities::isConstantVariable( fType ) )
-        return updateFormula( imperial, seaWater, formula, fType, false );
-
     QString value;
     QString format;
     if ( ( formulaType == EFormulaType::eCurrentValueFormula ) && has_value() )
@@ -382,40 +380,27 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
     }
     else
     {
-        switch ( fType )
-        {
-            case EVariableType::eIntermediate:
-            case EVariableType::eVariable:
-                {
-                    value = fDescription;
-                    format = QString( "%1 (%2)" );
-                    break;
-                }
-            default:
-                break;
-        };
+        value = fDescription;
+        format = QString( "%1 (%2)" );
     }
 
     auto newString = QString( format ).arg( value );
-    if ( ( fType == EVariableType::eVariable ) || ( fType == EVariableType::eIntermediate ) )
-    {
-        auto unit = unitText( imperial, seaWater, true, formulaType );
+    auto unit = unitText( imperial, seaWater, true, formulaType );
 
-        if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eCurrentValueFormula ) )
-        {
-            newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true, false ) );
-        }
-        else
-        {
-            newString = newString.arg( unit );
-            newString.replace( " ()", "" );
-        }
+    if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eCurrentValueFormula ) )
+    {
+        newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true, false ) );
+    }
+    else
+    {
+        newString = newString.arg( unit );
+        newString.replace( " ()", "" );
     }
 
     QString retVal = formula;
 
     auto token = fieldName();
-    if ( fType == EVariableType::eIntermediate )
+    if ( isIntermediate() )
     {
         if ( formulaType != EFormulaType::eCurrentValueFormula )
         {
@@ -433,7 +418,7 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
     return retVal;
 }
 
-QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EVariableType varType, bool descriptionNotValue )
+QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EConstantType varType, bool descriptionNotValue )
 {
     auto token = NUtilities::fieldNameForType( varType );
     auto pos = formula.indexOf( token );
@@ -470,11 +455,6 @@ double CVariableInfo::value() const
     return fValue.value();
 }
 
-bool CVariableInfo::isConstant() const
-{
-    return NUtilities::isConstantVariable( fType );
-}
-
 bool CVariableInfo::isWidget( QWidget *widget ) const
 {
     if ( widget == fField )
@@ -494,13 +474,13 @@ void CVariableInfo::setDefaultRange( const SRange &range )
 
 void CVariableInfo::addRange( std::optional< bool > imperial, std::optional< bool > seaWater, const SRange &range )
 {
-    Q_ASSERT( fType == EVariableType::eVariable );
+    Q_ASSERT( isVariable() );
     fRanges.addValue( imperial, seaWater, range );
 }
 
 void CVariableInfo::addRange( const SBaseInfo< SRange > &rangeInfo )
 {
-    Q_ASSERT( fType == EVariableType::eVariable );
+    Q_ASSERT( isVariable() );
     fRanges.addValue( rangeInfo );
 }
 
@@ -511,13 +491,13 @@ void CVariableInfo::setDefaultValues( const TNamedValueItemList &values )
 
 void CVariableInfo::addValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values )
 {
-    Q_ASSERT( fType == EVariableType::eVariable );
+    Q_ASSERT( isVariable() );
     fValues.addValue( imperial, seaWater, values );
 }
 
 void CVariableInfo::addValues( const SBaseInfo< TNamedValueItemList > &valueInfo )
 {
-    Q_ASSERT( fType == EVariableType::eVariable );
+    Q_ASSERT( isVariable() );
     fValues.addValue( valueInfo );
 }
 
@@ -559,7 +539,7 @@ void CVariableInfo::clearField( bool imperial, bool seaWater, bool notifyUI )
 
 void CVariableInfo::updateFieldFromValue( bool imperial, bool seaWater, bool notifyUI )
 {
-    if ( fType != EVariableType::eVariable )
+    if ( !isVariable() )
         return;
 
     Q_ASSERT( fField );
@@ -672,11 +652,14 @@ void CVariableInfo::updateValuesAndRanges( bool imperial, bool seaWater )
 
 std::shared_ptr< CVariableInfo > CVariableInfo::clone( const QString &suffix /*={}*/ ) const
 {
-    auto retVal = std::make_shared< CVariableInfo >( name() + suffix, fDescription, fType, fUnit, fVariableLocation );
+    auto retVal = std::make_shared< CVariableInfo >( name() + suffix, fDescription, fUnit, fVariableLocation );
+
     retVal->fRanges = fRanges;
     retVal->fValues = fValues;
     retVal->fUnitOverride = fUnitOverride;
     retVal->fValue = fValue;
+    retVal->fIntermediate = fIntermediate;
+
     return retVal;
 }
 

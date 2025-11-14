@@ -69,18 +69,22 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "time", tr( "Time at Average Depth" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "pressureUsed", tr( "Pressure used" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "tankVolume", tr( "Tank Volume" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "tankPressure", tr( "Tank Pressure Rating" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "sac", tr( "SAC" ), EVariableType::eVariable, EUnit::ePressurePerMinute, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "rmv", tr( "RMV" ), EVariableType::eVariable, EUnit::eVolumePerMinute, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "gasConsumed", tr( "Gas Consumed" ), EVariableType::eVariable, EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eIntermediate, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "psiPerMin", tr( "PSI Per Minute" ), EVariableType::eIntermediate, EUnit::ePressurePerMinute, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "time", tr( "Time at Average Depth" ), EUnit::eTime, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "pressureUsed", tr( "Pressure used" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "tankVolume", tr( "Tank Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "tankPressure", tr( "Tank Pressure Rating" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "sac", tr( "SAC" ), EUnit::ePressurePerMinute, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "rmv", tr( "RMV" ), EUnit::eVolumePerMinute, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "gasConsumed", tr( "Gas Consumed" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "psiPerMin", tr( "PSI Per Minute" ), EUnit::ePressurePerMinute, EVariableLoc::eRHS ),   //
 
         } );
+    auto pos = std::prev( std::prev( retVal.end() ) );
+    ( *pos )->setIsIntermediate( true );
+    pos++;
+    ( *pos )->setIsIntermediate( true );
     return retVal;
 }
 

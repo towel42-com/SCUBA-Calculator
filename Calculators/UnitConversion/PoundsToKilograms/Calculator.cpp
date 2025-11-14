@@ -55,8 +55,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "pounds", tr( "Weight" ), EVariableType::eVariable, EVariableLoc::eRHS, EUnit::eWeight, true ),   //
-            std::make_shared< CVariableInfo >( "kiloGrams", tr( "Weight" ), EVariableType::eVariable, EVariableLoc::eLHS, EUnit::eWeight, false ),   //
+            std::make_shared< CVariableInfo >( "pounds", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS, true ),   //
+            std::make_shared< CVariableInfo >( "kiloGrams", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eLHS, false ),   //
         } );
 
     return retVal;

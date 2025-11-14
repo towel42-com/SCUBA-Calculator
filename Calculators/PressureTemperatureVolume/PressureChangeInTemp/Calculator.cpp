@@ -58,10 +58,10 @@ TVariableInfoList CCalculator::getMyVariables( bool *preReversed ) const
     *preReversed = true;
 
     auto retVal = TVariableInfoList( {
-        std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EVariableType::eVariable, EUnit::ePressure, EVariableLoc::eLHS ),   //
-        std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EVariableType::eVariable, EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "t1", tr( "Temperature 1" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+        std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+        std::make_shared< CVariableInfo >( "t2", tr( "Temperature 2" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
     } );
 
     if ( isReversed() )
@@ -96,12 +96,12 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
 
 std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "p2" ), QString( R"__([(<t2> + %1) \times \frac{<p1> + %2}{(<t1> + %1}] - %2)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "p2" ), QString( R"__([(<t2> + %1) \times \frac{<p1> + %2}{(<t1> + %1}] - %2)__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EConstantType::ePressureAtSurfaceConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
-    return TFormulaList( { std::make_shared< CFormula >( getVariable( "t2" ), QString( R"__([\frac{(<p2> + %2) \times (<t1> + %1)}{<p1> + %2}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
+    return TFormulaList( { std::make_shared< CFormula >( getVariable( "t2" ), QString( R"__([\frac{(<p2> + %2) \times (<t1> + %1)}{<p1> + %2}] - %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EConstantType::ePressureAtSurfaceConst ) ) ) } );
 }
 
 std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
@@ -119,12 +119,12 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     else if ( unsetVar == "p1" )
     {
         // p1 = p2 * ( t1/t2 );
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([(<t1> + %1) \times \frac{<p2> + %2}{(<t2> + %1}] - %2)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([(<t1> + %1) \times \frac{<p2> + %2}{(<t2> + %1}] - %2)__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EConstantType::ePressureAtSurfaceConst ) ) ) } );
     }
     else if ( unsetVar == "t1" )
     {
         // T1 = t2*(t1/t2)
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([\frac{(<p1> + %2) \times (<t2> + %1)}{<p2> + %2}] - %1)__" ).arg( NUtilities::fieldNameForType( EVariableType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EVariableType::ePressureAtSurfaceConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__([\frac{(<p1> + %2) \times (<t2> + %1)}{<p2> + %2}] - %1)__" ).arg( NUtilities::fieldNameForType( EConstantType::eAbsZeroOffsetConst ) ).arg( NUtilities::fieldNameForType( EConstantType::ePressureAtSurfaceConst ) ) ) } );
     }
 
     return {};

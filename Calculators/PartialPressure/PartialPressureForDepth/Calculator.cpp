@@ -48,9 +48,9 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EVariableType::eIntermediate, EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EVariableType::eVariable, EUnit::ePercent, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EUnit::ePercent, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >(
                 "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EUnit::ePercent, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
@@ -62,6 +62,9 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         std::make_pair( tr( "Other" ), TOptionalDouble() )   //
                     } ) ) ),   //
         } );
+
+    auto pos = retVal.begin();
+    ( *pos )->setIsIntermediate( true );
 
     return retVal;
 }
@@ -81,7 +84,7 @@ std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &uns
     }
     else if ( unsetVar == "depth" )
     {
-        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(%1 \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::fieldNameForType( EVariableType::eDepthToSingleATMConst ) ) ) } );
+        return TFormulaList( { std::make_shared< CFormula >( getVariable( unsetVar ), QString( R"__(%1 \times (\frac{<partialPressureAtDepth>}{<partialPressureAtSurface>} - 1))__" ).arg( NUtilities::fieldNameForType( EConstantType::eDepthToSingleATMConst ) ) ) } );
     }
     else if ( unsetVar == "partialPressureAtSurface" )
     {

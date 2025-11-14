@@ -51,14 +51,14 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "calories", tr( "Calories" ), EVariableType::eVariable, EUnit::eCalories, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "weight", tr( "Weight" ), EVariableType::eVariable, EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "duration", tr( "Bottom Time" ), EVariableType::eVariable, EUnit::eTime, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EVariableType::eVariable, EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "temp", tr( "Temperature" ), EVariableType::eVariable, EUnit::eTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "weightM", tr( "Weight (%1)" ).arg( NUtilities::NUnitStrings::weightUnit( false, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depthMS", tr( "Depth (%1)" ).arg( NUtilities::NUnitStrings::depthUnit( false, true, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "tempM", tr( "Temperature (%1)" ).arg( NUtilities::NUnitStrings::tempUnit( false, true, false ) ), EVariableType::eIntermediate, EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "calories", tr( "Calories" ), EUnit::eCalories, EVariableLoc::eLHS ),   //
+            std::make_shared< CVariableInfo >( "weight", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "duration", tr( "Bottom Time" ), EUnit::eTime, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "temp", tr( "Temperature" ), EUnit::eTemperature, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "weightM", tr( "Weight (%1)" ).arg( NUtilities::NUnitStrings::weightUnit( false, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "depthMS", tr( "Depth (%1)" ).arg( NUtilities::NUnitStrings::depthUnit( false, true, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
+            std::make_shared< CVariableInfo >( "tempM", tr( "Temperature (%1)" ).arg( NUtilities::NUnitStrings::tempUnit( false, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
             std::make_shared< CVariableInfo >(
                 "activityLevel", tr( "Activity Level Adjustment" ), EUnit::eLargePercent, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
@@ -72,6 +72,14 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         std::make_pair( tr( "Custom" ), TOptionalDouble() )   //
                     } ) ) ),   //
         } );
+
+    auto pos = std::prev( std::prev( std::prev( std::prev( retVal.end() ) ) ) );
+    ( *pos )->setIsIntermediate( true );
+    pos++;
+    ( *pos )->setIsIntermediate( true );
+    pos++;
+    ( *pos )->setIsIntermediate( true );
+
     return retVal;
 }
 
