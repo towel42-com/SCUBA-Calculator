@@ -35,6 +35,8 @@ static QString toString( EFormulaType formulaType )
         return QObject::tr( "CurrentFormula" );
     else if ( formulaType == EFormulaType::eCurrentValueFormula )
         return QObject::tr( "CurrentValueFormula" );
+    else if ( formulaType == EFormulaType::eJSFormula )
+        return QObject::tr( "JSFormula" );
     return QObject::tr( "Unknown" );
 }
 
@@ -143,16 +145,16 @@ void CMainWindow::loadCalculators()
             continue;
         }
 
-        auto constructor = (TInstantiateCalcFunc)GetProcAddress( hLib, kInstantiateCalcFuncName );
-        if ( !constructor )
+        auto instantiator = (TInstantiateCalcFunc)GetProcAddress( hLib, kInstantiateCalcFuncName );
+        if ( !instantiator )
             continue;
 
-        auto calculator = constructor();
+        auto calculator = instantiator();
         addCalculator( calculator );
 
         if ( calculator->isReversible() )
         {
-            auto reversedCalc = constructor();
+            auto reversedCalc = instantiator();
             reversedCalc->setIsReversed( calculator, true );
             addCalculator( reversedCalc );
         }
@@ -171,8 +173,6 @@ void CMainWindow::addCalculator( CCalculatorBase *calculator )
     auto path = calculator->calculatorPath();
     if ( path.isEmpty() )
         return;
-
-    calculator->initResources();
 
     auto calculatorName = calculator->calculatorName();
     path.push_back( calculatorName );
@@ -330,7 +330,7 @@ void CMainWindow::slotSelectCalculator( QTreeWidgetItem *item )
 void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CCalculatorPage *page, bool initPage )
 {
     bool showUnits = page != nullptr;
-    bool isWaterTypeBased = page != nullptr;
+    bool showWaterType = page != nullptr;
     if ( page == nullptr )
     {
         fImpl->stackedWidget->setCurrentWidget( fBlankPage );
@@ -340,7 +340,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CCalculatorPage *page, 
         if ( !initPage )
             fImpl->stackedWidget->setCurrentWidget( page );
         showUnits = page->property( "showUnits" ).toBool();
-        isWaterTypeBased = page->property( "isWaterTypeBased" ).toBool();
+        showWaterType = page->property( "showWaterType" ).toBool();
     }
 
     if ( page && initPage )
@@ -353,7 +353,7 @@ void CMainWindow::setCurrentPage( QTreeWidgetItem *item, CCalculatorPage *page, 
     }
 
     this->showUnits( showUnits );
-    this->showWaterType( isWaterTypeBased );
+    this->showWaterType( showWaterType );
     fImpl->reset->setVisible( page != nullptr );
     loadFormulasForPage( page );
 }
@@ -414,11 +414,8 @@ void CMainWindow::loadFormulasForPage( CCalculatorPage *page )
         return;
     }
 
-    for ( auto &&formulaType : { EFormulaType::eBaseFormula /*, EFormulaType::eCurrentFormula, EFormulaType::eCurrentValueFormula*/ } )
-    {
-        auto formula = formulaForPage( page );
-        mathJaxGoupBox()->setFormula( formula );
-    }
+    auto formula = formulaForPage( page );
+    mathJaxGoupBox()->setFormula( formula );
 }
 
 NTowel42::CMathJaxQt6GroupBox *CMainWindow::mathJaxGoupBox() const
@@ -453,4 +450,3 @@ void CMainWindow::slotResetCurrentPage()
         return;
     calc->resetVariables();
 }
-
