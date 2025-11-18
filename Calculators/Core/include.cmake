@@ -26,6 +26,7 @@ set(qtproject_SRCS
     Formula.cpp
     CalculatorBase.cpp
     CalculatorPage.cpp
+    JsonCalculator.cpp
     Utilities.cpp
     Units.cpp
     VariableInfo.cpp
@@ -33,6 +34,7 @@ set(qtproject_SRCS
 
 set(qtproject_H
     CalculatorBase.h
+    JsonCalculator.h
     CalculatorPage.h
 )
 
