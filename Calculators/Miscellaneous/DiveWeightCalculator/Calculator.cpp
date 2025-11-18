@@ -22,8 +22,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
     virtual void setupCustomDependencies() override;
@@ -48,9 +48,9 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "lead", tr( "Lead Needed" ), EUnit::eWeight, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "yourWeight", tr( "Your Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >(
+            CVariableInfo::create( "lead", tr( "Lead Needed" ), EUnit::eWeight, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "yourWeight", tr( "Your Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            CVariableInfo::create(
                 "experience", tr( "Diving Experience Adjustment" ), EUnit::eWeight, EVariableLoc::eRHS,   //
                 SBaseInfo< TNamedValueItemList >(
                     false, {},
@@ -60,7 +60,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         { tr( "Advanced (100-150 dives)" ), -1.0 },
                         { tr( "Master Diver/Instructor (150+ dives)" ), -2.0 }   //
                     } ) ) ),   //
-            std::make_shared< CVariableInfo >(
+            CVariableInfo::create(
                 "exposureSuit", tr( "Exposure Suit Adjustment" ), EUnit::eWeight, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
                     false, {},
@@ -72,7 +72,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         { tr( "Tri-Lam Dry Suit" ), 10.0 },   //
                         { tr( "Neoprene Dry Suit" ), 12.0 },   //
                     } ) ) ),   //
-            std::make_shared< CVariableInfo >(
+            CVariableInfo::create(
                 "tankMaterial", tr( "Tank Material Adjustment" ), EUnit::eWeight, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
                     false, {},
@@ -81,7 +81,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         { tr( "Steel" ), -2.0 },   //
                         { tr( "Carbon Fiber" ), -1.0 },
                     } ) ) ),   //
-            std::make_shared< CVariableInfo >(
+            CVariableInfo::create(
                 "additionalEquipment", tr( "Additional Equipment Adjustment" ), EUnit::eWeight, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
                     false, {},
@@ -90,8 +90,8 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
                         { tr( "Medium (Camera, Lights, SMB)" ), 1.0 },
                         { tr( "Heavy (Camera System, Multiple Accessories)" ), 2.0 },
                     } ) ) ),   //
-            std::make_shared< CVariableInfo >( "baseLeadWeight", tr( "Base Lead Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "adjustments", tr( "Total Adjustments" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "baseLeadWeight", tr( "Base Lead Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "adjustments", tr( "Total Adjustments" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
         } );
 
     auto pos = std::next( std::next( retVal.begin() ) );
@@ -248,7 +248,7 @@ function calculateWeight() {
     weightChart.update();
 }
 */
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     TFormulaList formulas;
 
@@ -259,7 +259,7 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bo
     return formulas;
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     TFormulaList formulas;
 

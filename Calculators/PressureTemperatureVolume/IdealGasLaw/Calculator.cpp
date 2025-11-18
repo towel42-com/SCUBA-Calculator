@@ -20,8 +20,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -45,19 +45,19 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "p", tr( "Pressure" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "v", tr( "Volume" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "numMoles", tr( "Number of Moles" ), EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "t", tr( "Temperature" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "p", tr( "Pressure" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "v", tr( "Volume" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "numMoles", tr( "Number of Moles" ), EUnit::eNone, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "t", tr( "Temperature" ), EUnit::eAbsZeroTemperature, EVariableLoc::eRHS ),   //
         };
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { std::make_shared< CFormula >( TVariableInfo(), QString( R"__(<p> \times <v> = <numMoles> \times %1 \times <t>)__" ).arg( NUtilities::fieldNameForType( EConstantType::eIdealGasConst ) ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar == "p" )
     {

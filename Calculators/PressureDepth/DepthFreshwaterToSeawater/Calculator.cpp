@@ -21,9 +21,9 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -47,24 +47,24 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "seaWater", tr( "Seawater" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "freshWater", tr( "Freshwater" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "seaWater", tr( "Seawater" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "freshWater", tr( "Freshwater" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
         } );
 
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { NUtilities::NConversions::depthFreshwaterToSeawaterFormula( getVariable( "freshWater" ), getVariable( "seaWater" ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { NUtilities::NConversions::depthSeawaterToFreshwaterFormula( getVariable( "freshWater" ), getVariable( "seaWater" ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "seaWater" )
     {

@@ -20,8 +20,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -45,20 +45,20 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "tankVolume", tr( "Tank Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "ratedTankPressure", tr( "Tank Pressure Rating" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "currTankPressure", tr( "Current Tank Pressure" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "gasVolume", tr( "Gas Volume" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "tankVolume", tr( "Tank Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "ratedTankPressure", tr( "Tank Pressure Rating" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "currTankPressure", tr( "Current Tank Pressure" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "gasVolume", tr( "Gas Volume" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
         } );
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { std::make_shared< CFormula >( getVariable( "gasVolume" ), R"__(<tankVolume> \times \frac{<currTankPressure>}{<ratedTankPressure>})__" ) } );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool /*imperial*/, bool /*seaWater*/ ) const
 {
     if ( unsetVar == "gasVolume" )
         return myBaseFormulas( false, false );

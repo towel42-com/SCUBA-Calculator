@@ -23,8 +23,8 @@ public:
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual void setupCustomDependencies() override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -48,10 +48,10 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EUnit::ePercent, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >(
+            CVariableInfo::create( "ata", tr( "Absolute Pressure at Depth" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "partialPressureAtDepth", tr( "Partial Pressure at Depth" ), EUnit::ePercent, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "depth", tr( "Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            CVariableInfo::create(
                 "partialPressureAtSurface", tr( "Partial Pressure at Surface" ), EUnit::ePercent, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
                     {}, {},
@@ -69,14 +69,14 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     auto formulas = TFormulaList( { NUtilities::NConversions::depthToATAFormula( getVariable( "ata" ), getVariable( "depth" ) ) } );
     formulas.emplace_back( std::make_shared< CFormula >( getVariable( "partialPressureAtDepth" ), QString( R"__(<ata_value> \times <partialPressureAtSurface>)__" ) ) );
     return formulas;
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "partialPressureAtDepth" )
     {

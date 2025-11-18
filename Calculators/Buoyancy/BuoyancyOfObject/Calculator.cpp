@@ -22,8 +22,8 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -47,18 +47,18 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     return   //
         {
-            std::make_shared< CVariableInfo >( "buoyancy", tr( "Buoyancy" ), EUnit::eWeight, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "weightOfObject", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "volumeDisplaced", tr( "Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "buoyancy", tr( "Buoyancy" ), EUnit::eWeight, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "weightOfObject", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "volumeDisplaced", tr( "Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
         };
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { std::make_shared< CFormula >( getVariable( "buoyancy" ), QString( R"__(<weightOfObject> - [<volumeDisplaced> \times %1])__" ).arg( NUtilities::fieldNameForType( EConstantType::eWeightPerVolumeOfWaterConst ) ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "buoyancy" )
     {

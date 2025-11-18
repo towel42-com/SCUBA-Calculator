@@ -26,9 +26,9 @@ public:
     
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior );
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const override;
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const override;
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -58,10 +58,10 @@ TVariableInfoList CCalculator::getMyVariables( bool *preReversed ) const
     *preReversed = true;
 
     auto retVal = TVariableInfoList( {
-        std::make_shared< CVariableInfo >( "p1", tr( "Pressure 1" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "v1", tr( "Volume 1" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
-        std::make_shared< CVariableInfo >( "p2", tr( "Pressure 2" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
-        std::make_shared< CVariableInfo >( "v2", tr( "Volume 2" ), EUnit::eVolume, EVariableLoc::eRHS )   //
+        CVariableInfo::create( "p1", tr( "Pressure 1" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+        CVariableInfo::create( "v1", tr( "Volume 1" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+        CVariableInfo::create( "p2", tr( "Pressure 2" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+        CVariableInfo::create( "v2", tr( "Volume 2" ), EUnit::eVolume, EVariableLoc::eRHS )   //
     } );
 
     if ( isReversed() )
@@ -95,17 +95,17 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { std::make_shared< CFormula >( getVariable( "p2" ), QString( R"__(<p1> \times \frac{<v1>}{<v2>})__" ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { std::make_shared< CFormula >( getVariable( "v2" ), QString( R"__(<v1> \times \frac{<p1>}{<p2>})__" ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "p2" )
     {

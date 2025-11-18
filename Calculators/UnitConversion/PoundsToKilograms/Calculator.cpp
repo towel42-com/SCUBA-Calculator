@@ -24,9 +24,9 @@ public:
 
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList myReversedBaseFormulas( bool imperial, bool seaWater ) const override;
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -55,24 +55,24 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "pounds", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS, true ),   //
-            std::make_shared< CVariableInfo >( "kiloGrams", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eLHS, false ),   //
+            CVariableInfo::create( "pounds", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS, true ),   //
+            CVariableInfo::create( "kiloGrams", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eLHS, false ),   //
         } );
 
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { NUtilities::NConversions::lbsToKGsFormula( getVariable( "pounds" ), getVariable( "kiloGrams" ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return TFormulaList( { NUtilities::NConversions::kgsToLbsFormula( getVariable( "pounds" ), getVariable( "kiloGrams" ) ) } );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "kiloGrams" )
     {
@@ -90,12 +90,12 @@ void CCalculator::computeVariableValues()
     auto pounds = getVariable( "pounds" );
     auto kiloGrams = getVariable( "kiloGrams" );
 
-    if ( kiloGrams->has_value() && !kiloGrams->dependenciesSatisfied() )
+    if ( kiloGrams->has_value() && kiloGrams->dependenciesSatisfied() )
     {
         kiloGrams->setValue( NUtilities::NConversions::lbsToKGs( pounds->value() ) );
     }
     
-    if ( !pounds->has_value() && !pounds->dependenciesSatisfied() )
+    if ( !pounds->has_value() && pounds->dependenciesSatisfied() )
     {
         pounds->setValue( NUtilities::NConversions::kgsToLbs( kiloGrams->value() ) );
     }

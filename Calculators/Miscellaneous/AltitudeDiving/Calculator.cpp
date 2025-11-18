@@ -23,8 +23,8 @@ public:
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual void setupCustomDependencies() override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -48,11 +48,11 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "altitude", tr( "Altitude" ), EUnit::eLength, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Actual Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "theoreticalDepth", tr( "Theoretical Depth" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "safetyStop", tr( "Safety Stop" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "surfacePressure", tr( "Surface Air Pressure @ Altitude" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "altitude", tr( "Altitude" ), EUnit::eLength, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "depth", tr( "Actual Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "theoreticalDepth", tr( "Theoretical Depth" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "safetyStop", tr( "Safety Stop" ), EUnit::eDepth, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "surfacePressure", tr( "Surface Air Pressure @ Altitude" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
         } );
 
     auto pos = std::prev( std::prev( retVal.end() ) );
@@ -63,7 +63,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool imperial, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool imperial, bool /*seaWater*/ ) const
 {
     auto formulas = TFormulaList( { NUtilities::NConversions::surfacePressureAtAltitudeFormula( imperial, getVariable( "surfacePressure" ), getVariable( "altitude" ) ) } );
 
@@ -73,7 +73,7 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool imperial, bool /
     return formulas;
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     TFormulaList retVal;
 

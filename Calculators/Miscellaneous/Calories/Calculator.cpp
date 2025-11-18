@@ -25,8 +25,8 @@ public:
 
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
     virtual void setupCustomDependencies() override;
@@ -51,15 +51,15 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal = TVariableInfoList(   //
         {
-            std::make_shared< CVariableInfo >( "calories", tr( "Calories" ), EUnit::eCalories, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "weight", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "duration", tr( "Bottom Time" ), EUnit::eTime, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "temp", tr( "Temperature" ), EUnit::eTemperature, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "weightM", tr( "Weight (%1)" ).arg( NUtilities::NUnitStrings::weightUnit( false, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "depthMS", tr( "Depth (%1)" ).arg( NUtilities::NUnitStrings::depthUnit( false, true, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "tempM", tr( "Temperature (%1)" ).arg( NUtilities::NUnitStrings::tempUnit( false, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >(
+            CVariableInfo::create( "calories", tr( "Calories" ), EUnit::eCalories, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "weight", tr( "Weight" ), EUnit::eWeight, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "duration", tr( "Bottom Time" ), EUnit::eTime, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "depth", tr( "Average Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "temp", tr( "Temperature" ), EUnit::eTemperature, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "weightM", tr( "Weight (%1)" ).arg( NUtilities::NUnitStrings::weightUnit( false, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "depthMS", tr( "Depth (%1)" ).arg( NUtilities::NUnitStrings::depthUnit( false, true, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "tempM", tr( "Temperature (%1)" ).arg( NUtilities::NUnitStrings::tempUnit( false, true, false ) ), EUnit::eNone, EVariableLoc::eRHS ),   //
+            CVariableInfo::create(
                 "activityLevel", tr( "Activity Level Adjustment" ), EUnit::eLargePercent, EVariableLoc::eRHS,
                 SBaseInfo< TNamedValueItemList >(
                     {}, {},
@@ -83,7 +83,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool imperial, bool seaWater ) const
 {
     return TFormulaList( { NUtilities::NConversions::NCaloriesComputer::computeCaloriesFormula( imperial, seaWater, getVariable( "calories" ), getVariable( "weight" ), getVariable( "depth" ), getVariable( "temp" ), getVariable( "activityLevel" ), getVariable( "duration" ) ) } );
 }
@@ -96,7 +96,7 @@ TVariableInfo CCalculator::determineVariableToUnset( EVariableLoc updateFromSide
         return getVariable( "duration" );
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( unsetVar == "calories" )
     {

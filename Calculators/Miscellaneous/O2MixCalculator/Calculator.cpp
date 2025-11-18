@@ -22,8 +22,8 @@ public:
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual void setupCustomDependencies() override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
 };
@@ -47,13 +47,13 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "mix1", tr( "Starting Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
-            std::make_shared< CVariableInfo >( "p1", tr( "Starting Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
-            std::make_shared< CVariableInfo >( "mix2", tr( "Final Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
-            std::make_shared< CVariableInfo >( "p2", tr( "Final Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
-            std::make_shared< CVariableInfo >( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "o2_t", tr( "Time to fill with 100% O2" ), EUnit::eTime, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ),  EUnit::eTime, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "mix1", tr( "Starting Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
+            CVariableInfo::create( "p1", tr( "Starting Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
+            CVariableInfo::create( "mix2", tr( "Final Mix" ), EUnit::ePercent, EVariableLoc::eRHS, SBaseInfo< SRange >( {}, {}, SRange( { NUtilities::NConstants::percentO2AtSurface(), 0.40, {}, 0.01 } ) ) ),   //
+            CVariableInfo::create( "p2", tr( "Final Pressure" ), EUnit::ePressure, EVariableLoc::eRHS, SBaseInfo< SRange >( true, {}, SRange( { 0.0, 4000, {}, 10 } ) ) ),   //
+            CVariableInfo::create( "o2_p", tr( "Fill with 100% O2 to Pressure" ), EUnit::ePressure, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "o2_t", tr( "Time to fill with 100% O2" ), EUnit::eTime, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "air_t", tr( "Fill Time with Air (%1%)" ).arg( NUtilities::doubleToString( NUtilities::NConstants::percentO2AtSurface(), 3 ) ), EUnit::eTime, EVariableLoc::eLHS ),   //
         } );
     auto pos = std::next( retVal.begin() );
     ( *pos )->addRange( false, {}, SRange( { 0.0, NUtilities::NConversions::psiToBar( 4000 ), {}, 1 } ) );
@@ -68,7 +68,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     TFormulaList formulas;
 
@@ -79,7 +79,7 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bo
     return formulas;
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     TFormulaList formulas;
     if ( unsetVar == "o2_p" )

@@ -43,8 +43,8 @@ public:
     virtual TVariableInfoList getMyVariables( bool * /*preReversed*/ ) const override;
     virtual void setupCustomDependencies() override;
 
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const override;   // for descriptive purposes
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
     virtual TVariableInfo determineVariableToUnset( EVariableLoc updateFromSide, QWidget *triggerWidget, bool preDefaultBehavior ) override;
@@ -69,16 +69,16 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
 {
     auto retVal =   //
         TVariableInfoList( {
-            std::make_shared< CVariableInfo >( "depth", tr( "Average Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "time", tr( "Time at Average Depth" ), EUnit::eTime, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "pressureUsed", tr( "Pressure used" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "tankVolume", tr( "Tank Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "tankPressure", tr( "Tank Pressure Rating" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "sac", tr( "SAC" ), EUnit::ePressurePerMinute, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "rmv", tr( "RMV" ), EUnit::eVolumePerMinute, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "gasConsumed", tr( "Gas Consumed" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
-            std::make_shared< CVariableInfo >( "ata", tr( "Absolute Pressure at Depth" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
-            std::make_shared< CVariableInfo >( "psiPerMin", tr( "PSI Per Minute" ), EUnit::ePressurePerMinute, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "depth", tr( "Average Depth" ), EUnit::eDepth, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "time", tr( "Time at Average Depth" ), EUnit::eTime, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "pressureUsed", tr( "Pressure used" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "tankVolume", tr( "Tank Volume" ), EUnit::eVolume, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "tankPressure", tr( "Tank Pressure Rating" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "sac", tr( "SAC" ), EUnit::ePressurePerMinute, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "rmv", tr( "RMV" ), EUnit::eVolumePerMinute, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "gasConsumed", tr( "Gas Consumed" ), EUnit::eVolume, EVariableLoc::eLHS ),   //
+            CVariableInfo::create( "ata", tr( "Absolute Pressure at Depth" ), EUnit::ePressure, EVariableLoc::eRHS ),   //
+            CVariableInfo::create( "psiPerMin", tr( "PSI Per Minute" ), EUnit::ePressurePerMinute, EVariableLoc::eRHS ),   //
 
         } );
     auto pos = std::prev( std::prev( retVal.end() ) );
@@ -88,7 +88,7 @@ TVariableInfoList CCalculator::getMyVariables( bool * /*preReversed*/ ) const
     return retVal;
 }
 
-std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculator::myBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     TFormulaList formulas = { NUtilities::NConversions::depthToATAFormula( getVariable( "ata" ), getVariable( "depth" ) ) };
     formulas.emplace_back( std::make_shared< CFormula >( getVariable( "psiPerMin" ), QString( R"__(\frac{<pressureUsed>}{<time>})__" ) ) );
@@ -99,7 +99,7 @@ std::optional< TFormulaList > CCalculator::myBaseFormulas( bool /*imperial*/, bo
     return formulas;
 }
 
-std::optional< TFormulaList > CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
+TOptionalFormulaList CCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const
 {
     if ( ( unsetVar == "sac" ) || ( unsetVar == "rmv" ) )
     {
