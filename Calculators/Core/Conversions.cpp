@@ -233,8 +233,8 @@ namespace NUtilities
         {
             auto formula = QString( R"__(\frac{%1 - %2}{%4})__" )   //
                                .arg( surfacePressure->fieldName() )
-                               .arg( NConstants::pressureAtSurface( imperial, true, true, true ) )
-                               .arg( NConstants::pressureLossPerAltitudeGain( imperial, true, true, true ) );
+                               .arg( NConstants::pressureAtSurface( imperial, true, true, EFormulaType::eBaseFormula ) )
+                               .arg( NConstants::pressureLossPerAltitudeGain( imperial, true, true, EFormulaType::eBaseFormula ) );
             return std::make_shared< CFormula >( altitude, formula );
         }
 
@@ -331,11 +331,11 @@ namespace NUtilities
                 TFormulaList formulas;
                 if ( imperial )
                 {
-                    formulas.push_back( std::make_shared< CFormula >( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) ) );
+                    formulas.push_back( std::make_shared< CFormula >( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, EFormulaType::eCurrentFormula ) ) ) );
                     if ( seaWater )
-                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, false ) ) ) );
+                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, EFormulaType::eCurrentFormula ) ) ) );
                     else
-                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) ) );
+                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, EFormulaType::eCurrentFormula ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, EFormulaType::eCurrentFormula ) ) ) );
 
                     formulas.push_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
                 }
@@ -404,11 +404,11 @@ namespace NUtilities
                 TFormulaList formulas;
                 if ( imperial )
                 {
-                    formulas.push_back( std::make_shared< CFormula >( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, false ) ) ) );
+                    formulas.push_back( std::make_shared< CFormula >( actualWeight = weight->clone( "M" ), QString( R"__(%2 \times %3)__" ).arg( weight->fieldName() ).arg( NConstants::kgsPerLbs( true, true, EFormulaType::eCurrentFormula ) ) ) );
                     if ( seaWater )
-                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, false ) ) ) );
+                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(%2 \times %3)__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, EFormulaType::eCurrentFormula ) ) ) );
                     else
-                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, false ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, false ) ) ) );
+                        formulas.push_back( std::make_shared< CFormula >( actualDepth = depth->clone( "MS" ), QString( R"__(\frac{%2 \times %3}{%4} )__" ).arg( depth->fieldName() ).arg( NConstants::metersPerFoot( true, true, EFormulaType::eCurrentFormula ) ).arg( NConstants::freshWaterToSeaWater( false, true, true, EFormulaType::eCurrentFormula ) ) ) );
 
                     formulas.push_back( farenheightToCelsiusFormula( actualTemp = temperature->clone( "M" ), temperature ) );
                 }

@@ -31,7 +31,6 @@ CFormula::CFormula( TVariableInfo variable, const QString &formula ) :
     fVariable( variable ),
     fFormula( formula )
 {
-    Q_ASSERT( fVariable );
 }
 
 CFormula::CFormula( TConstVariableInfo variable, const QString &formula ) :
@@ -44,19 +43,26 @@ CFormula::CFormula( const QString &formula ) :
 {
 }
 
-TFormula CFormula::applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType )
+QString CFormula::applyVariableValues( bool imperial, bool seaWater, const QString & formula, const TVariableInfoList &variables, EFormulaType formulaType )
 {
-    QString finalizedFormula = fFormula;
+    QString finalizedFormula = formula;
     for ( auto &&curr : variables )
     {
         finalizedFormula = curr->updateFormula( imperial, seaWater, finalizedFormula, formulaType );
     }
     NUtilities::NConstants::foreachConstantType(   //
-        [ &, this ]( EConstantType currConst )   //
+        [ & ]( EConstantType currConst )   //
         {   //
-            finalizedFormula = CVariableInfo::updateFormula( imperial, seaWater, finalizedFormula, currConst, ( formulaType == EFormulaType::eBaseFormula ) );
+            finalizedFormula = CVariableInfo::updateFormula( imperial, seaWater, finalizedFormula, currConst, formulaType );
             return true;
         } );
+
+    return finalizedFormula;
+}
+
+TFormula CFormula::applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType )
+{
+    auto finalizedFormula = applyVariableValues( imperial, seaWater, fFormula, variables, formulaType );
     return std::make_shared< CFormula >( fVariable, finalizedFormula );
 }
 

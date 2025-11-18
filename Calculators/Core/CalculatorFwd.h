@@ -122,7 +122,8 @@ enum class EFormulaType
 {
     eBaseFormula,   // the formula used as part of the description up top
     eCurrentFormula,   // the current formula in use (may be the same as base formula) without values
-    eCurrentValueFormula   // the current formula with values filled in
+    eCurrentValueFormula,   // the current formula with values filled in
+    eJSFormula // a JS formula, no units just values
 };
 
 class CVariableInfo;
@@ -152,6 +153,7 @@ using TOptionalNameValuePair = std::optional< TNameValuePair >;
 class CFormula;
 using TFormula = std::shared_ptr< CFormula >;
 using TFormulaList = std::list< TFormula >;
+using TOptionalFormulaList = std::optional< TFormulaList >;
 
 CALCULATORS_EXPORT Q_DECLARE_LOGGING_CATEGORY( Calculator );
 
