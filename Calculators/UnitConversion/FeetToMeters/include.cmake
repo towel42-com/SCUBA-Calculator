@@ -39,9 +39,6 @@ set(qtproject_QRC
 
 SET( project_pub_DEPS
     Qt6::Core
-    Qt6::Gui
-    Qt6::Widgets
     CalculatorCore
-    SABUtils
     ${project_pub_DEPS}
 )
