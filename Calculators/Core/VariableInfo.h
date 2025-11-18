@@ -37,6 +37,7 @@ class QDoubleSpinBox;
 class QFormLayout;
 class QComboBox;
 class QDoubleSpinBox;
+class QJsonObject;
 
 struct SRange
 {
@@ -44,6 +45,7 @@ struct SRange
     SRange( double min, double max, std::optional< double > defaultValue, double step );
     SRange( QDoubleSpinBox *spinBox );
 
+    static std::optional< SRange > fromJson( const QJsonObject &rangeObj, std::optional< QString > &errorMsg );
     double fMin{ 0.0 };
     double fMax{ 0.0 };
     std::optional< double > fDefaultValue;
@@ -137,15 +139,27 @@ struct SVariableValue
     }
 };
 
-class CALCULATORS_EXPORT CVariableInfo
+class CALCULATORS_EXPORT CVariableInfo : public std::enable_shared_from_this< CVariableInfo >
 {
+private:
+    struct SForceShared
+    {
+    };
+
 public:
-    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation );
-    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial );
-    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &range );
-    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &values );
+    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SForceShared & );
+    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial, const SForceShared & );
+    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &range, const SForceShared & );
+    CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &values, const SForceShared & );
+
+    static TVariableInfo create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation );
+    static TVariableInfo create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial );
+    static TVariableInfo create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &range );
+    static TVariableInfo create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &values );
 
     [[nodiscard]] std::shared_ptr< CVariableInfo > clone( const QString &suffix = {} ) const;
+
+    static [[nodiscard]] TVariableInfo fromJson( const QJsonObject &obj, std::optional< QString > &errorMsg );
 
     ~CVariableInfo() {}
 
@@ -167,7 +181,7 @@ public:
     void updateFieldFromValue( bool imperial, bool seaWater, bool notifyUI = false );   // updates fField from fValue
     void updateValueFromField();   // updates fValue from fField
     [[nodiscard]] QString updateFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const;
-    [[nodiscard]] static QString updateFormula( bool imperial, bool seaWater, const QString &formula, EConstantType constantType, bool descriptionNotValue );
+    [[nodiscard]] static QString updateFormula( bool imperial, bool seaWater, const QString &formula, EConstantType constantType, EFormulaType formulaType );
 
     [[nodiscard]] int numDecimals() const { return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2; }
     [[nodiscard]] double formulaValue() const;   // user responsible for calling has_value first
@@ -189,7 +203,7 @@ public:
     void setDefaultValues( const TNamedValueItemList &values );
     void addValues( std::optional< bool > imperial, std::optional< bool > seaWater, const TNamedValueItemList &values );
     void addValues( const SBaseInfo< TNamedValueItemList > &valueInfo );
-    void setUnitOverride( EUnit unit, bool imperial ) { fUnitOverride = { unit, imperial }; }   // overrides default behavior and always uses this string for the label
+    void setUnitOverride( EUnit unit, bool imperial );   // overrides default behavior and always uses this string for the label
 
     void setIsIntermediate( bool isIntermediate ) { fIntermediate = isIntermediate; }
 
@@ -210,7 +224,19 @@ public:
     void setDependencies( const TVariableInfoList &dependencies );
     bool dependenciesSatisfied() const;
 
+    void setTexFormulas( const std::list< QString > &formulas ) { fTexFormulas = formulas; }
+    void setJSFormulas( const std::list< QString > &formulas ) { fJSFormulas = formulas; }
+
+    TOptionalFormulaList formulaList( bool imperial, bool seaWater ) const;
+    void computeFromJS( bool imperial, bool seaWater, const TVariableInfoList &variables );
+
 private:
+    static bool loadRange( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &retVal );
+    static bool loadRangeList( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &retVal );
+
+    static bool loadValues( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &retVal, TNamedValueItemList &valueList );
+    static bool loadValuesList( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &retVal );
+
     TOptionalNamedValueItemList getValues( bool imperial, bool seaWater ) const;
     TOptionalDouble valueForString( const QString &text ) const;
     void updateFieldFromValue( QDoubleSpinBox *spinBox, bool notifyUI );
@@ -239,5 +265,8 @@ private:
     std::optional< std::pair< EUnit, bool > > fUnitOverride;
     TOptionalDouble fValue;
     TWeakVariableInfoList fDependencies;
+
+    std::optional< std::list< QString > > fTexFormulas;
+    std::optional< std::list< QString > > fJSFormulas;
 };
 #endif

@@ -1,9 +1,11 @@
 #include "VariableInfo.h"
 #include "CalculatorPage.h"
 #include "CalculatorBase.h"
+#include "Formula.h"
 
 #include "Utilities.h"
 #include "SABUtils/DelayLineEdit.h"
+#include "SABUtils/JsonUtils.h"
 
 #include <QLineEdit>
 #include <QDoubleSpinBox>
@@ -11,11 +13,14 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QComboBox>
-
+#include <QJsonObject>
+#include <QJSEngine>
+#include <QJSValue>
 #include <optional>
 #include <algorithm>
+#include <memory>
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation ) :
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SForceShared & ) :
     fName( name ),
     fDescription( desc ),
     fUnit( unitType ),
@@ -23,22 +28,42 @@ CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit un
 {
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial ) :
-    CVariableInfo( name, desc, EUnit::eNone, variableLocation )
+TVariableInfo CVariableInfo::create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation )
+{
+    return std::make_shared< CVariableInfo >( name, desc, unitType, variableLocation, SForceShared() );
+}
+
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial, const SForceShared &forceShared ) :
+    CVariableInfo( name, desc, EUnit::eNone, variableLocation, forceShared )
 {
     setUnitOverride( unitType, imperial );
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo ) :
-    CVariableInfo( name, desc, unitType, variableLocation )
+TVariableInfo CVariableInfo::create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, bool imperial )
+{
+    return std::make_shared< CVariableInfo >( name, desc, unitType, variableLocation, imperial, SForceShared() );
+}
+
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo, const SForceShared &forceShared ) :
+    CVariableInfo( name, desc, unitType, variableLocation, forceShared )
 {
     addRange( rangeInfo );
 }
 
-CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &valuesInfo ) :
-    CVariableInfo( name, desc, unitType, variableLocation )
+TVariableInfo CVariableInfo::create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< SRange > &rangeInfo )
+{
+    return std::make_shared< CVariableInfo >( name, desc, unitType, variableLocation, rangeInfo, SForceShared() );
+}
+
+CVariableInfo::CVariableInfo( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &valuesInfo, const SForceShared &forceShared ) :
+    CVariableInfo( name, desc, unitType, variableLocation, forceShared )
 {
     addValues( valuesInfo );
+}
+
+TVariableInfo CVariableInfo::create( const QString &name, const QString &desc, EUnit unitType, EVariableLoc variableLocation, const SBaseInfo< TNamedValueItemList > &valuesInfo )
+{
+    return std::make_shared< CVariableInfo >( name, desc, unitType, variableLocation, valuesInfo, SForceShared() );
 }
 
 bool CVariableInfo::createWidgets( CCalculatorPage *page, QFormLayout *formLayout )
@@ -338,6 +363,41 @@ bool CVariableInfo::dependenciesSatisfied() const
     return true;
 }
 
+TOptionalFormulaList CVariableInfo::formulaList( bool /*imperial*/, bool /*seaWater*/ ) const
+{
+    if ( !fTexFormulas.has_value() || fTexFormulas.value().empty() )
+        return {};
+
+    TFormulaList retVal;
+    for ( auto ii : fTexFormulas.value() )
+    {
+        auto curr = std::make_shared< CFormula >( shared_from_this(), ii );
+        retVal.push_back( curr );
+    }
+    return retVal;
+}
+
+void CVariableInfo::computeFromJS( bool imperial, bool seaWater, const TVariableInfoList &variables )
+{
+    if ( !fJSFormulas.has_value() || fJSFormulas.value().empty() )
+        return;
+
+    setValue( {} );
+
+    QJSEngine engine;
+    for ( auto &&ii : fJSFormulas.value() )
+    {
+        auto finalizedFormula = CFormula::applyVariableValues( imperial, seaWater, ii, variables, EFormulaType::eJSFormula );
+
+        auto value = engine.evaluate( finalizedFormula );
+        if ( value.isError() || !value.isNumber() )
+            return;
+
+        auto currVal = value.toNumber();
+        setValue( currVal );
+    }
+}
+
 void CVariableInfo::updateValueFromField()
 {
     if ( !isVariable() )
@@ -373,10 +433,10 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
 {
     QString value;
     QString format;
-    if ( ( formulaType == EFormulaType::eCurrentValueFormula ) && has_value() )
+    if ( ( ( formulaType == EFormulaType::eCurrentValueFormula ) || ( formulaType == EFormulaType::eJSFormula ) ) && has_value() )
     {
         value = NUtilities::doubleToString( formulaValue(), numDecimals() );
-        format = QString( "%1%2" );
+        format = ( formulaType == EFormulaType::eCurrentValueFormula ) ? QString( "%1%2" ) : "%1";
     }
     else
     {
@@ -389,7 +449,11 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
 
     if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eCurrentValueFormula ) )
     {
-        newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true, false ) );
+        newString = QString( R"__((%1%2 + %3))__" ).arg( value ).arg( unit ).arg( NUtilities::NConstants::absZeroOffset( imperial, true, true, formulaType ) );
+    }
+    else if ( ( fUnit == EUnit::eAbsZeroTemperature ) && has_value() && ( formulaType == EFormulaType::eJSFormula ) )
+    {
+        newString = QString( R"__((%1 + %2))__" ).arg( value ).arg( NUtilities::doubleToString( NUtilities::NConstants::absZeroOffset( imperial ), 4 ) );
     }
     else
     {
@@ -418,14 +482,14 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
     return retVal;
 }
 
-QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EConstantType varType, bool descriptionNotValue )
+QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QString &formula, EConstantType varType, EFormulaType formulaType )
 {
     auto token = NUtilities::fieldNameForType( varType );
     auto pos = formula.indexOf( token );
     if ( pos == -1 )
         return formula;
 
-    QString constantString = NUtilities::NConstants::constantString( imperial, seaWater, varType, descriptionNotValue );
+    QString constantString = NUtilities::NConstants::constantString( imperial, seaWater, varType, formulaType );
     QString retVal = formula;
     retVal.replace( token, constantString );
     return retVal;
@@ -499,6 +563,12 @@ void CVariableInfo::addValues( const SBaseInfo< TNamedValueItemList > &valueInfo
 {
     Q_ASSERT( isVariable() );
     fValues.addValue( valueInfo );
+}
+
+void CVariableInfo::setUnitOverride( EUnit unit, bool imperial )
+{
+    fUnit = EUnit::eNone;
+    fUnitOverride = { unit, imperial };
 }
 
 double CVariableInfo::formulaValue() const
@@ -652,7 +722,7 @@ void CVariableInfo::updateValuesAndRanges( bool imperial, bool seaWater )
 
 std::shared_ptr< CVariableInfo > CVariableInfo::clone( const QString &suffix /*={}*/ ) const
 {
-    auto retVal = std::make_shared< CVariableInfo >( name() + suffix, fDescription, fUnit, fVariableLocation );
+    auto retVal = std::make_shared< CVariableInfo >( name() + suffix, fDescription, fUnit, fVariableLocation, SForceShared() );
 
     retVal->fRanges = fRanges;
     retVal->fValues = fValues;
@@ -661,6 +731,287 @@ std::shared_ptr< CVariableInfo > CVariableInfo::clone( const QString &suffix /*=
     retVal->fIntermediate = fIntermediate;
 
     return retVal;
+}
+
+TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QString > &errorMsg )
+{
+    errorMsg = {};
+    if ( obj.isEmpty() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, its empty.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    QString name;
+    if ( !NSABUtils::fromJson( name, obj, "name" ) || name.isEmpty() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, missing name field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    QString description;
+    if ( !NSABUtils::fromJson( description, obj, "description" ) || description.isEmpty() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, missing description field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    bool intermediate{ false };
+    NSABUtils::fromJson( intermediate, obj, "intermediate" );
+
+    QString locationStr;
+    if ( !NSABUtils::fromJson( locationStr, obj, "location" ) || locationStr.isEmpty() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, missing location field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    std::optional< EVariableLoc > location;
+    if ( !NUtilities::fromString( location, locationStr ) || !location.has_value() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, invalid location value '%1'.", "CVariableInfo::fromJson" ).arg( locationStr );
+        return {};
+    }
+
+    QString unitStr;
+    if ( !NSABUtils::fromJson( unitStr, obj, "unit" ) || unitStr.isEmpty() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, missing unit field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    std::optional< EUnit > unitType;
+    if ( !NUtilities::fromString( unitType, unitStr ) || !unitType.has_value() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, missing unit value '%1'.", "CVariableInfo::fromJson" ).arg( unitStr );
+        return {};
+    }
+
+    std::optional< bool > imperial;
+    NSABUtils::fromJson( imperial, obj, "imperial" );
+
+    if ( obj.contains( "texFormula" ) && obj.contains( "texFormulas" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, can not contain a texFormula and texFormulas field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    std::list< QString > texFormulas;
+    NSABUtils::fromJson( texFormulas, obj, "texFormulas" );
+
+    QString texFormula;
+    NSABUtils::fromJson( texFormula, obj, "texFormula" );
+    if ( !texFormula.isEmpty() )
+        texFormulas.push_back( texFormula );
+
+    if ( obj.contains( "jsFormula" ) && obj.contains( "jsFormulas" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, can not contain a jsFormula and jsFormulas field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    std::list< QString > jsFormulas;
+    NSABUtils::fromJson( jsFormulas, obj, "jsFormulas" );
+
+    QString jsFormula;
+    NSABUtils::fromJson( jsFormula, obj, "jsFormula" );
+    if ( !jsFormula.isEmpty() )
+        jsFormulas.push_back( jsFormula );
+
+    auto retVal = std::make_shared< CVariableInfo >( name, description, unitType.value(), location.value(), SForceShared() );
+
+    if ( !texFormulas.empty() )
+        retVal->setTexFormulas( texFormulas );
+    if ( !jsFormulas.empty() )
+        retVal->setJSFormulas( jsFormulas );
+
+    if ( imperial.has_value() )
+        retVal->setUnitOverride( unitType.value(), imperial.value() );
+
+    retVal->setIsIntermediate( intermediate );
+
+    if ( obj.contains( "range" ) && obj.contains( "rangeList" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, can not contain a range and rangeList field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    if ( obj.contains( "values" ) && obj.contains( "valuesList" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, can not contain a values and valuesList field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    if ( ( obj.contains( "range" ) || obj.contains( "rangeList" ) ) && ( obj.contains( "values" ) || obj.contains( "valuesList" ) ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, can not contain a range or rangeList field and a values or valuesList field.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    if ( !loadRange( obj, errorMsg, retVal ) )
+        return {};
+
+    if ( !loadRangeList( obj, errorMsg, retVal ) )
+        return {};
+
+    TNamedValueItemList valueList;
+    if ( !loadValues( obj, errorMsg, retVal, valueList ) )
+        return {};
+
+    if ( !loadValuesList( obj, errorMsg, retVal ) )
+        return {};
+
+    return retVal;
+}
+
+bool CVariableInfo::loadRange( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &varInfo )
+{
+    if ( !obj.contains( "range" ) )
+        return true;
+
+    auto rangeVal = obj[ "range" ];
+    if ( !rangeVal.isObject() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, range field is not an object.", "CVariableInfo::fromJson" );
+        return false;
+    }
+
+    auto range = SRange::fromJson( rangeVal.toObject(), errorMsg );
+    if ( !range.has_value() )
+        return false;
+
+    varInfo->addRange( {}, {}, range.value() );
+    return true;
+}
+
+bool CVariableInfo::loadRangeList( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &varInfo )
+{
+    if ( !obj.contains( "rangeList" ) )
+        return true;
+
+    auto rangeListVal = obj[ "rangeList" ];
+    if ( !rangeListVal.isArray() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, rangeList field is not an array.", "CVariableInfo::fromJson" );
+        return false;
+    }
+
+    auto rangeArray = rangeListVal.toArray();
+    for ( auto &&ii : rangeArray )
+    {
+        if ( !ii.isObject() )
+        {
+            errorMsg = QObject::tr( "Invalid JSON object, rangeList item is not an object.", "CVariableInfo::fromJson" );
+            return false;
+        }
+        auto currObj = ii.toObject();
+        if ( !currObj.contains( "range" ) )
+        {
+            errorMsg = QObject::tr( "Invalid JSON object, rangeList item does not contain a range.", "CVariableInfo::fromJson" );
+            return false;
+        }
+
+        std::optional< bool > imperial;
+        std::optional< bool > seaWater;
+        NSABUtils::fromJson( imperial, currObj, "imperial" );
+        NSABUtils::fromJson( seaWater, currObj, "seaWater" );
+
+        auto range = SRange::fromJson( currObj[ "range" ].toObject(), errorMsg );
+        if ( !range.has_value() )
+            return false;
+        varInfo->addRange( imperial, seaWater, range.value() );
+    }
+    return true;
+}
+
+bool CVariableInfo::loadValues( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &varInfo, TNamedValueItemList &valueList )
+{
+    if ( !obj.contains( "values" ) )
+        return true;
+
+    auto valuesVal = obj[ "values" ];
+    if ( !valuesVal.isArray() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, values field is not an array.", "CVariableInfo::fromJson" );
+        return false;
+    }
+
+    auto valuesArray = valuesVal.toArray();
+    for ( auto &&currValue : valuesArray )
+    {
+        if ( !currValue.isObject() )
+        {
+            errorMsg = QObject::tr( "Invalid JSON object, invalid value field.", "CVariableInfo::fromJson" );
+            return false;
+        }
+
+        auto currObj = currValue.toObject();
+        QString key;
+        if ( !NSABUtils::fromJson( key, currObj, "valueName" ) || key.isEmpty() )
+        {
+            errorMsg = QObject::tr( "Invalid JSON object, invalid valueName field.", "CVariableInfo::fromJson" );
+            return false;
+        }
+
+        TOptionalDouble value;
+        if ( currObj.contains( "value" ) )
+        {
+            if ( !NSABUtils::fromJson( value, currObj, "value" ) )
+            {
+                errorMsg = QObject::tr( "Invalid JSON object, invalid value field.", "CVariableInfo::fromJson" );
+                return false;
+            }
+        }
+        valueList.emplace_back( key, value );
+    }
+
+    if ( varInfo )
+        varInfo->addValues( {}, {}, valueList );
+    return true;
+}
+
+bool CVariableInfo::loadValuesList( const QJsonObject &obj, std::optional< QString > &errorMsg, TVariableInfo &varInfo )
+{
+    if ( !obj.contains( "valuesList" ) )
+        return true;
+
+    auto valuesListVal = obj[ "valuesList" ];
+    if ( !valuesListVal.isArray() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, valuesList field is not an array.", "CVariableInfo::fromJson" );
+        return false;
+    }
+
+    auto rangeArray = valuesListVal.toArray();
+    for ( auto &&ii : rangeArray )
+    {
+        if ( !ii.isObject() )
+        {
+            errorMsg = QObject::tr( "Invalid JSON object, valuesList item is not an object.", "CVariableInfo::fromJson" );
+            return false;
+        }
+
+        auto currObj = ii.toObject();
+        if ( !currObj.contains( "values" ) )
+        {
+            errorMsg = QObject::tr( "Invalid JSON object, valuesList item does not contain values.", "CVariableInfo::fromJson" );
+            return false;
+        }
+
+        std::optional< bool > imperial;
+        std::optional< bool > seaWater;
+        NSABUtils::fromJson( imperial, currObj, "imperial" );
+        NSABUtils::fromJson( seaWater, currObj, "seaWater" );
+        TNamedValueItemList valueItemList;
+        auto tmp = TVariableInfo();
+        if ( !loadValues( currObj, errorMsg, tmp, valueItemList ) )
+        {
+            return false;
+        }
+        varInfo->addValues( imperial, seaWater, valueItemList );
+    }
+
+    return true;
 }
 
 QString CVariableInfo::fieldName() const
@@ -746,6 +1097,37 @@ SRange::SRange( QDoubleSpinBox *spinBox )
     fMax = spinBox->maximum();
     fDefaultValue = spinBox->value();
     fStep = spinBox->singleStep();
+}
+
+std::optional< SRange > SRange::fromJson( const QJsonObject &rangeObj, std::optional< QString > &errorMsg )
+{
+    if ( rangeObj.isEmpty() )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, range field is not an object.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    SRange range;
+    if ( !NSABUtils::fromJson( range.fMin, rangeObj, "min" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, range field missing min value.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    if ( !NSABUtils::fromJson( range.fMax, rangeObj, "max" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, range field missing max value.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    if ( !NSABUtils::fromJson( range.fStep, rangeObj, "step" ) )
+    {
+        errorMsg = QObject::tr( "Invalid JSON object, range field missing step value.", "CVariableInfo::fromJson" );
+        return {};
+    }
+
+    NSABUtils::fromJson( range.fDefaultValue, rangeObj, "defaultValue" );
+    return range;
 }
 
 bool SRange::operator==( const SRange &rhs )
