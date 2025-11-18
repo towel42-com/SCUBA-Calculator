@@ -269,4 +269,33 @@ namespace NUtilities
         }
         return retVal;
     }
+
+    QString toString( EVariableLoc value )
+    {
+        if ( value == EVariableLoc::eLHS )
+            return "lhs";
+        else if ( value == EVariableLoc::eRHS )
+            return "rhs";
+        return {};
+    }
+
+    bool fromString( std::optional< EVariableLoc > &value, const QString &str )
+    {
+        value = {};
+        auto locs =   //
+            {
+                EVariableLoc::eLHS,   //
+                EVariableLoc::eRHS
+            };
+        for ( auto &&ii : locs )
+        {
+            auto currStr = toString( ii );
+            if ( currStr.compare( str, Qt::CaseInsensitive ) == 0 )
+            {
+                value = ii;
+                return true;
+            }
+        }
+        return false;
+    }
 }

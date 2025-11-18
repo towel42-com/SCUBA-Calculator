@@ -82,34 +82,34 @@ namespace NUtilities
         CALCULATORS_EXPORT double safetyStopDepth( bool imperial, bool seaWater );
         CALCULATORS_EXPORT double waterWeightAdjustment( bool imperial, bool seaWater );
 
-        CALCULATORS_EXPORT QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString lbsPerKGs( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString kgsPerLbs( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString scubaMET( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString fillRateO2( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString fillRateAir( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString weightPerVolumeOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString volumePerWeightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString percentN2AtSurface( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString singleATMPerDepth( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString metersPerFoot( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString feetPerMeter( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString seaWaterToFreshWater( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString barPerPSI( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString psiPerBAR( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString pressureLossPerAltitudeGain( bool imperial, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString safetyStopDepth( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString litersPerCubicFoot( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString cubicFeetPerLiter( bool useAbbreviations, bool tex, bool description );
-        CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex, bool description );
+        CALCULATORS_EXPORT QString pressureChangePerDegreeChange( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString lbsPerKGs( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString kgsPerLbs( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString scubaMET( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString fillRateO2( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString fillRateAir( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString weightPerVolumeOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString volumePerWeightOfWater( bool imperial, bool seaWater, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString idealGasConstant( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString percentN2AtSurface( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString percentO2AtSurface( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString singleATMPerDepth( bool imperial, bool seaWater, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString metersPerFoot( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString feetPerMeter( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString freshWaterToSeaWater( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString seaWaterToFreshWater( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString barPerPSI( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString psiPerBAR( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString pressureAtSurface( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString pressureLossPerAltitudeGain( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString safetyStopDepth( bool imperial, bool seaWater, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString waterWeightAdjustment( bool imperial, bool seaWater, bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString litersPerCubicFoot( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString cubicFeetPerLiter( bool useAbbreviations, bool tex, EFormulaType formulaType );
+        CALCULATORS_EXPORT QString absZeroOffset( bool imperial, bool useAbbreviations, bool tex, EFormulaType formulaType );
 
         void foreachConstantType( const std::function< bool( EConstantType ) > &onConstType );   // function returns true if the loop should continue
-        QString constantString( bool imperial, bool seaWater, EConstantType constantType, bool description );
+        QString constantString( bool imperial, bool seaWater, EConstantType constantType, EFormulaType formulaType );
         TOptionalDouble constantValue( bool imperial, bool seaWater, EConstantType constantType );
     }
 
@@ -212,6 +212,11 @@ namespace NUtilities
     CALCULATORS_EXPORT bool hasVariable( const QString &formula );
 
     CALCULATORS_EXPORT [[nodiscard]] TFormulaList sortAndUniquifyFormulas( const TFormulaList &formulas );
+
+    CALCULATORS_EXPORT bool fromString( std::optional< EUnit > &value, const QString &str );
+    CALCULATORS_EXPORT QString toString( EUnit value );
+    CALCULATORS_EXPORT bool fromString( std::optional< EVariableLoc > &value, const QString &str );
+    CALCULATORS_EXPORT QString toString( EVariableLoc value );
 };
 
 #endif
