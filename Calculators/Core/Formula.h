@@ -34,6 +34,7 @@ public:
     CFormula( TConstVariableInfo variable, const QString &formula );
     CFormula( const QString &formula );
 
+    static QString applyVariableValues( bool imperial, bool seaWater, const QString & formula, const TVariableInfoList &variables, EFormulaType formulaType );
     TFormula applyVariables( bool imperial, bool seaWater, const TVariableInfoList &variables, EFormulaType formulaType );
     QString equation( bool imperial, bool seaWater ) const;
     [[nodiscard]] TFormula getFinalValueFormula( bool imperial, bool seaWater, CCalculatorBase *calculator );
@@ -65,6 +66,27 @@ inline bool operator==( const TFormula &lhs, const TFormula &rhs )
 }
 
 inline bool operator!=( const TFormula &lhs, const TFormula &rhs )
+{
+    return !operator==( lhs, rhs );
+}
+
+inline bool operator==( const TFormulaList &lsh, const TFormulaList &rhs )
+{
+    bool isSame = ( lsh.size() == rhs.size() );
+    if ( isSame )
+    {
+        auto &&ii = lsh.begin();
+        auto &&jj = rhs.begin();
+
+        for ( ; isSame && ( ii != lsh.end() ) && ( jj != rhs.end() ); ++ii, ++jj )
+        {
+            isSame = ( *ii == *jj );
+        }
+    }
+    return isSame;
+}
+
+inline bool operator!=( const TFormulaList &lhs, const TFormulaList &rhs )
 {
     return !operator==( lhs, rhs );
 }
