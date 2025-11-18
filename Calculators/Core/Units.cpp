@@ -214,4 +214,90 @@ namespace NUtilities
             return ratio( NUnitStrings::volumeUnit( imperial, useAbbreviations, tex ), NUnitStrings::timeUnit( imperial, useAbbreviations, tex ), tex );
         }
     }
+
+    QString toString( EUnit value )
+    {
+        switch ( value )
+        {
+            case EUnit::eNone:
+                return QObject::tr( "None", "toString(EUnit)" );
+                break;   //
+            case EUnit::eVolume:
+                return QObject::tr( "Volume", "toString(EUnit)" );
+                break;   //
+            case EUnit::eWeight:
+                return QObject::tr( "Weight", "toString(EUnit)" );
+                break;   //
+            case EUnit::eLength:
+                return QObject::tr( "Length", "toString(EUnit)" );
+                break;   //
+            case EUnit::eDepth:
+                return QObject::tr( "Depth", "toString(EUnit)" );
+                break;   //
+            case EUnit::ePressure:
+                return QObject::tr( "Pressure", "toString(EUnit)" );
+                break;   //
+            case EUnit::eAtmospheres:
+                return QObject::tr( "Atmospheres", "toString(EUnit)" );
+                break;   //
+            case EUnit::eTemperature:
+                return QObject::tr( "Temperature", "toString(EUnit)" );
+                break;   //
+            case EUnit::eAbsZeroTemperature:
+                return QObject::tr( "AbsZeroTemperature", "toString(EUnit)" );
+                break;
+            case EUnit::ePercent:
+                return QObject::tr( "Percent", "toString(EUnit)" );
+                break;   // values case EUnit::expected to be below 100%
+            case EUnit::eLargePercent:
+                return QObject::tr( "LargePercent", "toString(EUnit)" );
+                break;   // values case EUnit::expected to be above 100%
+            case EUnit::eTime:
+                return QObject::tr( "Time", "toString(EUnit)" );
+                break;   //
+            case EUnit::eCalories:
+                return QObject::tr( "Calories", "toString(EUnit)" );
+                break;   //
+            case EUnit::eVolumePerMinute:
+                return QObject::tr( "VolumePerMinute", "toString(EUnit)" );
+                break;   //
+            case EUnit::ePressurePerMinute:
+                return QObject::tr( "PressurePerMinute", "toString(EUnit)" );
+                break;   //
+            default:
+                return {};
+        }
+    }
+    bool fromString( std::optional< EUnit > &value, const QString &str )
+    {
+        value = {};
+        auto units =   //
+            {
+                EUnit::eNone,   //
+                EUnit::eVolume,   //
+                EUnit::eWeight,   //
+                EUnit::eLength,   //
+                EUnit::eDepth,   //
+                EUnit::ePressure,   //
+                EUnit::eAtmospheres,   //
+                EUnit::eTemperature,   //
+                EUnit::eAbsZeroTemperature,
+                EUnit::ePercent,   // values EUnit::expected to be below 100%
+                EUnit::eLargePercent,   // values EUnit::expected to be above 100%
+                EUnit::eTime,   //
+                EUnit::eCalories,   //
+                EUnit::eVolumePerMinute,   //
+                EUnit::ePressurePerMinute   //
+            };
+        for ( auto &&ii : units )
+        {
+            auto currStr = toString( ii );
+            if ( currStr.compare( str, Qt::CaseInsensitive ) == 0 )
+            {
+                value = ii;
+                return true;
+            }
+        }
+        return false;
+    }
 }
