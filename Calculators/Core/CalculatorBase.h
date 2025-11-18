@@ -45,7 +45,7 @@ class CALCULATORS_EXPORT CCalculatorBase : public QObject
     Q_OBJECT;
 
     Q_PROPERTY( bool showUnits READ showUnits );
-    Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
+    Q_PROPERTY( bool showWaterType READ showWaterType );
     Q_PROPERTY( bool isReversible READ isReversible );
 
 public:
@@ -76,8 +76,6 @@ public:
     virtual void setSeaWater( bool seaWater ) /*final*/;
 
     virtual void resetVariables() /*final*/;
-
-    virtual void initResources() const /*final*/;
 
 public:
     // used inside the DLL
@@ -111,11 +109,11 @@ protected:
     virtual QString myCalculatorName() const;
     virtual QString myReversedCalculatorName() const;
 
-    virtual TFormulaList getBaseFormulas() const final;   // for descriptive purposes
+    virtual TFormulaList getBaseFormulas( bool forceReverse = false ) const final;   // for descriptive purposes
 
-    virtual std::optional< TFormulaList > getCurrentFormulas() const final;   // returns the current formula in use
-    virtual std::optional< TFormulaList > myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
-    virtual std::optional< TFormulaList > myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
+    virtual TOptionalFormulaList getCurrentFormulas() const final;   // returns the current formula in use
+    virtual TOptionalFormulaList myBaseFormulas( bool imperial, bool seaWater ) const = 0;   // when the formula depends on watertype and/or units but not just in units
+    virtual TOptionalFormulaList myReversedBaseFormulas( bool imperial, bool seaWater ) const;   // when the formula depends on watertype and/or units but not just in units
 
     void initVariables();
     TVariableInfoList unsetVariables() const;
@@ -153,7 +151,7 @@ protected:
 
     TVariableInfoList getUnsetVariables() const;
     TVariableInfo getFirstUnsetVariable() const;
-    virtual std::optional< TFormulaList > getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
+    virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const = 0;   // returns the current formula in use
 
     TVariableInfo getFirstVariable( EVariableLoc side ) const;
     TVariableInfo getLastVariable( EVariableLoc side ) const;

@@ -40,7 +40,7 @@ public:
 
 public:
     Q_PROPERTY( bool showUnits READ showUnits );
-    Q_PROPERTY( bool isWaterTypeBased READ isWaterTypeBased );
+    Q_PROPERTY( bool showWaterType READ showWaterType );
 
     CCalculatorPage( CCalculatorBase *calculator, QWidget *parent );
     virtual ~CCalculatorPage();
@@ -57,7 +57,7 @@ public:
     virtual void setSeaWater( bool seaWater ) final;
 
     virtual bool showUnits() const;
-    virtual bool isWaterTypeBased() const;
+    virtual bool showWaterType() const;
 
     virtual bool needsInit() const;
 

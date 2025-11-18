@@ -4,8 +4,11 @@
 #include "Utilities.h"
 #include "Formula.h"
 
-#include <memory>
 #include <QRegularExpression>
+#include <QFile>
+#include <QFileInfo>
+
+#include <memory>
 
 // https://scuba.garykessler.net/EANcalculator/EAN_psi.html
 // https://allthingsdiving.com/dive-calculators/
@@ -36,14 +39,18 @@ QString CCalculatorBase::myReversedCalculatorName() const
     return {};
 }
 
-std::optional< TFormulaList > CCalculatorBase::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
+TOptionalFormulaList CCalculatorBase::myReversedBaseFormulas( bool /*imperial*/, bool /*seaWater*/ ) const
 {
     return {};
 }
 
-TFormulaList CCalculatorBase::getBaseFormulas() const
+TFormulaList CCalculatorBase::getBaseFormulas( bool forceReverse ) const
 {
-    auto retVal = ( isReversed() ) ? myReversedBaseFormulas( imperial(), seaWater() ) : myBaseFormulas( imperial(), seaWater() );
+    bool isReversed = this->isReversed();
+    if ( forceReverse && isReversible() )
+        isReversed = !isReversed;
+
+    auto retVal = isReversed ? myReversedBaseFormulas( imperial(), seaWater() ) : myBaseFormulas( imperial(), seaWater() );
     if ( retVal.has_value() )
         return retVal.value();
     return {};
@@ -349,10 +356,6 @@ TVariableInfo CCalculatorBase::determineVariableToUnset( EVariableLoc /*updateFr
     return {};
 }
 
-void CCalculatorBase::initResources() const
-{
-}
-
 TVariableInfo CCalculatorBase::getLastVariable( EVariableLoc side ) const
 {
     auto &&variables = ( side == EVariableLoc::eLHS ) ? fLHSVariables : fRHSVariables;
@@ -462,7 +465,7 @@ void CCalculatorBase::compute( EVariableLoc updateFromSide, QWidget *triggerWidg
     updateFields( triggerWidget );
 }
 
-std::optional< TFormulaList > CCalculatorBase::getCurrentFormulas() const
+TOptionalFormulaList CCalculatorBase::getCurrentFormulas() const
 {
     auto baseFormulas = getBaseFormulas();
 
@@ -471,20 +474,13 @@ std::optional< TFormulaList > CCalculatorBase::getCurrentFormulas() const
     if ( !formulasForVar.has_value() )
         return baseFormulas;
 
-    bool baseIsSame = ( formulasForVar.value().size() == baseFormulas.size() );
-    if ( baseIsSame )
-    {
-        auto &&ii = formulasForVar.value().begin();
-        auto &&jj = baseFormulas.begin();
+    auto reverseFormulas = getBaseFormulas( true );
 
-        for ( ; baseIsSame && ( ii != formulasForVar.value().end() ) && ( jj != baseFormulas.end() ); ++ii, ++jj )
-        {
-            baseIsSame = ( *ii == *jj );
-        }
-    }
+    if ( formulasForVar.value() == reverseFormulas )
+        baseFormulas = reverseFormulas;
 
     auto retVal = baseFormulas;
-    if ( !baseIsSame )
+    if ( formulasForVar.value() != baseFormulas )
     {
         for ( auto &&ii : retVal )
         {

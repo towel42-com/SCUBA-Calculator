@@ -68,7 +68,7 @@ bool CCalculatorPage::showUnits() const
     return fCalculator->showUnits();
 }
 
-bool CCalculatorPage::isWaterTypeBased() const
+bool CCalculatorPage::showWaterType() const
 {
     return fCalculator->showWaterType();
 }
