@@ -525,6 +525,11 @@ TVariableInfo CCalculatorBase::getFirstUnsetVariable() const
     auto unset = getUnsetVariables();
     if ( unset.empty() )
         return {};
+    for(auto && ii : unset)
+    {
+        if ( ii->variableLoc() == EVariableLoc::eLHS )
+            return ii;
+    }
     return unset.front();
 }
 
