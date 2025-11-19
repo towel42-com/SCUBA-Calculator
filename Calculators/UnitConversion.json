@@ -1,0 +1,130 @@
+[
+  {
+    "reversible": true,
+    "fromToLabels": [ "PSI", "BAR" ],
+    "Path": [ "Unit Conversion", "Imperial to Metric" ],
+    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "showUnits": false,
+    "showWaterType": false,
+    "baseFormula": "<bar>",
+    "reversedBaseFormula": "<psi>",
+    "variables": [
+      {
+        "name": "psi",
+        "description": "Pressure",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "pressure",
+        "imperial": true,
+        "texFormula": "<bar> \times <barToPSIConst>",
+        "jsFormula": "<bar> * <barToPSIConst>"
+      },
+      {
+        "name": "bar",
+        "description": "Pressure",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "pressure",
+        "imperial": false,
+        "texFormula": "<psi> \times <psiToBarConst>",
+        "jsFormula": "<psi> * <psiToBarConst>"
+      }
+    ]
+  },
+  {
+    "reversible": true,
+    "fromToLabels": [ "Pounds", "Kilograms" ],
+    "Path": [ "Unit Conversion", "Imperial to Metric" ],
+    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "showUnits": false,
+    "showWaterType": false,
+    "baseFormula": "<kilograms>",
+    "reversedBaseFormula": "<pounds>",
+    "variables": [
+      {
+        "name": "pounds",
+        "description": "Weight",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "weight",
+        "imperial": true,
+        "texFormula": "<kilograms> \times <kgsToLbsConst>",
+        "jsFormula": "<kilograms> * <kgsToLbsConst>"
+      },
+      {
+        "name": "kilograms",
+        "description": "Weight",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "weight",
+        "imperial": false,
+        "texFormula": "<pounds> \times <kLbsPerKgsConstFieldName>",
+        "jsFormula": "<pounds> * <kLbsPerKgsConstFieldName>"
+      }
+    ]
+  },
+  {
+    "reversible": true,
+    "fromToLabels": [ "Feet", "Meters" ],
+    "Path": [ "Unit Conversion", "Imperial to Metric" ],
+    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "showUnits": false,
+    "showWaterType": false,
+    "baseFormula": "<meters>",
+    "reversedBaseFormula": "<feet>",
+    "variables": [
+      {
+        "name": "feet",
+        "description": "Length",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "length",
+        "imperial": true,
+        "texFormula": "<meters> \times <metersToFeetConst>",
+        "jsFormula": "<meters> * <metersToFeetConst>"
+      },
+      {
+        "name": "meters",
+        "description": "Length",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "length",
+        "imperial": false,
+        "texFormula": "<feet> \times <feetToMetersConst>",
+        "jsFormula": "<feet> * <feetToMetersConst>"
+      }
+    ]
+  },
+  {
+    "reversible": true,
+    "fromToLabels": [ "Cubic Feet", "Liters" ],
+    "Path": [ "Unit Conversion", "Imperial to Metric" ],
+    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "showUnits": false,
+    "showWaterType": false,
+    "baseFormula": "<liters>",
+    "reversedBaseFormula": "<cubicfeet>",
+    "variables": [
+      {
+        "name": "cubicfeet",
+        "description": "Volume",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "volume",
+        "imperial": true,
+        "texFormula": "<liters> \times <litersToCubicFeetConst>",
+        "jsFormula": "<liters> * <litersToCubicFeetConst>"
+      },
+      {
+        "name": "liters",
+        "description": "Length",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "volume",
+        "imperial": false,
+        "texFormula": "<cubicfeet> \times <cubicFeetToLitersConst>",
+        "jsFormula": "<cubicfeet> * <cubicFeetToLitersConst>"
+      }
+    ]
+  }
+]

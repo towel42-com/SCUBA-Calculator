@@ -22,10 +22,7 @@
 
 
 function(AddFilesToCalculatorQRC calculator globString baseName )
-   file( GLOB 
-        _FILES  
-        ${globString}
-    )
+   file( GLOB _FILES ${globString} )
     
     if ( NOT _FILES OR ( "${_FILES}" STREQUAL "" ) )
         return()
@@ -61,66 +58,63 @@ endfunction()
 
 function(AddToCalculatorList calculator groupName)
     set( GROUP_NAME ${groupName} )
-    set( ROOT_TARGET "SCUBA-Calculator" )
+    get_property(ROOT_TARGET GLOBAL PROPERTY MAIN_EXE_PROJECT_NAME)
     set( CALC_DIR "Calculators" )
     SET( DEST_DIR "$<TARGET_FILE_DIR:${ROOT_TARGET}>/${CALC_DIR}" )
 
-    if ( TARGET ${calculator} )
-        get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
-        list(APPEND _CURR "${calculator}")
-        set_property(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "${_CURR}")
+    get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
+    list(APPEND _CURR "${calculator}")
+    set_property(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "${_CURR}")
 
-        INSTALL( TARGETS ${calculator} RUNTIME DESTINATION Calculators )
-        INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
+    INSTALL( TARGETS ${calculator} RUNTIME DESTINATION Calculators )
+    INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
 
-        set_target_properties( ${calculator} PROPERTIES FOLDER Libs/Calculators/${GROUP_NAME} )
-        set_target_properties( ${calculator} PROPERTIES DEBUG_POSTFIX d )
+    set_target_properties( ${calculator} PROPERTIES FOLDER Libs/Calculators/${GROUP_NAME} )
+    set_target_properties( ${calculator} PROPERTIES DEBUG_POSTFIX d )
 
-        SET( DLL_NAME "$<TARGET_FILE_NAME:${calculator}>" )
-        SET( DLL_SRC_PATH "$<TARGET_FILE:${calculator}>" )
-        SET( DLL_DEST_PATH "${DEST_DIR}/${DLL_NAME}" )
-    
-        SET( PDB_NAME "$<TARGET_FILE_NAME:${calculator}>" )
-        SET( PDB_SRC_PATH "$<TARGET_PDB_FILE:${calculator}>" )
-        SET( PDB_DEST_PATH "${DEST_DIR}/$<TARGET_FILE_BASE_NAME:${calculator}>.pdb" )
-    
-        configure_file(
-            "${CMAKE_SOURCE_DIR}/Calculators/CalculatorDef.h.in"
-            "${CMAKE_CURRENT_BINARY_DIR}/CalculatorDef.h"
-            @ONLY
-        )
+    SET( DLL_NAME "$<TARGET_FILE_NAME:${calculator}>" )
+    SET( DLL_SRC_PATH "$<TARGET_FILE:${calculator}>" )
+    SET( DLL_DEST_PATH "${DEST_DIR}/${DLL_NAME}" )
 
-        add_custom_command(TARGET ${calculator} POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
-            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target Library Library '${DLL_NAME}' for '${ROOT_TARGET}'"
-            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${DLL_SRC_PATH}" \"${DLL_DEST_PATH}\"
-            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target PDB File '${PDB_SRC_PATH}' for '${ROOT_TARGET}'"
-            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
-        )
-    
-        AddFilesToCalculatorQRC( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json formulas)
-        AddFilesToCalculatorQRC( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json calculator)
-    endif()
-    
-    if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json )
-        set( _JSON_CALC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json )
+    SET( PDB_NAME "$<TARGET_FILE_NAME:${calculator}>" )
+    SET( PDB_SRC_PATH "$<TARGET_PDB_FILE:${calculator}>" )
+    SET( PDB_DEST_PATH "${DEST_DIR}/$<TARGET_FILE_BASE_NAME:${calculator}>.pdb" )
 
-        INSTALL( FILES ${_JSON_CALC_FILE} DESTINATION ${CALC_DIR} RENAME ${calculator}.json )
-        
-        get_property(_CURR GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST)
-        list(APPEND _CURR ${_JSON_CALC_FILE} )
-        list(APPEND _CURR ${calculator} )
-        set_property(GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST "${_CURR}")
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/Calculators/CalculatorDef.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CalculatorDef.h"
+        @ONLY
+    )
 
-        if ( TARGET ${calculator} )
-            add_custom_command(TARGET ${calculator} POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
-                COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target JSON Calculator '${_JSON_CALC_FILE}' for '${calculator}'"
-                COMMAND "${CMAKE_COMMAND}" -E create_symlink "${_JSON_CALC_FILE}" \"${DEST_DIR}/${calculator}.json\"
-            )
-        endif()
-    endif()
+    add_custom_command(TARGET ${calculator} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
+        COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target Library Library '${DLL_NAME}' for '${ROOT_TARGET}'"
+        COMMAND "${CMAKE_COMMAND}" -E create_symlink "${DLL_SRC_PATH}" \"${DLL_DEST_PATH}\"
+        COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target PDB File '${PDB_SRC_PATH}' for '${ROOT_TARGET}'"
+        COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
+    )
+
+    AddFilesToCalculatorQRC( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json formulas)
+    AddFilesToCalculatorQRC( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json calculator)
+   
 endfunction()
+
+function(AddToJSONCalculatorList jsonFile )
+    if ( NOT EXISTS ${jsonFile} )
+        message( FATAL_ERROR "${jsonFile} does not exist")
+    endif()
+
+  
+    set( CALC_DIR "Calculators" )
+    INSTALL( FILES ${jsonFile} DESTINATION ${CALC_DIR} )
+    
+    get_filename_component( jsonCalcFileName ${jsonFile} NAME )
+
+    get_property(_CURR GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST)
+    list(APPEND _CURR "${jsonFile}" "${jsonCalcFileName}" )
+    set_property(GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST "${_CURR}")
+endfunction()
+
 
 add_subdirectory( Core )
 
@@ -130,4 +124,5 @@ add_subdirectory( PartialPressure )
 add_subdirectory( PressureDepth )
 add_subdirectory( PressureVolume )
 add_subdirectory( PressureTemperatureVolume )
-add_subdirectory( UnitConversion )
+
+AddToJSONCalculatorList( ${CMAKE_CURRENT_SOURCE_DIR}/UnitConversion.json )
