@@ -52,7 +52,7 @@ private:
 
     void showUnits( bool show );
     void showWaterType( bool show );
-    void addCalculator( CCalculatorBase *calculator );
+    void addCalculator( CCalculatorBase *calculator, const std::function< CCalculatorBase *() > &instantiator );
 
     void loadFormulasForPage( CCalculatorPage *page );
 
@@ -64,6 +64,8 @@ private:
     void setMathJaxWidgetsVisible( bool visible );
 
 private:
+    void loadJsonCalculators();
+    void loadDllCalculators();
     void setFormulaForPage( CCalculatorPage *page, const QString &formula, bool finished );
 
     CCalculatorBase *getCalculator( QTreeWidgetItem *leaf ) const;

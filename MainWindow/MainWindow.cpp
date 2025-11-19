@@ -3,6 +3,7 @@
 
 #include "Calculators/Core/CalculatorBase.h"
 #include "Calculators/Core/CalculatorPage.h"
+#include "Calculators/Core/JsonCalculator.h"
 
 #include "T42-MathJaxQt6/include/MathJaxQt6.h"
 #include "SABUtils/utils.h"
@@ -119,6 +120,48 @@ void CMainWindow::saveSettings()
 
 void CMainWindow::loadCalculators()
 {
+    loadDllCalculators();
+    loadJsonCalculators();
+    fImpl->whichCalculator->expandAll();
+    fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
+    fImpl->whichCalculator->resizeColumnToContents( 0 );
+    auto colWidth = fImpl->whichCalculator->columnWidth( 0 );
+    fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
+
+    slotSelectCalculator( nullptr );
+}
+
+void CMainWindow::loadJsonCalculators()
+{
+    auto calcDir = QApplication::applicationDirPath() + "/Calculators";
+
+    auto ii = QDirIterator( calcDir, QStringList() << "*.json" );
+    while ( ii.hasNext() )
+    {
+        auto jsonFile = ii.next();
+        if ( !QFileInfo( jsonFile ).isFile() )
+            continue;
+
+        auto instantiator = [ this, jsonFile ]()
+        {
+            auto calculator = CJsonCalculator::create( jsonFile, this );
+            if ( calculator->hasError() )
+            {
+                delete calculator;
+                calculator = nullptr;
+            }
+            return calculator;
+        };
+
+        auto calculator = instantiator();
+        if ( !calculator )
+            continue;
+        addCalculator( calculator, instantiator );
+    }
+}
+
+void CMainWindow::loadDllCalculators()
+{
     auto calcDir = QApplication::applicationDirPath() + "/Calculators";
 
     auto ii = QDirIterator( calcDir, QStringList() << "*.dll" );
@@ -150,25 +193,11 @@ void CMainWindow::loadCalculators()
             continue;
 
         auto calculator = instantiator();
-        addCalculator( calculator );
-
-        if ( calculator->isReversible() )
-        {
-            auto reversedCalc = instantiator();
-            reversedCalc->setIsReversed( calculator, true );
-            addCalculator( reversedCalc );
-        }
+        addCalculator( calculator, [ instantiator ]() { return instantiator(); } );
     }
-    fImpl->whichCalculator->expandAll();
-    fImpl->whichCalculator->sortByColumn( 0, Qt::SortOrder::AscendingOrder );
-    fImpl->whichCalculator->resizeColumnToContents( 0 );
-    auto colWidth = fImpl->whichCalculator->columnWidth( 0 );
-    fImpl->whichCalculator->setMinimumWidth( colWidth + 20 );
-
-    slotSelectCalculator( nullptr );
 }
 
-void CMainWindow::addCalculator( CCalculatorBase *calculator )
+void CMainWindow::addCalculator( CCalculatorBase *calculator, const std::function< CCalculatorBase *() > &instantiator )
 {
     auto path = calculator->calculatorPath();
     if ( path.isEmpty() )
@@ -193,6 +222,16 @@ void CMainWindow::addCalculator( CCalculatorBase *calculator )
                                       {   //
                                           this->setFormulaForPage( calcPage, formula, finished );
                                       } );
+
+    if ( instantiator && calculator->isReversible() && !calculator->isReversed() )
+    {
+        auto reversedCalc = instantiator();
+        if ( reversedCalc )
+        {
+            reversedCalc->setIsReversed( calculator, true );
+            addCalculator( reversedCalc, {} );
+        }
+    }
 }
 
 QString pathForItem( QTreeWidgetItem *rootItem, QTreeWidgetItem *item )
