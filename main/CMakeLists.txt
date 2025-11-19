@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 cmake_minimum_required(VERSION 3.22)
-project(SCUBA-Calculator) 
+
+get_property(ROOT_PROJECT GLOBAL PROPERTY MAIN_EXE_PROJECT_NAME)
+project(${ROOT_PROJECT}) 
 
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
@@ -38,17 +40,18 @@ if ( JSON_CALCULATOR_LIST )
     SET( DEST_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${CALC_DIR}" )
 
     foreach(ii RANGE 0 ${_end} 2)
-        list( GET JSON_CALCULATOR_LIST ${ii} jsonCalc)
+        list( GET JSON_CALCULATOR_LIST ${ii} fullPath)
         math(EXPR _next "${ii} + 1")
-        list( GET JSON_CALCULATOR_LIST ${_next} projectName)
+        list( GET JSON_CALCULATOR_LIST ${_next} fileName)
+        #MESSAGE( STATUS "fullPath = ${fullPath}" )
+        #MESSAGE( STATUS "fileName = ${fileName}" )
 
-        #MESSAGE( STATUS "jsonCalc = ${jsonCalc}" )
-        #MESSAGE( STATUS "projectName = ${projectName}" )
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
-            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target JSON Calculator '${jsonCalc}' - ${projectName}.json"
-            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${jsonCalc}" \"${DEST_DIR}/${projectName}.json\"
+            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target JSON Calculator '${fullPath}'"
+            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${fullPath}" \"${DEST_DIR}/${fileName}\"
         )
+            
         LIST( APPEND _PROJECT_DEPENDENCIES ${jsonCalc} )
     endforeach()
 endif()
