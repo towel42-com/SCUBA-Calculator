@@ -254,13 +254,13 @@ bool CJsonCalculator::loadJson()
         return false;
     }
 
-    if ( !NSABUtils::fromJson( fPath, obj, "Path" ) )
+    if ( !NSABUtils::fromJson( fPath, obj, "path" ) )
     {
         fErrorMsg = tr( "Invalid JSON. Root object does not contain a Path field" );
         return false;
     }
 
-    NSABUtils::fromJson( fReversePath, obj, "ReversePath" );
+    NSABUtils::fromJson( fReversePath, obj, "reversePath" );
     NSABUtils::fromJson( fShowUnits, obj, "showUnits" );
     NSABUtils::fromJson( fShowWaterType, obj, "showWaterType" );
 
