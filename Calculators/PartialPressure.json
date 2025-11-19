@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Equivalent Narcotic Depth w/Helium (END)",
+    "path": [ "Partial Pressure Calculations" ],
+    "showUnits": true,
+    "showWaterType": true,
+    "baseFormula": "<end>",
+    "variables": [
+      {
+        "name": "end",
+        "description": "Equivalent Narcotic Depth (END)",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "depth",
+        "texFormula": "[(<depth> + <depthToSingleAtmosphereConst>) \times (1.0 - <fhe>)] - <depthToSingleAtmosphereConst>"
+      },
+      {
+        "name": "depth",
+        "description": "Depth",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "depth",
+        "texFormula": "\frac{<end> + <depthToSingleAtmosphereConst>}{1.0 - <fhe>} - <depthToSingleAtmosphereConst>"
+      },      
+      {
+        "name": "fhe",
+        "description": "Helium Percentage",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "largepercent",
+        "texFormula": "1.0 - \frac{<end> + <depthToSingleAtmosphereConst>}{<depth> + <depthToSingleAtmosphereConst>}"
+      }
+    ]
+  },
+  {
+    "name": "Equivalent Air Depth (EAD)",
+    "path": [ "Partial Pressure Calculations" ],
+    "showUnits": true,
+    "showWaterType": true,
+    "baseFormula": "<ead>",
+    "variables": [
+      {
+        "name": "ead",
+        "description": "Equivalent Air Depth EAD",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "depth",
+        "texFormula": "[\frac{<fn2>}{<FN2AtSurfaceConst>} \times (<depth> + <depthToSingleAtmosphereConst>)] - <depthToSingleAtmosphereConst>"
+      },
+      {
+        "name": "depth",
+        "description": "Depth",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "depth",
+        "texFormula": "[\frac{<ead> + <depthToSingleAtmosphereConst>}{\frac{<fn2>}{<FN2AtSurfaceConst>}}] - <depthToSingleAtmosphereConst>"
+      },      
+      {
+        "name": "fn2",
+        "description": "Nitrogen Percentage",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "largepercent",
+        "texFormula": "\frac{<FN2AtSurfaceConst> \times (<ead> + <depthToSingleAtmosphereConst>)}{<depth> + <depthToSingleAtmosphereConst>}"
+      }
+    ]
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "reversible": true,
+    "fromToLabels": [ "Depth Freshwater", "Depth Seawater" ],
+    "path": [ "Pressure and Depth Conversions" ],
+    "showUnits": true,
+    "showWaterType": false,
+    "baseFormula": "<seaWater>",
+    "reversedBaseFormula": "<freshWater>",
+    "variables": [
+      {
+        "name": "seaWater",
+        "description": "Seawater",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "depth",
+        "texFormula": "<freshWater> \times <freshWaterToSeaWaterConst>)"
+      },
+      {
+        "name": "freshWater",
+        "description": "Freshwater",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "depth",
+        "texFormula": "<seaWater> \times <seaWaterToFreshWaterConst>)"
+      }
+    ]
+  },
+  {
+    "reversible": true,
+    "fromToLabels": [ "Pressure", "Depth" ],
+    "path": [ "Pressure and Depth Conversions" ],
+    "showUnits": true,
+    "showWaterType": true,
+    "baseFormula": "<seaWater>",
+    "reversedBaseFormula": "<freshWater>",
+    "variables": [
+      {
+        "name": "depth",
+        "description": "Pressure",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "depth",
+        "texFormula": "(<pressure> - 1) \times <depthToSingleAtmosphereConst>)"
+      },
+      {
+        "name": "pressure",
+        "description": "Pressure",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "atmospheres",
+        "texFormula": "\frac{<depth>}{<depthToSingleAtmosphereConst>} + 1"
+      }
+    ]
+  }
+]
