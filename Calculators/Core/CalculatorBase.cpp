@@ -35,7 +35,7 @@ QString CCalculatorBase::myCalculatorName() const
 
 QString CCalculatorBase::myReversedCalculatorName() const
 {
-    Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for non reversible calculators." );
+    Q_ASSERT_X( isReversible(), "myCalculatorName", "Should be overridden for reversible calculators or use fromToLabels." );
     return {};
 }
 
