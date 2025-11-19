@@ -142,21 +142,37 @@ void CMainWindow::loadJsonCalculators()
         if ( !QFileInfo( jsonFile ).isFile() )
             continue;
 
-        auto instantiator = [ this, jsonFile ]()
+        std::optional< QString > errorMsg;
+        auto calculators = CJsonCalculator::create( jsonFile, this, errorMsg );
+        if ( !calculators.has_value() )
         {
-            auto calculator = CJsonCalculator::create( jsonFile, this );
-            if ( calculator->hasError() )
+            auto msg = errorMsg.has_value() ? errorMsg.value() : tr( "Unknown error in loading" );
+            QMessageBox::critical(
+                this, tr( "Error loading Json file" ),   //
+                tr( "Error loading file '%1'\n%2" ).arg( jsonFile ).arg( msg ) );
+            continue;
+        }
+
+        auto instantiator = [ this ]( CCalculatorBase *sourceCalc ) -> CJsonCalculator *
+        {
+            auto jsonCalc = dynamic_cast< CJsonCalculator * >( sourceCalc );
+            if ( !jsonCalc )
+                return nullptr;
+
+            auto jsonObj = jsonCalc->jsonObject();
+            auto retVal = CJsonCalculator::create( jsonCalc->calculatorProjectName() + "-reversed", jsonObj, this );
+            if ( retVal && retVal->hasError() )
             {
-                delete calculator;
-                calculator = nullptr;
+                delete retVal;
+                retVal = nullptr;
             }
-            return calculator;
+            return retVal;
         };
 
-        auto calculator = instantiator();
-        if ( !calculator )
-            continue;
-        addCalculator( calculator, instantiator );
+        for ( auto &&ii : calculators.value() )
+        {
+            addCalculator( ii, instantiator );
+        }
     }
 }
 
@@ -193,12 +209,15 @@ void CMainWindow::loadDllCalculators()
             continue;
 
         auto calculator = instantiator();
-        addCalculator( calculator, [ instantiator ]() { return instantiator(); } );
+        addCalculator( calculator, [ instantiator ]( CCalculatorBase * /*sourceCalc*/ ) { return instantiator(); } );
     }
 }
 
-void CMainWindow::addCalculator( CCalculatorBase *calculator, const std::function< CCalculatorBase *() > &instantiator )
+void CMainWindow::addCalculator( CCalculatorBase *calculator, const std::function< CCalculatorBase *( CCalculatorBase *sourceCalc ) > &instantiator )
 {
+    if ( !calculator )
+        return;
+
     auto path = calculator->calculatorPath();
     if ( path.isEmpty() )
         return;
@@ -225,7 +244,7 @@ void CMainWindow::addCalculator( CCalculatorBase *calculator, const std::functio
 
     if ( instantiator && calculator->isReversible() && !calculator->isReversed() )
     {
-        auto reversedCalc = instantiator();
+        auto reversedCalc = instantiator( calculator );
         if ( reversedCalc )
         {
             reversedCalc->setIsReversed( calculator, true );

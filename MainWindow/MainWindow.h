@@ -52,7 +52,7 @@ private:
 
     void showUnits( bool show );
     void showWaterType( bool show );
-    void addCalculator( CCalculatorBase *calculator, const std::function< CCalculatorBase *() > &instantiator );
+    void addCalculator( CCalculatorBase *calculator, const std::function< CCalculatorBase *( CCalculatorBase * sourceCalc ) > &instantiator );
 
     void loadFormulasForPage( CCalculatorPage *page );
 

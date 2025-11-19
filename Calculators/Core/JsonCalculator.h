@@ -26,20 +26,27 @@
 #include "CalculatorBase.h"
 #include "CalculatorFwd.h"
 #include <optional>
+#include <list>
 #include <QString>
 #include <QStringList>
+#include <QJsonValue>
 
+class QJsonDocument;
 class QJsonObject;
+class QJsonValueRef;
 class CJsonCalculator : public CCalculatorBase
 {
     Q_OBJECT;
 
     CJsonCalculator( const QString &projectName, const QString &groupName, QObject *parent = nullptr );
-    CJsonCalculator( const QString &fileName, QObject *parent = nullptr );
+    CJsonCalculator( const QString &objName, const QJsonObject &jsonObj, QObject *parent = nullptr );
+    CJsonCalculator( const QString &objName, const QJsonValue &jsonObj, QObject *parent = nullptr );
 
 public:
     static CJsonCalculator *create( const QString &projectName, const QString &groupName, QObject *parent );
-    static CJsonCalculator *create( const QString &fileName, QObject *parent );
+    static CJsonCalculator *create( const QString &objName, const QJsonValue &jsonObj, QObject *parent );
+    static CJsonCalculator *create( const QString &objName, const QJsonObject &jsonObj, QObject *parent );
+    static std::optional< std::list< CJsonCalculator * > > create( const QString &jsonFile, QObject *parent, std::optional< QString > &errorMsg );
     virtual ~CJsonCalculator() override;
 
     bool hasError() const { return fErrorMsg.has_value(); }
@@ -64,16 +71,20 @@ public:
     virtual TOptionalFormulaList getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const override;   // returns the current formula in use
 
     virtual void computeVariableValues() override;   // updates all values
+
+    const QJsonValue &jsonObject() const { return fJsonValue; }
+
 private:
     TVariableInfo findVariable( const QString &var ) const;
     TOptionalFormulaList formulasForBaseFormula( bool imperial, bool seaWater, const std::optional< QString > &formula ) const;
 
-    bool jsonExists() const;
-    bool loadJSON();
+    bool loadJson( const QString &jsonFile );
+    bool loadJson();
+    static std::optional< QJsonDocument > loadJsonDocument( const QString &jsonFile, std::optional< QString > &errorMsg );
 
     QString fProjectName;
     QString fGroupName;
-    QString fJSONFile;
+    QJsonValue fJsonValue;
 
     std::optional< QString > fErrorMsg;
 

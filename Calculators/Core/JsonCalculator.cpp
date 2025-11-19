@@ -13,22 +13,27 @@
 CJsonCalculator::CJsonCalculator( const QString &projectName, const QString &groupName, QObject *parent ) :
     CCalculatorBase( parent ),
     fProjectName( projectName ),
-    fGroupName( groupName )
+    fGroupName( groupName ),
+    fJsonValue( QJsonValue() )
 {
-    fJSONFile = QString( ":/calculator/%1.json" ).arg( projectName );
+    auto jsonFile = QString( ":/calculator/%1.json" ).arg( projectName );
     setObjectName( fProjectName );
 
-    loadJSON();
+    loadJson( jsonFile );
 }
 
-CJsonCalculator::CJsonCalculator( const QString &fileName, QObject *parent ) :
+CJsonCalculator::CJsonCalculator( const QString &objName, const QJsonObject &jsonObj, QObject *parent ) :
     CCalculatorBase( parent ),
-    fJSONFile( fileName )
+    fJsonValue( jsonObj )
 {
-    fGroupName = fProjectName = QFileInfo( fJSONFile ).baseName();
-    setObjectName( fProjectName );
+    setObjectName( objName );
+    fGroupName = fProjectName = objName;
+    loadJson();
+}
 
-    loadJSON();
+CJsonCalculator::CJsonCalculator( const QString &objName, const QJsonValue &jsonValue, QObject *parent ) :
+    CJsonCalculator( objName, jsonValue.toObject(), parent )
+{
 }
 
 CJsonCalculator *CJsonCalculator::create( const QString &projectName, const QString &groupName, QObject *parent )
@@ -42,15 +47,57 @@ CJsonCalculator *CJsonCalculator::create( const QString &projectName, const QStr
     return retVal;
 }
 
-CJsonCalculator *CJsonCalculator::create( const QString &fileName, QObject *parent )
+std::optional< std::list< CJsonCalculator * > > CJsonCalculator::create( const QString &fileName, QObject *parent, std::optional< QString > &errorMsg )
 {
-    auto retVal = new CJsonCalculator( fileName, parent );
-    if ( retVal->hasError() )
+    auto doc = loadJsonDocument( fileName, errorMsg );
+    if ( !doc.has_value() )
+        return {};
+
+    std::optional< std::list< CJsonCalculator * > > retVal;
+
+    auto baseName = QFileInfo( fileName ).baseName();
+    if ( doc.value().isObject() )
     {
-        delete retVal;
-        retVal = nullptr;
+        auto object = doc.value().object();
+        auto curr = new CJsonCalculator( baseName, object, parent );
+        if ( !curr || ( curr && curr->hasError() ) )
+        {
+            delete curr;
+            return {};
+        }
+        retVal = std::list< CJsonCalculator * >( { curr } );
     }
+    else if ( doc.value().isArray() )
+    {
+        retVal = std::list< CJsonCalculator * >();
+        auto array = doc.value().array();
+        int jj = 0;
+        for ( auto &&ii : array )
+        {
+            if ( !ii.isObject() )
+                continue;
+
+            auto objName = baseName;
+            if ( array.size() > 1 )
+                objName += QString( "_%1" ).arg( jj++ );
+            auto curr = create( objName, ii, parent );
+            if ( !curr || ( curr && curr->hasError() ) )
+            {
+                delete curr;
+                continue;
+            }
+            retVal.value().push_back( curr );
+        }
+        if ( retVal.value().empty() )
+            retVal = {};
+    }
+
     return retVal;
+}
+
+CJsonCalculator *CJsonCalculator::create( const QString & objName, const QJsonValue &jsonObj, QObject *parent /*= nullptr */ )
+{
+    return new CJsonCalculator( objName, jsonObj, parent );
 }
 
 CJsonCalculator::~CJsonCalculator()
@@ -151,68 +198,52 @@ void CJsonCalculator::computeVariableValues()
     }
 }
 
-bool CJsonCalculator::jsonExists() const
-{
-    return QFileInfo( fJSONFile ).exists();
-}
-
-bool CJsonCalculator::loadJSON()
+bool CJsonCalculator::loadJson( const QString &jsonFile )
 {
     fErrorMsg.reset();
 
-    if ( !jsonExists() )
-    {
-        fErrorMsg = tr( "JSON File '%1' does not exist." ).arg( fJSONFile );
+    auto doc = loadJsonDocument( jsonFile, fErrorMsg );
+    if ( !doc.has_value() )
         return false;
-    }
 
-    auto fi = QFile( fJSONFile );
-    if ( !fi.open( QFile::ReadOnly | QFile::Text ) )
-    {
-        fErrorMsg = tr( "JSON File '%1' could not be opened." ).arg( fJSONFile );
-        return false;
-    }
-
-    auto data = fi.readAll();
-    data.replace( R"(\)", R"(\\)" );
-
-    QJsonParseError error;
-    auto doc = QJsonDocument::fromJson( data, &error );
-    if ( error.error != QJsonParseError::NoError )
-    {
-        fErrorMsg = error.errorString();
-        return false;
-    }
-
-    if ( !doc.isObject() )
+    if ( !doc.value().isObject() )
     {
         fErrorMsg = tr( "Invalid JSON.  Expected root to be an object." );
         return false;
     }
-    auto calcObj = doc.object();
+    fJsonValue = doc.value().object();
 
-    NSABUtils::fromJson( fIsReversible, calcObj, "reversible" );
-    NSABUtils::fromJson( fFromToLabels, calcObj, "fromToLabels" );
-    if ( !NSABUtils::fromJson( fPath, calcObj, "Path" ) )
+    return loadJson();
+}
+
+bool CJsonCalculator::loadJson()
+{
+    if ( !fJsonValue.isObject() )
+        return false;
+
+    auto obj = fJsonValue.toObject();
+    NSABUtils::fromJson( fIsReversible, obj, "reversible" );
+    NSABUtils::fromJson( fFromToLabels, obj, "fromToLabels" );
+    if ( !NSABUtils::fromJson( fPath, obj, "Path" ) )
     {
         fErrorMsg = tr( "Invalid JSON. Root object does not contain a Path field" );
         return false;
     }
 
-    NSABUtils::fromJson( fReversePath, calcObj, "ReversePath" );
-    NSABUtils::fromJson( fShowUnits, calcObj, "showUnits" );
-    NSABUtils::fromJson( fShowWaterType, calcObj, "showWaterType" );
+    NSABUtils::fromJson( fReversePath, obj, "ReversePath" );
+    NSABUtils::fromJson( fShowUnits, obj, "showUnits" );
+    NSABUtils::fromJson( fShowWaterType, obj, "showWaterType" );
 
-    NSABUtils::fromJson( fBaseFormula, calcObj, "baseFormula" );
-    NSABUtils::fromJson( fReversedBaseFormula, calcObj, "reversedBaseFormula" );
+    NSABUtils::fromJson( fBaseFormula, obj, "baseFormula" );
+    NSABUtils::fromJson( fReversedBaseFormula, obj, "reversedBaseFormula" );
 
-    if ( !calcObj.contains( "variables" ) )
+    if ( !obj.contains( "variables" ) )
     {
         fErrorMsg = tr( "Invalid JSON: Root object contains no variables." );
         return false;
     }
 
-    auto vars = calcObj[ "variables" ].toArray();
+    auto vars = obj[ "variables" ].toArray();
     for ( auto &&var : vars )
     {
         auto variable = CVariableInfo::fromJson( var.toObject(), fErrorMsg );
@@ -223,4 +254,33 @@ bool CJsonCalculator::loadJSON()
         fVariables.push_back( variable );
     }
     return true;
+}
+
+std::optional< QJsonDocument > CJsonCalculator::loadJsonDocument( const QString &jsonFile, std::optional< QString > &errorMsg )
+{
+    if ( !QFileInfo( jsonFile ).exists() )
+    {
+        errorMsg = tr( "JSON File '%1' does not exist." ).arg( jsonFile );
+        return {};
+    }
+
+    auto fi = QFile( jsonFile );
+    if ( !fi.open( QFile::ReadOnly | QFile::Text ) )
+    {
+        errorMsg = tr( "JSON File '%1' could not be opened." ).arg( jsonFile );
+        return {};
+    }
+
+    auto data = fi.readAll();
+    data.replace( R"(\)", R"(\\)" );
+
+    QJsonParseError error;
+    auto doc = QJsonDocument::fromJson( data, &error );
+    if ( error.error != QJsonParseError::NoError )
+    {
+        errorMsg = error.errorString();
+        return {};
+    }
+
+    return doc;
 }
