@@ -24,24 +24,5 @@ get_filename_component( _PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
 get_filename_component( _GROUP_NAME ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY )
 get_filename_component( _GROUP_NAME ${_GROUP_NAME} NAME )
-project( ${_PROJECT_NAME} )
 
-
-include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
-add_library(${PROJECT_NAME} SHARED
-    ${_PROJECT_DEPENDENCIES} 
-)
-
-target_include_directories( ${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Calculators )
-
-target_link_libraries( ${PROJECT_NAME}
-      PUBLIC
-          ${project_pub_DEPS}
-      PRIVATE
-          ${project_pri_DEPS}
-)
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE CALCULATORS_INTERNAL)
-
-AddToCalculatorList( "${PROJECT_NAME}" "${_GROUP_NAME}" )
+AddToCalculatorList( "${_PROJECT_NAME}" "${_GROUP_NAME}" )

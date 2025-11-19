@@ -1,0 +1,32 @@
+{
+  "reversible": true,
+  "fromToLabels": [ "PSI", "BAR" ],
+  "Path": [ "Unit Conversion", "Imperial to Metric" ],
+  "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+  "showUnits": false,
+  "showWaterType": false,
+  "baseFormula": "<bar>",
+  "reversedBaseFormula": "<psi>",
+  "variables": [
+    {
+      "name": "psi",
+      "description": "Pressure",
+      "intermediate": false,
+      "location": "rhs",
+      "unit": "pressure",
+      "imperial": true,
+      "texFormula": "<bar> \times <barToPSIConst>",
+      "jsFormula": "<bar> * <barToPSIConst>"
+    },
+    {
+      "name": "bar",
+      "description": "Pressure",
+      "intermediate": false,
+      "location": "lhs",
+      "unit": "pressure",
+      "imperial": false,
+      "texFormula": "<psi> \times <psiToBarConst>",
+      "jsFormula": "<psi> * <psiToBarConst>"
+    }
+  ]
+}
