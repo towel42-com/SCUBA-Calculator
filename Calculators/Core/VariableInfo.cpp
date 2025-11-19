@@ -227,6 +227,15 @@ TOptionalDouble CVariableInfo::optValue() const
     return retVal;
 }
 
+void CVariableInfo::setValue( TOptionalDouble value )
+{
+    if ( value.has_value() && ( fUnit == EUnit::eLargePercent ) )
+    {
+        value.value() *= 100;
+    }
+    fValue = value;
+}
+
 QLineEdit *CVariableInfo::lineEdit() const
 {
     return ( dynamic_cast< QLineEdit * >( fField ) );
@@ -435,7 +444,7 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
     QString format;
     if ( ( ( formulaType == EFormulaType::eCurrentValueFormula ) || ( formulaType == EFormulaType::eJSFormula ) ) && has_value() )
     {
-        value = NUtilities::doubleToString( formulaValue(), numDecimals() );
+        value = NUtilities::doubleToString( formulaValue( formulaType ), numDecimals( formulaType ) );
         format = ( formulaType == EFormulaType::eCurrentValueFormula ) ? QString( "%1%2" ) : "%1";
     }
     else
@@ -495,6 +504,13 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
     return retVal;
 }
 
+int CVariableInfo::numDecimals( EFormulaType formulaType ) const
+{
+    if ( formulaType == EFormulaType::eJSFormula )
+        return -1;
+    return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2;
+}
+
 QString CVariableInfo::descriptiveName( bool imperial, bool seaWater ) const
 {
     auto retVal = updateFormula( imperial, seaWater, fieldName(), EFormulaType::eBaseFormula );
@@ -508,15 +524,6 @@ QString CVariableInfo::valueString( bool imperial, bool seaWater ) const
 
     auto retVal = updateFormula( imperial, seaWater, fieldName(), EFormulaType::eCurrentValueFormula );
     return retVal;
-}
-
-double CVariableInfo::value() const
-{
-    if ( ( fUnit == EUnit::ePercent ) && ( fValue.value() >= 5 ) )
-    {
-        return fValue.value() / 100;
-    }
-    return fValue.value();
 }
 
 bool CVariableInfo::isWidget( QWidget *widget ) const
@@ -571,16 +578,27 @@ void CVariableInfo::setUnitOverride( EUnit unit, bool imperial )
     fUnitOverride = { unit, imperial };
 }
 
-double CVariableInfo::formulaValue() const
+double CVariableInfo::value() const
+{
+    auto retVal = fValue.value();
+    if ( ( fUnit == EUnit::eLargePercent ) || ( ( fUnit == EUnit::ePercent ) && ( fValue.value() >= 5 ) ) )
+    {
+        retVal = retVal / 100;
+    }
+    return retVal;
+}
+
+double CVariableInfo::formulaValue( EFormulaType formulaType ) const
 {
     if ( !has_value() )
         return 0.0;
 
-    if ( fUnit == EUnit::ePercent )
+    auto retVal = value();
+    if ( ( formulaType != EFormulaType::eJSFormula ) && ( fUnit == EUnit::eLargePercent ) )
     {
-        return value() * 100;
+        retVal = retVal * 100.0;
     }
-    return value();
+    return retVal;
 }
 
 void CVariableInfo::clearField( bool imperial, bool seaWater, bool notifyUI )

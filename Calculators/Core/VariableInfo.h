@@ -183,13 +183,13 @@ public:
     [[nodiscard]] QString updateFormula( bool imperial, bool seaWater, const QString &formula, EFormulaType formulaType ) const;
     [[nodiscard]] static QString updateFormula( bool imperial, bool seaWater, const QString &formula, EConstantType constantType, EFormulaType formulaType );
 
-    [[nodiscard]] int numDecimals() const { return ( ( fUnit == EUnit::ePercent ) || ( fUnit == EUnit::eLargePercent ) ) ? 0 : 2; }
-    [[nodiscard]] double formulaValue() const;   // user responsible for calling has_value first
+    [[nodiscard]] int numDecimals( EFormulaType formulaType ) const;
+    [[nodiscard]] double formulaValue( EFormulaType formulaType ) const;   // user responsible for calling has_value first
     [[nodiscard]] double value() const;   // user responsible for calling has_value first
     [[nodiscard]] TOptionalDouble optValue() const;
 
     [[nodiscard]] bool has_value() const { return fValue.has_value(); }
-    [[nodiscard]] void setValue( TOptionalDouble value ) { fValue = value; }
+    [[nodiscard]] void setValue( TOptionalDouble value );
 
     [[nodiscard]] bool isVariable() const { return !fIntermediate; }
     [[nodiscard]] bool isIntermediate() const { return fIntermediate; }
