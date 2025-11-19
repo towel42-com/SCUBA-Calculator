@@ -45,6 +45,7 @@ SET( project_pub_DEPS
     Qt6::Gui
     Qt6::Svg
     MathJaxQt6
+    CalculatorCore
     ${project_pub_DEPS}
 )
 
