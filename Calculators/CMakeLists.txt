@@ -21,28 +21,27 @@
 # SOFTWARE.
 
 
-function(AddJSONToCalculator calculator jsonFilesGlobString baseName )
-
+function(AddFilesToCalculatorQRC calculator globString baseName )
    file( GLOB 
-        _JSON_FILES  
-        ${jsonFilesGlobString}
+        _FILES  
+        ${globString}
     )
     
-    if ( NOT _JSON_FILES OR ( "${_JSON_FILES}" STREQUAL "" ) )
+    if ( NOT _FILES OR ( "${_FILES}" STREQUAL "" ) )
         return()
     endif()
 
-    foreach( jsonFile ${_JSON_FILES} )
-        string(REGEX MATCH "${baseName}([^./]*).json" MATCHIT "${jsonFile}")
+    foreach( file ${_FILES} )
+        string(REGEX MATCH "${baseName}([^./]*)\.(.*)" MATCHIT "${file}")
         
         if ( NOT "${CMAKE_MATCH_1}" STREQUAL "" )
             SET( _FN_SUFFIX ${CMAKE_MATCH_1} )
         endif()
         
-        SET( _ALIAS ./${PROJECT_NAME}${_FN_SUFFIX}.json )
-        #MESSAGE( STATUS "File: ${jsonFile} Alias: ${_ALIAS}" )
+        SET( _ALIAS ./${PROJECT_NAME}${_FN_SUFFIX}.${CMAKE_MATCH_2} )
+        #MESSAGE( STATUS "File: ${file} Alias: ${_ALIAS}" )
         set_source_files_properties( 
-            ${jsonFile}
+            ${file}
             PROPERTIES
                 QT_RESOURCE_ALIAS ${_ALIAS}
         )
@@ -52,54 +51,75 @@ function(AddJSONToCalculator calculator jsonFilesGlobString baseName )
         PREFIX
             "/${baseName}"
         FILES
-            ${_JSON_FILES}
+            ${_FILES}
         OUTPUT_TARGETS 
             QRC_OTHER_TARGETS    
     )
     
-    target_sources( ${calculator} PUBLIC ${_JSON_FILES} )
+    target_sources( ${calculator} PUBLIC ${_FILES} )
 endfunction()
 
 function(AddToCalculatorList calculator groupName)
-    get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
-    list(APPEND _CURR "${calculator}")
-    set_property(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "${_CURR}")
-    
-    INSTALL( TARGETS ${calculator} RUNTIME DESTINATION Calculators )
-    INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
-
     set( GROUP_NAME ${groupName} )
-    set_target_properties( ${calculator} PROPERTIES FOLDER Libs/Calculators/${GROUP_NAME} )
-    set_target_properties( ${calculator} PROPERTIES DEBUG_POSTFIX d )
-
     set( ROOT_TARGET "SCUBA-Calculator" )
     set( CALC_DIR "Calculators" )
     SET( DEST_DIR "$<TARGET_FILE_DIR:${ROOT_TARGET}>/${CALC_DIR}" )
-    SET( DLL_NAME "$<TARGET_FILE_NAME:${calculator}>" )
-    SET( DLL_SRC_PATH "$<TARGET_FILE:${calculator}>" )
-    SET( DLL_DEST_PATH "${DEST_DIR}/${DLL_NAME}" )
+
+    if ( TARGET ${calculator} )
+        get_property(_CURR GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST)
+        list(APPEND _CURR "${calculator}")
+        set_property(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "${_CURR}")
+
+        INSTALL( TARGETS ${calculator} RUNTIME DESTINATION Calculators )
+        INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${calculator}.pdb DESTINATION Calculators CONFIGURATIONS Debug RelWithDebInfo )
+
+        set_target_properties( ${calculator} PROPERTIES FOLDER Libs/Calculators/${GROUP_NAME} )
+        set_target_properties( ${calculator} PROPERTIES DEBUG_POSTFIX d )
+
+        SET( DLL_NAME "$<TARGET_FILE_NAME:${calculator}>" )
+        SET( DLL_SRC_PATH "$<TARGET_FILE:${calculator}>" )
+        SET( DLL_DEST_PATH "${DEST_DIR}/${DLL_NAME}" )
     
-    SET( PDB_NAME "$<TARGET_FILE_NAME:${calculator}>" )
-    SET( PDB_SRC_PATH "$<TARGET_PDB_FILE:${calculator}>" )
-    SET( PDB_DEST_PATH "${DEST_DIR}/$<TARGET_FILE_BASE_NAME:${calculator}>.pdb" )
+        SET( PDB_NAME "$<TARGET_FILE_NAME:${calculator}>" )
+        SET( PDB_SRC_PATH "$<TARGET_PDB_FILE:${calculator}>" )
+        SET( PDB_DEST_PATH "${DEST_DIR}/$<TARGET_FILE_BASE_NAME:${calculator}>.pdb" )
     
-    configure_file(
-        "${CMAKE_SOURCE_DIR}/Calculators/CalculatorDef.h.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/CalculatorDef.h"
-        @ONLY
-    )
+        configure_file(
+            "${CMAKE_SOURCE_DIR}/Calculators/CalculatorDef.h.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/CalculatorDef.h"
+            @ONLY
+        )
+
+        add_custom_command(TARGET ${calculator} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
+            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target Library Library '${DLL_NAME}' for '${ROOT_TARGET}'"
+            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${DLL_SRC_PATH}" \"${DLL_DEST_PATH}\"
+            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target PDB File '${PDB_SRC_PATH}' for '${ROOT_TARGET}'"
+            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
+        )
     
-    add_custom_command(TARGET ${calculator} POST_BUILD
-#        COMMAND "${CMAKE_COMMAND}" -E echo "Making Directory '${DEST_DIR}' for '${ROOT_TARGET}'"
-        COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
-        COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target Library Library '${DLL_NAME}' for '${ROOT_TARGET}'"
-        COMMAND "${CMAKE_COMMAND}" -E create_symlink "${DLL_SRC_PATH}" \"${DLL_DEST_PATH}\"
-        COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target PDB File '${PDB_SRC_PATH}' for '${ROOT_TARGET}'"
-        COMMAND "${CMAKE_COMMAND}" -E create_symlink "${PDB_SRC_PATH}" \"${PDB_DEST_PATH}\"
-    )
+        AddFilesToCalculatorQRC( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json formulas)
+        AddFilesToCalculatorQRC( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json calculator)
+    endif()
     
-    AddJSONToCalculator( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/formulas/*formulas*.json formulas)
-    AddJSONToCalculator( ${calculator} ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json calculator)
+    if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json )
+        set( _JSON_CALC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/calculator.json )
+
+        INSTALL( FILES ${_JSON_CALC_FILE} DESTINATION ${CALC_DIR} RENAME ${calculator}.json )
+        
+        get_property(_CURR GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST)
+        list(APPEND _CURR ${_JSON_CALC_FILE} )
+        list(APPEND _CURR ${calculator} )
+        set_property(GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST "${_CURR}")
+
+        if ( TARGET ${calculator} )
+            add_custom_command(TARGET ${calculator} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
+                COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target JSON Calculator '${_JSON_CALC_FILE}' for '${calculator}'"
+                COMMAND "${CMAKE_COMMAND}" -E create_symlink "${_JSON_CALC_FILE}" \"${DEST_DIR}/${calculator}.json\"
+            )
+        endif()
+    endif()
 endfunction()
 
 add_subdirectory( Core )
