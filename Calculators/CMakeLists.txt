@@ -118,7 +118,6 @@ endfunction()
 
 add_subdirectory( Core )
 
-add_subdirectory( Buoyancy )
 add_subdirectory( Miscellaneous )
 add_subdirectory( PartialPressure )
 add_subdirectory( PressureDepth )
@@ -127,3 +126,4 @@ add_subdirectory( PressureTemperatureVolume )
 
 AddToJSONCalculatorList( ${CMAKE_CURRENT_SOURCE_DIR}/PressureVolume.json )
 AddToJSONCalculatorList( ${CMAKE_CURRENT_SOURCE_DIR}/UnitConversion.json )
+AddToJSONCalculatorList( ${CMAKE_CURRENT_SOURCE_DIR}/Buoyancy.json )
