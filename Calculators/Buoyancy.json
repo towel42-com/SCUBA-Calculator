@@ -1,0 +1,60 @@
+[
+  {
+    "name": "Buoyancy Characteristics of an Object",
+    "path": [ "Buoyancy Calculations" ],
+    "showUnits": true,
+    "showWaterType": true,
+    "baseFormula": "<buoyancy>",
+    "variables": [
+      {
+        "name": "buoyancy",
+        "description": "Buoyancy",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "weight",
+        "texFormula": "<weightOfObject> - (<volumeDisplaced> \times <weightPerVolumeOfWaterConst>)"
+      },
+      {
+        "name": "weightOfObject",
+        "description": "Weight",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "weight",
+        "texFormula": "<buoyancy> + (<volumeDisplaced> \times <weightPerVolumeOfWaterConst>)"
+      },
+      {
+        "name": "volumeDisplaced",
+        "description": "Volume Displaced",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "volume",
+        "texFormula": "(<weightOfObject> - <buoyancy>) \times <volumePerWeightOfWaterConst>"
+      }
+    ]
+  },
+  {
+    "name": "Offsetting Negative Buoyancy",
+    "path": [ "Buoyancy Calculations" ],
+    "showUnits": true,
+    "showWaterType": true,
+    "baseFormula": "<buoyancy>",
+    "variables": [
+      {
+        "name": "volumeDisplaced",
+        "description": "Volume Displaced",
+        "intermediate": false,
+        "location": "lhs",
+        "unit": "volume",
+        "texFormula": "<negativeBuoyancy> \times <volumePerWeightOfWaterConst>"
+      },
+      {
+        "name": "negativeBuoyancy",
+        "description": "Negative Buoyancy",
+        "intermediate": false,
+        "location": "rhs",
+        "unit": "weight",
+        "texFormula": "<volumeDisplaced> \times <weightPerVolumeOfWaterConst>"
+      }
+    ]
+  }
+]

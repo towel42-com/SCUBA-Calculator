@@ -442,10 +442,17 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
 {
     QString value;
     QString format;
+    bool hasUnit = true;
     if ( ( ( formulaType == EFormulaType::eCurrentValueFormula ) || ( formulaType == EFormulaType::eJSFormula ) ) && has_value() )
     {
         value = NUtilities::doubleToString( formulaValue( formulaType ), numDecimals( formulaType ) );
-        format = ( formulaType == EFormulaType::eCurrentValueFormula ) ? QString( "%1%2" ) : "%1";
+        if ( formulaType == EFormulaType::eCurrentValueFormula )
+            format = QString( "%1%2" );
+        else
+        {
+            format = "%1";
+            hasUnit = false;
+        }
     }
     else
     {
@@ -466,7 +473,8 @@ QString CVariableInfo::updateFormula( bool imperial, bool seaWater, const QStrin
     }
     else
     {
-        newString = newString.arg( unit );
+        if ( hasUnit )
+            newString = newString.arg( unit );
         newString.replace( " ()", "" );
     }
 
@@ -840,6 +848,15 @@ TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QS
 
     if ( !texFormulas.empty() )
         retVal->setTexFormulas( texFormulas );
+
+    if ( !texFormulas.empty() && jsFormulas.empty() )
+    {
+        for ( const auto &ii : texFormulas )
+        {
+            jsFormulas.push_back( NUtilities::texToJS( ii ) );
+        }
+    }
+
     if ( !jsFormulas.empty() )
         retVal->setJSFormulas( jsFormulas );
 

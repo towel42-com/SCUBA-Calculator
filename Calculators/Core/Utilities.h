@@ -217,6 +217,8 @@ namespace NUtilities
     CALCULATORS_EXPORT QString toString( EUnit value );
     CALCULATORS_EXPORT bool fromString( std::optional< EVariableLoc > &value, const QString &str );
     CALCULATORS_EXPORT QString toString( EVariableLoc value );
+
+    CALCULATORS_EXPORT QString texToJS( const QString &texFormula );
 };
 
 #endif

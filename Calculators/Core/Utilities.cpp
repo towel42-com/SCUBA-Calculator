@@ -285,7 +285,7 @@ namespace NUtilities
         auto locs =   //
             {
                 EVariableLoc::eLHS,   //
-                EVariableLoc::eRHS
+                EVariableLoc::eRHS   //
             };
         for ( auto &&ii : locs )
         {
@@ -297,5 +297,110 @@ namespace NUtilities
             }
         }
         return false;
+    }
+
+    using TSearchPosition = std::optional< std::pair< int, std::optional< int > > >;
+
+    std::optional< int > len( int start, const std::optional< int > &end )
+    {
+        if ( !end.has_value() )
+            return {};
+        return end.value() - start;
+    }
+
+    std::optional< int > len( const TSearchPosition &positionPair )
+    {
+        if ( !positionPair.has_value() )
+            return {};
+        return len( positionPair.value().first, positionPair.value().second );
+    }
+
+    std::optional< int > len( const TSearchPosition &start, const TSearchPosition &end )
+    {
+        if ( !start.has_value() || !end.has_value() )
+            return {};
+
+        return len( start.value().first, end.value().second );
+    }
+
+    bool isComplete( const TSearchPosition &position )
+    {
+        return position.has_value() && position.value().second.has_value();
+    }
+
+    std::optional< QString > subString( const QString &src, const TSearchPosition &position )
+    {
+        if ( !isComplete( position ) )
+            return {};
+
+        auto length = len( position );
+        if ( !length.has_value() )
+            return {};
+        return src.mid( position.value().first, length.value() );
+    }
+
+    QString texToJS( const QString &texFormula )
+    {
+        auto retVal = texFormula;
+        retVal.replace( R"__(\times)__", "*" );
+        retVal.replace( R"__([)__", "(" );
+        retVal.replace( R"__(])__", ")" );
+
+        auto pos = retVal.indexOf( R"__(\frac)__", 0 );
+        while ( pos != -1 )
+        {
+            int startPos = pos;
+            pos += 5;
+
+            int start = pos;
+            int parenDepth = 0;
+            TSearchPosition numerator;
+            TSearchPosition denominator;
+
+            while ( ( pos < retVal.length() ) && ( !isComplete( numerator ) || !isComplete( denominator ) ) )
+            {
+                auto curr = retVal[ pos ];
+                if ( curr == '{' )
+                {
+                    if ( !numerator.has_value() )
+                        numerator = std::make_pair( pos+1, std::optional< int >() );
+                    else if ( !denominator.has_value() )
+                        denominator = std::make_pair( pos+1, std::optional< int >() );
+                    parenDepth++;
+                }
+                else if ( curr == '}' )
+                {
+                    parenDepth--;
+                    if ( parenDepth == 0 )
+                    {
+                        if ( numerator.has_value() && !isComplete( numerator ) )
+                            numerator.value().second = pos;
+                        if ( denominator.has_value() && !isComplete( denominator ) )
+                            denominator.value().second = pos;
+                    }
+                }
+                pos++;
+            }
+
+            auto numeratorString = subString( retVal, numerator );
+            auto denominatorString = subString( retVal, denominator );
+            bool updated = false;
+            if ( numeratorString.has_value() && denominatorString.has_value() )
+            {
+                auto newString = QString( "((%1)/(%2))" ).arg( numeratorString.value() ).arg( denominatorString.value() );
+                auto length = len( numerator, denominator );
+                if ( length.has_value() )
+                {
+                    retVal = retVal.replace( startPos, length.value() + 7, newString );
+                    updated = true;
+                }
+            }
+            pos = startPos;
+            if ( !updated )
+                pos++;
+            pos = retVal.indexOf( R"__(\frac)__", pos );
+        }
+
+        return retVal;
     }
 }

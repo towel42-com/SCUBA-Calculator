@@ -1,7 +1,7 @@
 [
   {
     "name": "Calculating Relative Change in Ambient Pressure",
-    "Path": [ "Pressure and Volume Conversions" ],
+    "path": [ "Pressure and Volume Conversions" ],
     "showUnits": false,
     "showWaterType": false,
     "baseFormula": "<relChange>",
@@ -12,8 +12,7 @@
         "intermediate": false,
         "location": "lhs",
         "unit": "largepercent",
-        "texFormula": "\frac{<pressureBefore>}{<pressureAfter>}",
-        "jsFormula": "<pressureBefore>/<pressureAfter>"
+        "texFormula": "\frac{<pressureBefore>}{<pressureAfter>}"
       },
       {
         "name": "pressureBefore",
@@ -21,8 +20,7 @@
         "intermediate": false,
         "location": "rhs",
         "unit": "pressure",
-        "texFormula": "\frac{<pressureAfter>}{<relChange>}",
-        "jsFormula": "<pressureAfter> / <relChange>"
+        "texFormula": "\frac{<pressureAfter>}{<relChange>}"
       },      
       {
         "name": "pressureAfter",
@@ -30,8 +28,7 @@
         "intermediate": false,
         "location": "rhs",
         "unit": "pressure",
-        "texFormula": "\frac{<pressureBefore>}{<relChange>}",
-        "jsFormula": "<pressureBefore> / <relChange>"
+        "texFormula": "\frac{<pressureBefore>}{<relChange>}"
       }
     ]
   }]

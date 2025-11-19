@@ -2,8 +2,8 @@
   {
     "reversible": true,
     "fromToLabels": [ "PSI", "BAR" ],
-    "Path": [ "Unit Conversion", "Imperial to Metric" ],
-    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "path": [ "Unit Conversion", "Imperial to Metric" ],
+    "reversePath": [ "Unit Conversion", "Metric to Imperial" ],
     "showUnits": false,
     "showWaterType": false,
     "baseFormula": "<bar>",
@@ -16,8 +16,7 @@
         "location": "rhs",
         "unit": "pressure",
         "imperial": true,
-        "texFormula": "<bar> \times <barToPSIConst>",
-        "jsFormula": "<bar> * <barToPSIConst>"
+        "texFormula": "<bar> \times <barToPSIConst>"
       },
       {
         "name": "bar",
@@ -26,16 +25,15 @@
         "location": "lhs",
         "unit": "pressure",
         "imperial": false,
-        "texFormula": "<psi> \times <psiToBarConst>",
-        "jsFormula": "<psi> * <psiToBarConst>"
+        "texFormula": "<psi> \times <psiToBarConst>"
       }
     ]
   },
   {
     "reversible": true,
     "fromToLabels": [ "Pounds", "Kilograms" ],
-    "Path": [ "Unit Conversion", "Imperial to Metric" ],
-    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "path": [ "Unit Conversion", "Imperial to Metric" ],
+    "reversePath": [ "Unit Conversion", "Metric to Imperial" ],
     "showUnits": false,
     "showWaterType": false,
     "baseFormula": "<kilograms>",
@@ -48,8 +46,7 @@
         "location": "rhs",
         "unit": "weight",
         "imperial": true,
-        "texFormula": "<kilograms> \times <kgsToLbsConst>",
-        "jsFormula": "<kilograms> * <kgsToLbsConst>"
+        "texFormula": "<kilograms> \times <kgsToLbsConst>"
       },
       {
         "name": "kilograms",
@@ -58,16 +55,15 @@
         "location": "lhs",
         "unit": "weight",
         "imperial": false,
-        "texFormula": "<pounds> \times <kLbsPerKgsConstFieldName>",
-        "jsFormula": "<pounds> * <kLbsPerKgsConstFieldName>"
+        "texFormula": "<pounds> \times <lbsToKgsConst>"
       }
     ]
   },
   {
     "reversible": true,
     "fromToLabels": [ "Feet", "Meters" ],
-    "Path": [ "Unit Conversion", "Imperial to Metric" ],
-    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "path": [ "Unit Conversion", "Imperial to Metric" ],
+    "reversePath": [ "Unit Conversion", "Metric to Imperial" ],
     "showUnits": false,
     "showWaterType": false,
     "baseFormula": "<meters>",
@@ -80,8 +76,7 @@
         "location": "rhs",
         "unit": "length",
         "imperial": true,
-        "texFormula": "<meters> \times <metersToFeetConst>",
-        "jsFormula": "<meters> * <metersToFeetConst>"
+        "texFormula": "<meters> \times <metersToFeetConst>"
       },
       {
         "name": "meters",
@@ -90,16 +85,15 @@
         "location": "lhs",
         "unit": "length",
         "imperial": false,
-        "texFormula": "<feet> \times <feetToMetersConst>",
-        "jsFormula": "<feet> * <feetToMetersConst>"
+        "texFormula": "<feet> \times <feetToMetersConst>"
       }
     ]
   },
   {
     "reversible": true,
     "fromToLabels": [ "Cubic Feet", "Liters" ],
-    "Path": [ "Unit Conversion", "Imperial to Metric" ],
-    "ReversePath": [ "Unit Conversion", "Metric to Imperial" ],
+    "path": [ "Unit Conversion", "Imperial to Metric" ],
+    "reversePath": [ "Unit Conversion", "Metric to Imperial" ],
     "showUnits": false,
     "showWaterType": false,
     "baseFormula": "<liters>",
@@ -112,8 +106,7 @@
         "location": "rhs",
         "unit": "volume",
         "imperial": true,
-        "texFormula": "<liters> \times <litersToCubicFeetConst>",
-        "jsFormula": "<liters> * <litersToCubicFeetConst>"
+        "texFormula": "<liters> \times <litersToCubicFeetConst>"
       },
       {
         "name": "liters",
@@ -122,8 +115,7 @@
         "location": "lhs",
         "unit": "volume",
         "imperial": false,
-        "texFormula": "<cubicfeet> \times <cubicFeetToLitersConst>",
-        "jsFormula": "<cubicfeet> * <cubicFeetToLitersConst>"
+        "texFormula": "<cubicfeet> \times <cubicFeetToLitersConst>"
       }
     ]
   }
