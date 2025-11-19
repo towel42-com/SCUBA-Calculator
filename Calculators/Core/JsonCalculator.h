@@ -58,6 +58,9 @@ public:
     virtual QStringList myCalculatorPath() const override { return fPath; }
     virtual QStringList myReversedCalculatorPath() const override { return fReversePath; }
 
+    virtual QString myCalculatorName() const override;
+    virtual QString myReversedCalculatorName() const override;
+
     virtual QString calculatorProjectName() const override;
     virtual QString calculatorGroupName() const override;
 
@@ -90,6 +93,8 @@ private:
 
     bool fIsReversible{ false };
     std::optional< std::pair< QString, QString > > fFromToLabels;
+    std::optional< QString > fName;
+    std::optional< QString > fReversedName;
     QStringList fPath;
     QStringList fReversePath;
     bool fShowUnits{ false };

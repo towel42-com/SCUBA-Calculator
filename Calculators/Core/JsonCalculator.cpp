@@ -59,7 +59,7 @@ std::optional< std::list< CJsonCalculator * > > CJsonCalculator::create( const Q
     if ( doc.value().isObject() )
     {
         auto object = doc.value().object();
-        auto curr = new CJsonCalculator( baseName, object, parent );
+        auto curr = create( baseName, object, parent );
         if ( !curr || ( curr && curr->hasError() ) )
         {
             delete curr;
@@ -83,6 +83,7 @@ std::optional< std::list< CJsonCalculator * > > CJsonCalculator::create( const Q
             auto curr = create( objName, ii, parent );
             if ( !curr || ( curr && curr->hasError() ) )
             {
+                errorMsg = curr->errorMsg();
                 delete curr;
                 continue;
             }
@@ -95,13 +96,34 @@ std::optional< std::list< CJsonCalculator * > > CJsonCalculator::create( const Q
     return retVal;
 }
 
-CJsonCalculator *CJsonCalculator::create( const QString & objName, const QJsonValue &jsonObj, QObject *parent /*= nullptr */ )
+CJsonCalculator *CJsonCalculator::create( const QString &objName, const QJsonValue &jsonObj, QObject *parent /*= nullptr */ )
+{
+    return new CJsonCalculator( objName, jsonObj, parent );
+}
+
+CJsonCalculator *CJsonCalculator::create( const QString &objName, const QJsonObject &jsonObj, QObject *parent /*= nullptr */ )
 {
     return new CJsonCalculator( objName, jsonObj, parent );
 }
 
 CJsonCalculator::~CJsonCalculator()
 {
+}
+
+QString CJsonCalculator::myCalculatorName() const
+{
+    Q_ASSERT_X( fName.has_value(), "myCalculatorName", "Need to have name field in the Json for this to not assert." ); 
+    if ( fName.has_value() )
+        return fName.value();
+    return CCalculatorBase::myCalculatorName();
+}
+
+QString CJsonCalculator::myReversedCalculatorName() const
+{
+    Q_ASSERT_X( fReversedName.has_value(), "myCalculatorName", "Need to have name field in the Json for this to not assert." );
+    if ( fReversedName.has_value() )
+        return fReversedName.value();
+    return CCalculatorBase::myReversedCalculatorName();
 }
 
 QString CJsonCalculator::calculatorProjectName() const
@@ -224,6 +246,14 @@ bool CJsonCalculator::loadJson()
     auto obj = fJsonValue.toObject();
     NSABUtils::fromJson( fIsReversible, obj, "reversible" );
     NSABUtils::fromJson( fFromToLabels, obj, "fromToLabels" );
+    NSABUtils::fromJson( fName, obj, "name" );
+    NSABUtils::fromJson( fReversedName, obj, "reversedName" );
+    if ( !fFromToLabels.has_value() && !fName.has_value() )
+    {
+        fErrorMsg = tr( "Invalid JSON must have fromToLabels or name fields." );
+        return false;
+    }
+
     if ( !NSABUtils::fromJson( fPath, obj, "Path" ) )
     {
         fErrorMsg = tr( "Invalid JSON. Root object does not contain a Path field" );
