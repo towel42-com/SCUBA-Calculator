@@ -50,6 +50,7 @@ add_subdirectory( SABUtils )
 add_subdirectory( MainWindow )
 
 SET_PROPERTY(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "")
+SET_PROPERTY(GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST "")
 
 add_subdirectory( Calculators )
 add_subdirectory( main )

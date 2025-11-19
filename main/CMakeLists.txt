@@ -26,9 +26,35 @@ include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 add_executable( ${PROJECT_NAME} WIN32
-                ${_PROJECT_DEPENDENCIES} 
                 application.rc
           )
+GET_PROPERTY( JSON_CALCULATOR_LIST GLOBAL PROPERTY TOWEL42_JSON_CALCULATOR_LIST )
+if ( JSON_CALCULATOR_LIST )
+    #MESSAGE( STATUS "JSON_CALCULATOR_LIST = ${JSON_CALCULATOR_LIST}" )
+    list(LENGTH JSON_CALCULATOR_LIST _len)
+    math(EXPR _end "${_len} - 1")
+
+    set( CALC_DIR "Calculators" )
+    SET( DEST_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${CALC_DIR}" )
+
+    foreach(ii RANGE 0 ${_end} 2)
+        list( GET JSON_CALCULATOR_LIST ${ii} jsonCalc)
+        math(EXPR _next "${ii} + 1")
+        list( GET JSON_CALCULATOR_LIST ${_next} projectName)
+
+        #MESSAGE( STATUS "jsonCalc = ${jsonCalc}" )
+        #MESSAGE( STATUS "projectName = ${projectName}" )
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory \"${DEST_DIR}\"
+            COMMAND "${CMAKE_COMMAND}" -E echo "Linking Target JSON Calculator '${jsonCalc}' - ${projectName}.json"
+            COMMAND "${CMAKE_COMMAND}" -E create_symlink "${jsonCalc}" \"${DEST_DIR}/${projectName}.json\"
+        )
+        LIST( APPEND _PROJECT_DEPENDENCIES ${jsonCalc} )
+    endforeach()
+endif()
+
+target_sources( ${PROJECT_NAME} PRIVATE ${_PROJECT_DEPENDENCIES} )
+
 if ( NOT DEPLOYQT_EXECUTABLE )
     message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
 endif()
