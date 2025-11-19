@@ -15,8 +15,18 @@ CJsonCalculator::CJsonCalculator( const QString &projectName, const QString &gro
     fProjectName( projectName ),
     fGroupName( groupName )
 {
-    setObjectName( fProjectName );
     fJSONFile = QString( ":/calculator/%1.json" ).arg( projectName );
+    setObjectName( fProjectName );
+
+    loadJSON();
+}
+
+CJsonCalculator::CJsonCalculator( const QString &fileName, QObject *parent ) :
+    CCalculatorBase( parent ),
+    fJSONFile( fileName )
+{
+    fGroupName = fProjectName = QFileInfo( fJSONFile ).baseName();
+    setObjectName( fProjectName );
 
     loadJSON();
 }
@@ -24,6 +34,17 @@ CJsonCalculator::CJsonCalculator( const QString &projectName, const QString &gro
 CJsonCalculator *CJsonCalculator::create( const QString &projectName, const QString &groupName, QObject *parent )
 {
     auto retVal = new CJsonCalculator( projectName, groupName, parent );
+    if ( retVal->hasError() )
+    {
+        delete retVal;
+        retVal = nullptr;
+    }
+    return retVal;
+}
+
+CJsonCalculator *CJsonCalculator::create( const QString &fileName, QObject *parent )
+{
+    auto retVal = new CJsonCalculator( fileName, parent );
     if ( retVal->hasError() )
     {
         delete retVal;
@@ -90,7 +111,10 @@ TOptionalFormulaList CJsonCalculator::myBaseFormulas( bool imperial, bool seaWat
     if ( fVariables.empty() )
         return {};
 
-    return fVariables.front()->formulaList( imperial, seaWater );
+    auto var = this->getFirstVariable( EVariableLoc::eLHS );
+    if ( var )
+        return var->formulaList( imperial, seaWater );
+    return {};
 }
 
 TOptionalFormulaList CJsonCalculator::myReversedBaseFormulas( bool imperial, bool seaWater ) const
@@ -102,7 +126,10 @@ TOptionalFormulaList CJsonCalculator::myReversedBaseFormulas( bool imperial, boo
     if ( fVariables.empty() )
         return {};
 
-    return fVariables.back()->formulaList( imperial, seaWater );
+    auto var = this->getFirstVariable( EVariableLoc::eLHS );
+    if ( var )
+        return var->formulaList( imperial, seaWater );
+    return {};
 }
 
 TOptionalFormulaList CJsonCalculator::getFormulasForVar( const QString &unsetVar, bool imperial, bool seaWater ) const

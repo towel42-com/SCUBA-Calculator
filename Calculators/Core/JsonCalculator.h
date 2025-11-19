@@ -35,9 +35,11 @@ class CJsonCalculator : public CCalculatorBase
     Q_OBJECT;
 
     CJsonCalculator( const QString &projectName, const QString &groupName, QObject *parent = nullptr );
+    CJsonCalculator( const QString &fileName, QObject *parent = nullptr );
 
 public:
     static CJsonCalculator *create( const QString &projectName, const QString &groupName, QObject *parent );
+    static CJsonCalculator *create( const QString &fileName, QObject *parent );
     virtual ~CJsonCalculator() override;
 
     bool hasError() const { return fErrorMsg.has_value(); }
