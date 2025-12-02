@@ -10,3 +10,6 @@
 	path = T42-MathJaxQt6
 	url = https://github.com/towel42-com/T42-MathJaxQt6
 	branch = trunk
+[submodule "T42-Utils"]
+	path = T42-Utils
+	url = https://github.com/towel42-com/T42-Utils.git
