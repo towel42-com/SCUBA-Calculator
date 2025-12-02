@@ -1,7 +1,7 @@
 #include "CalculatorPage.h"
 #include "CalculatorBase.h"
 #include "VariableInfo.h"
-#include "SABUtils/WidgetChanged.h"
+#include "T42-Utils/WidgetChanged.h"
 
 #include <QVBoxLayout>
 #include <QFormLayout>
@@ -60,7 +60,7 @@ void CCalculatorPage::addWidget( EVariableLoc side, QWidget *widget )
 {
     fVariables[ widget ] = side;
 
-    NSABUtils::setupWidgetChanged( widget, [ = ]( QObject *object ) { slotWidgetChanged( dynamic_cast< QWidget * >( object ) ); } );
+    NTowel42Utils::setupWidgetChanged( widget, [ = ]( QObject *object ) { slotWidgetChanged( dynamic_cast< QWidget * >( object ) ); } );
 }
 
 bool CCalculatorPage::showUnits() const

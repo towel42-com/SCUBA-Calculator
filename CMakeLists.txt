@@ -25,7 +25,7 @@ cmake_minimum_required(VERSION 3.31)
 project(Root-SCUBA-Calculator VERSION 1.0)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/Modules ${CMAKE_MODULE_PATH})
-SET(SAB_ENABLE_TESTING ON)
+SET(TOWEL42_ENABLE_TESTING ON)
 
 set( TOWEL42_NO_DEPLOY_SUBMODULES ON )
 
@@ -46,7 +46,7 @@ include( VersionInfo.cmake )
 file( REAL_PATH ~/bin/SCUBA-Calculator CMAKE_INSTALL_PREFIX EXPAND_TILDE)
 
 add_subdirectory( T42-MathJaxQt6  )
-add_subdirectory( SABUtils )
+add_subdirectory( T42-Utils )
 add_subdirectory( MainWindow )
 
 SET_PROPERTY(GLOBAL PROPERTY TOWEL42_CALCULATOR_LIST "")

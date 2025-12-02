@@ -1,6 +1,6 @@
 #include "JSONCalculator.h"
 #include "VariableInfo.h"
-#include "SABUtils/JsonUtils.h"
+#include "T42-Utils/JsonUtils.h"
 
 #include <QString>
 #include <QFile>
@@ -244,28 +244,28 @@ bool CJsonCalculator::loadJson()
         return false;
 
     auto obj = fJsonValue.toObject();
-    NSABUtils::fromJson( fIsReversible, obj, "reversible" );
-    NSABUtils::fromJson( fFromToLabels, obj, "fromToLabels" );
-    NSABUtils::fromJson( fName, obj, "name" );
-    NSABUtils::fromJson( fReversedName, obj, "reversedName" );
+    NTowel42Utils::fromJson( fIsReversible, obj, "reversible" );
+    NTowel42Utils::fromJson( fFromToLabels, obj, "fromToLabels" );
+    NTowel42Utils::fromJson( fName, obj, "name" );
+    NTowel42Utils::fromJson( fReversedName, obj, "reversedName" );
     if ( !fFromToLabels.has_value() && !fName.has_value() )
     {
         fErrorMsg = tr( "Invalid JSON must have fromToLabels or name fields." );
         return false;
     }
 
-    if ( !NSABUtils::fromJson( fPath, obj, "path" ) )
+    if ( !NTowel42Utils::fromJson( fPath, obj, "path" ) )
     {
         fErrorMsg = tr( "Invalid JSON. Root object does not contain a Path field" );
         return false;
     }
 
-    NSABUtils::fromJson( fReversePath, obj, "reversePath" );
-    NSABUtils::fromJson( fShowUnits, obj, "showUnits" );
-    NSABUtils::fromJson( fShowWaterType, obj, "showWaterType" );
+    NTowel42Utils::fromJson( fReversePath, obj, "reversePath" );
+    NTowel42Utils::fromJson( fShowUnits, obj, "showUnits" );
+    NTowel42Utils::fromJson( fShowWaterType, obj, "showWaterType" );
 
-    NSABUtils::fromJson( fBaseFormula, obj, "baseFormula" );
-    NSABUtils::fromJson( fReversedBaseFormula, obj, "reversedBaseFormula" );
+    NTowel42Utils::fromJson( fBaseFormula, obj, "baseFormula" );
+    NTowel42Utils::fromJson( fReversedBaseFormula, obj, "reversedBaseFormula" );
 
     if ( !obj.contains( "variables" ) )
     {

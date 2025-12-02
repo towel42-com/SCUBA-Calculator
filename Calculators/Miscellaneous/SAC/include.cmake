@@ -39,6 +39,6 @@ SET( project_pub_DEPS
     Qt6::Gui
     Qt6::Widgets
     CalculatorCore
-    SABUtils
+    Towel42Utils
     ${project_pub_DEPS}
 )

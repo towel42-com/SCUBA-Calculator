@@ -66,7 +66,7 @@ get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 include_directories( ${CMAKE_BINARY_DIR} )
 set ( DEBUG_PATH 
         "%PATH%"
-        "$<TARGET_FILE_DIR:SABUtils>"
+        "$<TARGET_FILE_DIR:Towel42Utils>"
         "${QTDIR}"
         )
 
@@ -91,7 +91,7 @@ add_dependencies(${PROJECT_NAME} ${CALCULATOR_LIST})
 DeployQt( ${PROJECT_NAME} . 
     EXTRA_TARGETS
        MathJaxQt6
-       SABUtils
+       Towel42Utils
 )
 
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )

@@ -20,6 +20,6 @@ set(qtproject_QRC
         Qt6::Core
         Qt6::SvgWidgets
         MainWindow
-        SABUtils
+        Towel42Utils
         MathJaxQt6
 )

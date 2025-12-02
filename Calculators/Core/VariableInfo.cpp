@@ -4,8 +4,8 @@
 #include "Formula.h"
 
 #include "Utilities.h"
-#include "SABUtils/DelayLineEdit.h"
-#include "SABUtils/JsonUtils.h"
+#include "T42-Utils/DelayLineEdit.h"
+#include "T42-Utils/JsonUtils.h"
 
 #include <QLineEdit>
 #include <QDoubleSpinBox>
@@ -89,7 +89,7 @@ bool CVariableInfo::createWidgets( CCalculatorPage *page, QFormLayout *formLayou
         comboBox->setObjectName( fName.data() );
         fField = comboBox;
 
-        auto le = new NSABUtils::CDelayLineEdit( page );
+        auto le = new NTowel42Utils::CDelayLineEdit( page );
         le->setObjectName( ( fName + "-auxData" ).data() );
         fExtraInputWidgets.push_back( le );
 
@@ -99,7 +99,7 @@ bool CVariableInfo::createWidgets( CCalculatorPage *page, QFormLayout *formLayou
     }
     else
     {
-        fField = new NSABUtils::CDelayLineEdit( page );
+        fField = new NTowel42Utils::CDelayLineEdit( page );
         fField->setObjectName( fName.data() );
     }
 
@@ -769,24 +769,24 @@ TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QS
     }
 
     QString name;
-    if ( !NSABUtils::fromJson( name, obj, "name" ) || name.isEmpty() )
+    if ( !NTowel42Utils::fromJson( name, obj, "name" ) || name.isEmpty() )
     {
         errorMsg = QObject::tr( "Invalid JSON object, missing name field.", "CVariableInfo::fromJson" );
         return {};
     }
 
     QString description;
-    if ( !NSABUtils::fromJson( description, obj, "description" ) || description.isEmpty() )
+    if ( !NTowel42Utils::fromJson( description, obj, "description" ) || description.isEmpty() )
     {
         errorMsg = QObject::tr( "Invalid JSON object, missing description field.", "CVariableInfo::fromJson" );
         return {};
     }
 
     bool intermediate{ false };
-    NSABUtils::fromJson( intermediate, obj, "intermediate" );
+    NTowel42Utils::fromJson( intermediate, obj, "intermediate" );
 
     QString locationStr;
-    if ( !NSABUtils::fromJson( locationStr, obj, "location" ) || locationStr.isEmpty() )
+    if ( !NTowel42Utils::fromJson( locationStr, obj, "location" ) || locationStr.isEmpty() )
     {
         errorMsg = QObject::tr( "Invalid JSON object, missing location field.", "CVariableInfo::fromJson" );
         return {};
@@ -800,7 +800,7 @@ TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QS
     }
 
     QString unitStr;
-    if ( !NSABUtils::fromJson( unitStr, obj, "unit" ) || unitStr.isEmpty() )
+    if ( !NTowel42Utils::fromJson( unitStr, obj, "unit" ) || unitStr.isEmpty() )
     {
         errorMsg = QObject::tr( "Invalid JSON object, missing unit field.", "CVariableInfo::fromJson" );
         return {};
@@ -814,7 +814,7 @@ TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QS
     }
 
     std::optional< bool > imperial;
-    NSABUtils::fromJson( imperial, obj, "imperial" );
+    NTowel42Utils::fromJson( imperial, obj, "imperial" );
 
     if ( obj.contains( "texFormula" ) && obj.contains( "texFormulas" ) )
     {
@@ -823,10 +823,10 @@ TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QS
     }
 
     std::list< QString > texFormulas;
-    NSABUtils::fromJson( texFormulas, obj, "texFormulas" );
+    NTowel42Utils::fromJson( texFormulas, obj, "texFormulas" );
 
     QString texFormula;
-    NSABUtils::fromJson( texFormula, obj, "texFormula" );
+    NTowel42Utils::fromJson( texFormula, obj, "texFormula" );
     if ( !texFormula.isEmpty() )
         texFormulas.push_back( texFormula );
 
@@ -837,10 +837,10 @@ TVariableInfo CVariableInfo::fromJson( const QJsonObject &obj, std::optional< QS
     }
 
     std::list< QString > jsFormulas;
-    NSABUtils::fromJson( jsFormulas, obj, "jsFormulas" );
+    NTowel42Utils::fromJson( jsFormulas, obj, "jsFormulas" );
 
     QString jsFormula;
-    NSABUtils::fromJson( jsFormula, obj, "jsFormula" );
+    NTowel42Utils::fromJson( jsFormula, obj, "jsFormula" );
     if ( !jsFormula.isEmpty() )
         jsFormulas.push_back( jsFormula );
 
@@ -948,8 +948,8 @@ bool CVariableInfo::loadRangeList( const QJsonObject &obj, std::optional< QStrin
 
         std::optional< bool > imperial;
         std::optional< bool > seaWater;
-        NSABUtils::fromJson( imperial, currObj, "imperial" );
-        NSABUtils::fromJson( seaWater, currObj, "seaWater" );
+        NTowel42Utils::fromJson( imperial, currObj, "imperial" );
+        NTowel42Utils::fromJson( seaWater, currObj, "seaWater" );
 
         auto range = SRange::fromJson( currObj[ "range" ].toObject(), errorMsg );
         if ( !range.has_value() )
@@ -982,7 +982,7 @@ bool CVariableInfo::loadValues( const QJsonObject &obj, std::optional< QString >
 
         auto currObj = currValue.toObject();
         QString key;
-        if ( !NSABUtils::fromJson( key, currObj, "valueName" ) || key.isEmpty() )
+        if ( !NTowel42Utils::fromJson( key, currObj, "valueName" ) || key.isEmpty() )
         {
             errorMsg = QObject::tr( "Invalid JSON object, invalid valueName field.", "CVariableInfo::fromJson" );
             return false;
@@ -991,7 +991,7 @@ bool CVariableInfo::loadValues( const QJsonObject &obj, std::optional< QString >
         TOptionalDouble value;
         if ( currObj.contains( "value" ) )
         {
-            if ( !NSABUtils::fromJson( value, currObj, "value" ) )
+            if ( !NTowel42Utils::fromJson( value, currObj, "value" ) )
             {
                 errorMsg = QObject::tr( "Invalid JSON object, invalid value field.", "CVariableInfo::fromJson" );
                 return false;
@@ -1035,8 +1035,8 @@ bool CVariableInfo::loadValuesList( const QJsonObject &obj, std::optional< QStri
 
         std::optional< bool > imperial;
         std::optional< bool > seaWater;
-        NSABUtils::fromJson( imperial, currObj, "imperial" );
-        NSABUtils::fromJson( seaWater, currObj, "seaWater" );
+        NTowel42Utils::fromJson( imperial, currObj, "imperial" );
+        NTowel42Utils::fromJson( seaWater, currObj, "seaWater" );
         TNamedValueItemList valueItemList;
         auto tmp = TVariableInfo();
         if ( !loadValues( currObj, errorMsg, tmp, valueItemList ) )
@@ -1143,25 +1143,25 @@ std::optional< SRange > SRange::fromJson( const QJsonObject &rangeObj, std::opti
     }
 
     SRange range;
-    if ( !NSABUtils::fromJson( range.fMin, rangeObj, "min" ) )
+    if ( !NTowel42Utils::fromJson( range.fMin, rangeObj, "min" ) )
     {
         errorMsg = QObject::tr( "Invalid JSON object, range field missing min value.", "CVariableInfo::fromJson" );
         return {};
     }
 
-    if ( !NSABUtils::fromJson( range.fMax, rangeObj, "max" ) )
+    if ( !NTowel42Utils::fromJson( range.fMax, rangeObj, "max" ) )
     {
         errorMsg = QObject::tr( "Invalid JSON object, range field missing max value.", "CVariableInfo::fromJson" );
         return {};
     }
 
-    if ( !NSABUtils::fromJson( range.fStep, rangeObj, "step" ) )
+    if ( !NTowel42Utils::fromJson( range.fStep, rangeObj, "step" ) )
     {
         errorMsg = QObject::tr( "Invalid JSON object, range field missing step value.", "CVariableInfo::fromJson" );
         return {};
     }
 
-    NSABUtils::fromJson( range.fDefaultValue, rangeObj, "defaultValue" );
+    NTowel42Utils::fromJson( range.fDefaultValue, rangeObj, "defaultValue" );
     return range;
 }
 

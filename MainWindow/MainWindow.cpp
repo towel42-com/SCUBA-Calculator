@@ -6,7 +6,7 @@
 #include "Calculators/Core/JsonCalculator.h"
 
 #include "T42-MathJaxQt6/include/MathJaxQt6.h"
-#include "SABUtils/utils.h"
+#include "T42-Utils/utils.h"
 
 #include <QDir>
 #include <QDirIterator>
@@ -26,7 +26,7 @@
 
 #include <set>
 #include <libloaderapi.h>
-#include "SABUtils/FileUtils.h"
+#include "T42-Utils/FileUtils.h"
 
 static QString toString( EFormulaType formulaType )
 {
@@ -199,7 +199,7 @@ void CMainWindow::loadDllCalculators()
         auto hLib = ::LoadLibrary( (LPCWSTR)dllName.utf16() );
         if ( !hLib )
         {
-            auto lastError = NSABUtils::getLastError();   // windows only
+            auto lastError = NTowel42Utils::getLastError();   // windows only
             QMessageBox::critical( this, tr( "Could not load Calculator" ), tr( "Loading calculator '%1' failed with error:<br/> %2" ).arg( dllName ).arg( lastError ) );
             continue;
         }
